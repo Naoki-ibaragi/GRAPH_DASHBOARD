@@ -1,4 +1,3 @@
-
 import Highcharts from "highcharts";
 import { useState } from "react";
 import HighchartsReact from "highcharts-react-official";
@@ -13,48 +12,32 @@ import {
   TextField,
   Grid,
   Checkbox,
+  Stack,
   Radio,
   RadioGroup,
   FormControlLabel,
 } from "@mui/material";
+import GraphSetting from "../graphComponents/GraphSetting";
 
 export default function ChartCard1() {
-  const [graphType, setGraphType] = useState("ScatterPlot");
-  const [xdimItem, setXdimItem] = useState("LD_COORD_X");
-  const [ydimItem, setYdimItem] = useState("LD_COORD_Y");
-  const [operator, setOperator] = useState("and");
+  const [graphType, setGraphType] = useState("ScatterPlot"); //グラフの種類
+  const [xdimItem, setXdimItem] = useState("LD_COORD_X"); //x軸の項目
+  const [ydimItem, setYdimItem] = useState("LD_COORD_Y"); //y軸の項目
+  const [alarmUnit, setAlarmUnit] = useState("LD"); //アラームユニットの設定
+  const [operator, setOperator] = useState("and"); //フィルターの接続詞
+  const [closeSettingCard, setCloseSettingCard] = useState(false); //設定カードを閉じるかどうか(グラフを見やすくするため)
 
+  //filerオブジェクトを入れる配列
   const [filters, setFilters] = useState(
-    Array(5).fill({
+      Array(2).fill({
       enable:false,
       dimItem: "LD_COORD_X",
       dimVal: "",
       dimOperator: "equal",
-    })
+      })
   );
 
-  const dim_items = {
-    "LD座標X": "LD_COORD_X",
-    "LD座標Y": "LD_COORD_Y",
-  };
-
-  const operator_items = {
-    "に等しい": "equal",
-    "に等しくない": "not_equal",
-    "より大きい": "greater_than",
-    "より小さい": "less_than",
-  };
-
-  const handleFilterChange = (index, field, value) => {
-    const newFilters = [...filters];
-    newFilters[index] = { ...newFilters[index], [field]: value };
-    setFilters(newFilters);
-  };
-
-  const handleRadioButton=(e)=>{
-    setOperator(e.target.value);
-  }
-
+  //HighChartのテスト
   const options = {
     title: { text: "月別売上" },
     xAxis: { categories: ["Jan", "Feb", "Mar", "Apr", "May"] },
@@ -67,36 +50,36 @@ export default function ChartCard1() {
   };
 
   return (
-    <Box>
+    <Box sx={{width:"100%",maxWidth:"100%"}}>
+      <Box sx={{display:"flex",justifyContent:"flex-end"}}>
+        <Button type="inherit" >グラフの設定を閉じる</Button>
+      </Box>
       <Card>
         <CardContent>
           {/* グラフ種類 */}
           <Box mb={2}>
-            <Typography variant="subtitle2" gutterBottom>
-              グラフ種類
-            </Typography>
-            <Select
-              size="small"
-              sx={{height:32}}
-              value={graphType}
-              onChange={(e) => setGraphType(e.target.value)}
+            <Stack
+              direction="row"
+              alignItems="center"
+              flexWrap="wrap"
             >
-              <MenuItem value={"ScatterPlot"}>散布図</MenuItem>
-              <MenuItem value={"LinePlot"}>折れ線グラフ</MenuItem>
-              <MenuItem value={"Histogram"}>ヒストグラム</MenuItem>
-            </Select>
-          </Box>
-
-          {/* 軸設定 */}
-          <Grid container spacing={2} mb={2}>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" gutterBottom>
-                X軸の項目
-              </Typography>
+              <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>グラフの種類</Typography>
               <Select
                 size="small"
-                sx={{height:32}}
-                fullWidth
+                sx={{mr:3,height:32,width:200}}
+                value={graphType}
+                onChange={(e) => setGraphType(e.target.value)}
+              >
+                {Object.keys(graph_items).map((key) => (
+                  <MenuItem key={key} value={graph_items[key]}>
+                    {key}
+                  </MenuItem>
+                ))}
+              </Select>
+              <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>X軸の項目</Typography>
+              <Select
+                size="small"
+                sx={{mr:3,height:32,width:200}}
                 value={xdimItem}
                 onChange={(e) => setXdimItem(e.target.value)}
               >
@@ -106,15 +89,10 @@ export default function ChartCard1() {
                   </MenuItem>
                 ))}
               </Select>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" gutterBottom>
-                Y軸の項目
-              </Typography>
+              <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>Y軸の項目</Typography>
               <Select
                 size="small"
-                sx={{height:32}}
-                fullWidth
+                sx={{mr:3,height:32,width:200}}
                 value={ydimItem}
                 onChange={(e) => setYdimItem(e.target.value)}
               >
@@ -124,9 +102,41 @@ export default function ChartCard1() {
                   </MenuItem>
                 ))}
               </Select>
-            </Grid>
-          </Grid>
-
+            </Stack>
+          </Box>
+          {/* アラーム番号設定 */}
+          {/* 散布図と2Dヒートマップが設定されているときだけ表示するようにする */}
+          {graphType === "ScatterPlot" || graphType==="2DHeatmap" ? (
+            <Box mb={2}>
+              <Stack direction="row" alignItems="center" flexWrap="wrap">
+                <Typography sx={{ mr: 1 }} variant="subtitle2" gutterBottom>
+                  アラーム設定
+                </Typography>
+                <Select
+                  size="small"
+                  sx={{mr:3,height:32,width:200}}
+                  value={alarmUnit}
+                  onChange={(e) => setAlarmUnit(e.target.value)}
+                >
+                  {Object.keys(unit_items).map((key) => (
+                    <MenuItem key={key} value={unit_items[key]}>
+                      {key}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <Typography sx={{ mr: 1 }} variant="subtitle2" gutterBottom>
+                  アラーム番号
+                </Typography>
+                <TextField
+                  size="small"
+                  label="アラーム番号"
+                  onChange={(e) =>
+                    handleFilterChange(index, "dimVal", e.target.value)
+                  }
+                />
+              </Stack>
+            </Box>
+          ) : null}
           {/* フィルター設定 */}
           <Grid
             container
@@ -223,12 +233,14 @@ export default function ChartCard1() {
               </Grid>
             </Grid>
           ))}
-          <Button
-            variant="contained"
-            color="primary"
-          >
-            グラフ作成開始
-          </Button>
+          <Box>
+            <Button
+              variant="contained"
+              color="primary"
+            >
+              グラフ作成開始
+            </Button>
+          </Box>
         </CardContent>
       </Card>
 
