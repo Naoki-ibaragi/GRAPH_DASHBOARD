@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Box,
   Button,
@@ -15,9 +14,25 @@ import {
   RadioGroup,
   FormControlLabel,
 } from "@mui/material";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-export default function GraphSetting() {
-    
+export default function GraphSetting(props) {
+
+    const graphType=props.graphType; //グラフの種類
+    const setGraphType=props.setGraphType;
+    const xdimItem=props.xdimItem; //x軸の項目
+    const setXdimItem=props.setXdimItem;
+    const ydimItem=props.ydimItem; //Y軸の項目
+    const setYdimItem=props.setYdimItem;
+    const alarmUnit=props.alarmUnit; //グラフに表示するアラームのユニット
+    const setAlarmUnit=props.setAlarmUnit;
+    const alarmNumbers=props.alarmNumbers; //アラームの番号
+    const setAlarmNumbers=props.setAlarmNumbers;
+    const operator=props.operator; //フィルターの結び方
+    const setOperator=props.setOperator;
+    const filters=props.filters; //フィルターの中身(配列)
+    const setFilters=props.setFilters;
 
     //グラフの種類一覧
     const graph_items = {
@@ -55,6 +70,11 @@ export default function GraphSetting() {
         "より小さい": "less_than",
     };
 
+    //アラーム設定のテキストボックス書き換え時のハンドラ
+    const handleAlarmNumberChange=(val)=>{
+        setAlarmNumbers(val.split(","));
+    }
+
     //フィルターのエントリー記入時にハンドラー
     const handleFilterChange = (index, field, value) => {
         const newFilters = [...filters];
@@ -65,7 +85,29 @@ export default function GraphSetting() {
     //フィルターのラジオボタンクリック時のハンドラー
     const handleRadioButton=(e)=>{
         setOperator(e.target.value);
-    }
+    };
+
+    //フィルターを追加する
+    const addFilter=()=>{
+        const newFilters = [...filters];
+        newFilters.push(
+        {
+            enable:true,
+            dimItem: "LD_COORD_X",
+            dimVal: "",
+            dimOperator: "equal",
+        });
+        setFilters(newFilters);
+    };
+
+    //フィルターを追加する
+    const deleteFilter=(index)=>{
+        const newFilters = [
+        ...filters.slice(0, index),
+        ...filters.slice(index + 1)
+        ];
+        setFilters(newFilters);
+    };
 
     return (
         <Card>
@@ -93,7 +135,7 @@ export default function GraphSetting() {
                 <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>X軸の項目</Typography>
                 <Select
                     size="small"
-                    sx={{mr:3,height:32,width:200}}
+                    sx={{mr:3,height:32,width:300}}
                     value={xdimItem}
                     onChange={(e) => setXdimItem(e.target.value)}
                 >
@@ -106,7 +148,7 @@ export default function GraphSetting() {
                 <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>Y軸の項目</Typography>
                 <Select
                     size="small"
-                    sx={{mr:3,height:32,width:200}}
+                    sx={{mr:3,height:32,width:300}}
                     value={ydimItem}
                     onChange={(e) => setYdimItem(e.target.value)}
                 >
@@ -144,8 +186,9 @@ export default function GraphSetting() {
                     <TextField
                     size="small"
                     label="アラーム番号"
+                    value={(alarmNumbers.join(","))}
                     onChange={(e) =>
-                        handleFilterChange(index, "dimVal", e.target.value)
+                        handleAlarmNumberChange(e.target.value)
                     }
                     />
                 </Stack>
@@ -203,8 +246,7 @@ export default function GraphSetting() {
                 <Grid item xs={12} sm={3}>
                     <Select
                     size="small"
-                    sx={{height:32}}
-                    fullWidth
+                    sx={{height:32,width:300}}
                     value={filter.dimItem}
                     onChange={(e) =>
                         handleFilterChange(index, "dimItem", e.target.value)
@@ -245,6 +287,20 @@ export default function GraphSetting() {
                     ))}
                     </Select>
                 </Grid>
+                <Grid>
+                    {index>0 ? (
+                        <Button onClick={(e)=>deleteFilter(index)}>
+                            <DeleteIcon></DeleteIcon>
+                        </Button>
+                    ):null}
+                </Grid>
+                <Grid>
+                    {index===(filters.length)-1 ? (
+                        <Button onClick={addFilter}>
+                            <AddCircleOutlineIcon></AddCircleOutlineIcon>
+                        </Button>
+                    ):null}
+                </Grid>
                 </Grid>
             ))}
             <Box>
@@ -259,3 +315,4 @@ export default function GraphSetting() {
         </Card>
     )
 }
+
