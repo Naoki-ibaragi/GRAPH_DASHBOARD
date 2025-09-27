@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import ChartCard1 from "./components/ChartCard1";
 import Downloads from "./components/Downloads";
 import Header from "./components/Header";
+import Settings from "./components/Settings";
 import { Typography,Box } from "@mui/material";
 
 function App() {
@@ -45,7 +46,7 @@ function App() {
         </div>
         {/* Settings */}
         <div hidden={selectedPage !== "settings"}>
-          <Typography variant="h4">Settings Section</Typography>
+          <Settings />
         </div>
       </main>
     </Box>

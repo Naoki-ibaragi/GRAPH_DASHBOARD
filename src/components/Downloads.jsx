@@ -9,27 +9,42 @@ import {
   Stack,
   LinearProgress,
 } from "@mui/material";
+import { invoke } from "@tauri-apps/api/core"; 
 
 export default function Downloads() {
   const [lotNumber, setLotNumber] = useState("");
   const [downloads, setDownloads] = useState([]);
 
   // 共通でタスク追加
-  const addDownloadTask = (type, label) => {
+  const addDownloadTask = async (type, label) => {
     const taskId = Date.now(); // 簡易ID
     setDownloads((prev) => [
       ...prev,
       { id: taskId, type, label, status: "downloading" },
     ]);
 
-    // ダミーで3秒後に完了にする（実際はAPIのレスポンスで更新）
-    setTimeout(() => {
+    try {
+      if (type === "lot") {
+        // ★ Rust の関数 "download_lot" を呼び出し
+        await invoke("download_lot", { lot: lotNumber });
+      } else if (type === "alarm") {
+        await invoke("download_alarm");
+      }
+
+      // 成功したら状態を完了に変更
       setDownloads((prev) =>
         prev.map((t) =>
           t.id === taskId ? { ...t, status: "completed" } : t
         )
       );
-    }, 3000);
+    } catch (e) {
+      console.error(e);
+      setDownloads((prev) =>
+        prev.map((t) =>
+          t.id === taskId ? { ...t, status: "failed" } : t
+        )
+      );
+    }
   };
 
   return (
