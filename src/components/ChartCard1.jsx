@@ -1,6 +1,7 @@
 import Highcharts from "highcharts";
 import { useState } from "react";
 import HighchartsReact from "highcharts-react-official";
+import dayjs from "dayjs";
 import {
   Box,
   Button,
@@ -27,6 +28,13 @@ export default function ChartCard1() {
   const [alarmNumbers, setAlarmNumbers] = useState([]); //アラームユニットの設定
   const [operator, setOperator] = useState("and"); //フィルターの接続詞
   const [closeSettingCard, setCloseSettingCard] = useState(false); //設定カードを閉じるかどうか(グラフを見やすくするため)
+  const today=new Date();
+  //let oneMonthAgo=new Date();
+  //oneMonthAgo.setMonth(oneMonthAgo.getMonth()-1);
+  //const [startDate,setStartDate]=useState(oneMonthAgo.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit"}).replaceAll("/","-"));
+  //const [endDate,setEndDate]=useState(today.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit"}).replaceAll("/","-"));
+  const [startDate,setStartDate]=useState(dayjs().subtract(1,"month"));
+  const [endDate,setEndDate]=useState(dayjs());
 
   //filerオブジェクトを入れる配列
   const [filters, setFilters] = useState(
@@ -51,9 +59,9 @@ export default function ChartCard1() {
   };
 
   return (
-    <Box sx={{width:"100%",maxWidth:"100%"}}>
+    <Box sx={{width:"99%",maxWidth:"100%"}}>
       <Box sx={{display:"flex",justifyContent:"flex-end"}}>
-        <Button type="inherit" onClick={()=>setCloseSettingCard((prev)=>!prev)}>
+        <Button type="inherit" onClick={()=>setCloseSettingCard((prev)=>!prev)} sx={{my:0,py:0,px:3}}>
           {closeSettingCard ? (
             "グラフの設定を開く"
           ):(
@@ -77,14 +85,15 @@ export default function ChartCard1() {
           setOperator={setOperator}
           filters={filters}
           setFilters={setFilters}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
         />
       ):null}
 
       <Card sx={{ mt: 3 }}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            プレビュー
-          </Typography>
           <HighchartsReact highcharts={Highcharts} options={options} />
         </CardContent>
       </Card>

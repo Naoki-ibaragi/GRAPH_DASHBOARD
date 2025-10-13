@@ -28,7 +28,8 @@ export default function Downloads() {
         // ★ Rust の関数 "download_lot" を呼び出し
         await invoke("download_lot", { lot: lotNumber });
       } else if (type === "alarm") {
-        await invoke("download_alarm");
+        let data=await invoke("download_alarm",{machineName:"CLT_1"});
+        console.log(data);
       }
 
       // 成功したら状態を完了に変更

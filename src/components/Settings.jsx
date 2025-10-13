@@ -28,7 +28,7 @@ function Settings() {
     // バックエンドにフォルダパスを送って登録処理を走らせる
     const registData = async () => {
         try {
-            await invoke("regist_data", { folder_path: folderPath }); //tauriでプログラムを走らせる
+            await invoke("regist_data", { folderPath: folderPath }); //tauriでプログラムを走らせる
         } catch (e) {
             console.error(e);
         }
@@ -66,7 +66,7 @@ function Settings() {
                 variant="contained"
                 color="primary"
                 disabled={!folderPath}
-                onClick={()=>registData}
+                onClick={registData}
             >
                 DBへデータを登録
             </Button>
