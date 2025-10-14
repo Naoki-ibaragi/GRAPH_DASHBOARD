@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import ChartCard1 from "./components/ChartCard1";
 import Downloads from "./components/Downloads";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
+import LotDataDownloads from "./components/LotDataDownloads";
 import Header from "./components/Header";
 import Settings from "./components/Settings";
 import { Typography,Box } from "@mui/material";
@@ -41,8 +42,8 @@ function App() {
       {openSideBar ? <Sidebar onSelect={setSelectedPage} openSideBar={openSideBar} setOpenSideBar={setOpenSideBar}/>:<></>}
       <main style={{ marginLeft: leftSpace, padding: "10px", flex: 1 }}>
         {/* Downloads */}
-        <div hidden={selectedPage !== "downloads"}>
-          <Downloads />
+        <div hidden={selectedPage !== "LotDataDownloads"}>
+          <LotDataDownloads />
         </div>
         {/* Alarmデータのダウンロードページ */}
         <div hidden={selectedPage !== "AlarmDataDownloads"}>

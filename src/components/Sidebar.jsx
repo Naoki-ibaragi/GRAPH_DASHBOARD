@@ -22,8 +22,8 @@ export default function Sidebar({ onSelect,openSideBar,setOpenSideBar }) {
       }}
       >
       <List>
-        <ListItem button onClick={()=>onClickSideBarItem("downloads")}>
-          <ListItemText primary="Downloads" />
+        <ListItem button onClick={()=>onClickSideBarItem("LotDataDownloads")}>
+          <ListItemText primary="LotDataDownloads" />
         </ListItem>
         <ListItem button onClick={()=>onClickSideBarItem("AlarmDataDownloads")}>
           <ListItemText primary="AlarmDownloads" />
