@@ -4,12 +4,8 @@ use std::thread;
 mod alarm_log;
 use alarm_log::{read_jsondata,get_alarmdata};
 
-#[command]
-fn download_lot(lot: String) -> String {
-    println!("受け取ったロット番号: {}", lot);
-    // ここでDBからデータ取得やファイル生成などを行う
-    format!("Lot {} のデータを生成しました", lot)
-}
+mod lot_log;
+use lot_log::{get_lotdata};
 
 // 進捗報告用のイベントペイロード
 #[derive(Clone, serde::Serialize)]
@@ -27,6 +23,63 @@ struct CompletionPayload {
     error: Option<String>,
 }
 
+//1ロット分のデータを取得して返す
+#[command]
+fn download_lot(window:Window,lot_name: String) -> Result<(),String> {
+    thread::spawn(move || {
+
+        let _ = window.emit("lot_data-progress", ProgressPayload {
+            step: "access to db".to_string(),
+            progress: 10,
+            message: "DBデータ読み込み中...".to_string(),
+        });
+
+        let db_path = "D:\\testspace\\chiptest.db";
+        let data=match get_lotdata(db_path, &lot_name){
+            Ok(data)=>{
+                let _ = window.emit("lot_log-progress",ProgressPayload{
+                    step:"dbからの読み出し完了".to_string(),
+                    progress:90,
+                    message:"DBからのデータ取得完了".to_string()
+                });
+                data
+            },
+            Err(e)=>{
+                let _ =window.emit("lot_log-complete",CompletionPayload{
+                    success:false,
+                    data:None,
+                    error:Some(format!("Failed to read DB:{}",e))
+                });
+                return;
+            }  
+        };
+
+        //データ成形を実施
+        let response = serde_json::json!({
+            "lot_header": data.0,
+            "lot_data": data.1
+        });
+        
+        // 完了通知
+        let _ = window.emit("lot_log-complete", CompletionPayload {
+            success: true,
+            data: Some(response),
+            error: None,
+        });
+        
+        let _ = window.emit("lot_log-progress", ProgressPayload {
+            step: "complete".to_string(),
+            progress: 100,
+            message: "処理完了".to_string(),
+        });
+
+    });
+
+    Ok(())
+}
+
+
+//装置単位のアラームをまとめて返す
 #[command]
 async fn download_alarm(window: Window, machine_name: String) -> Result<(), String> {
     // 別スレッドで処理を実行

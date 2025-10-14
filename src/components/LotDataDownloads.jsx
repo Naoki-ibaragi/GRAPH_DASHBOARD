@@ -48,7 +48,7 @@ export default function LotDataDownloads() {
 
     //ダウンロードタスクをセットする
     setDownloads(true);
-    setDownloadsState("ダウンロード開始");
+    setDownloadsState("データ取得開始");
 
     // 進捗イベントのリスナーを設定
     const unlistenProgress = await listen('alarm-progress', (event) => {
