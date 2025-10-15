@@ -11,10 +11,10 @@ import {
 } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import AlarmTable from "../TableComponents/AlarmTable";
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
 import { BaseDirectory } from '@tauri-apps/plugin-fs';
+import LotDataTable from "../TableComponents/LotDataTable";
 
 export default function LotDataDownloads() {
   const [lotNumber, setLotNumber] = useState(""); //バックエンドに送信するロット番号
@@ -22,21 +22,21 @@ export default function LotDataDownloads() {
   const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
   const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
   const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
+  const [columnHeader,setColumnHeader]=useState(null); //バックエンドから受け取った各カラムのヘッダー名
   const [lotUnitData,setLotUnitData]=useState(null); //バックエンドから受け取った設備単位のアラームデータ一覧
   const [isTable,setIsTable]=useState(false); //データを受け取ってテーブルを表示するかどうか
 
-  //バックエンドからのアラームデータのダウンロードが完了するとテーブルを表示する
+  //invoke処理が完了するとテーブルを表示する
   useEffect(()=>{
-    if(lotUnitData==null || alarmCodes==null){
+    if(lotUnitData==null || columnHeader==null){
       setIsTable(false);
       return; 
     }
     setIsTable(true);
-  },[lotUnitData,alarmCodes]);
+  },[lotUnitData,columnHeader]);
 
-  // ロットデータのダウンロード
+  // ロットデータのダウンロード処理(invoke)
   const downloadLotData=async ()=> {
-    setLotUnitData(null);
 
     //ロット名のバリデーションを入れる
     if(lotNumber.length!=10){
@@ -46,12 +46,16 @@ export default function LotDataDownloads() {
       setValidationError(false);
     }
 
+    setColumnHeader(null); //データの初期化
+    setLotUnitData(null); //データの初期化
+    setIsTable(false); //テーブルの削除
+
     //ダウンロードタスクをセットする
     setDownloads(true);
     setDownloadsState("データ取得開始");
 
     // 進捗イベントのリスナーを設定
-    const unlistenProgress = await listen('alarm-progress', (event) => {
+    const unlistenProgress = await listen('lot_log-progress', (event) => {
       const payload = event.payload;
       console.log(`進捗: ${payload.progress}% - ${payload.message}`);
       
@@ -60,12 +64,13 @@ export default function LotDataDownloads() {
     });
     
     // 完了イベントのリスナーを設定
-    const unlistenComplete = await listen('alarm-complete', (event) => {
+    const unlistenComplete = await listen('lot_log-complete', (event) => {
       const payload = event.payload;
       
       if (payload.success) {
         console.log('処理成功:', payload.data);
-        setLotUnitData(payload.data.lot_unit_alarm_data);
+        setColumnHeader(payload.data.lot_header);
+        setLotUnitData(payload.data.lot_data);
         setDownloads(false);
       } else {
         console.error('処理失敗:', payload.error);
@@ -81,12 +86,17 @@ export default function LotDataDownloads() {
     
     try {
       // バックエンドのコマンドを呼び出し（即座に戻る）
-      await invoke('download_lot', { lotNumber });
+      await invoke('download_lot', { lotName:lotNumber });
     } catch (error) {
       console.error('コマンド呼び出しエラー:', error);
       unlistenProgress();
       unlistenComplete();
     }
+  }
+
+  //テーブルをcsvで出力
+  const exportCSV=async ()=>{
+
   }
 
   return (
@@ -132,7 +142,7 @@ export default function LotDataDownloads() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                {`処理状況 ${downloadsState}`}
+                {`処理状況 - ${downloadsState}`}
               </Typography>
               <Stack spacing={2}>
               </Stack>
@@ -141,7 +151,7 @@ export default function LotDataDownloads() {
         ):null}
       </Box>
       {isTable ? <Button onClick={exportCSV}>テーブルをCSVに出力</Button>:null}
-      {isTable ? <AlarmTable alarmCodes={alarmCodes} lotUnitData={lotUnitData}></AlarmTable>:null}
+      {isTable ? <LotDataTable columnHeader={columnHeader} lotUnitData={lotUnitData}></LotDataTable>:null}
     </>
   );
 }

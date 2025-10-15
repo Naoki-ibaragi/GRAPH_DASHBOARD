@@ -9,7 +9,7 @@ import Settings from "./components/Settings";
 import { Typography,Box } from "@mui/material";
 
 function App() {
-  const [selectedPage, setSelectedPage] = useState("AlarmDataDownloads");
+  const [selectedPage, setSelectedPage] = useState("LotDataDownloads");
   const [openSideBar, setOpenSideBar] = useState(false);
   const [title,setTitle]=useState("Download");
 
@@ -17,8 +17,8 @@ function App() {
   const leftSpace=0;
 
   useEffect(() => {
-    if (selectedPage === "downloads") {
-      setTitle("Downloads");
+    if (selectedPage === "LotDataDownloads") {
+      setTitle("LotDataDownloads");
     }else if(selectedPage==="AlarmDataDownloads"){
       setTitle("Alarm Data Download");
     } else if (selectedPage === "dashboard") {

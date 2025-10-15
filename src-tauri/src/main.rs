@@ -25,23 +25,12 @@ struct CompletionPayload {
 
 //1ロット分のデータを取得して返す
 #[command]
-fn download_lot(window:Window,lot_name: String) -> Result<(),String> {
+fn download_lot(window:Window,lotName: String) -> Result<(),String> {
     thread::spawn(move || {
 
-        let _ = window.emit("lot_data-progress", ProgressPayload {
-            step: "access to db".to_string(),
-            progress: 10,
-            message: "DBデータ読み込み中...".to_string(),
-        });
-
-        let db_path = "D:\\testspace\\chiptest.db";
-        let data=match get_lotdata(db_path, &lot_name){
+        let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
+        let data=match get_lotdata(&window,db_path, &lotName){
             Ok(data)=>{
-                let _ = window.emit("lot_log-progress",ProgressPayload{
-                    step:"dbからの読み出し完了".to_string(),
-                    progress:90,
-                    message:"DBからのデータ取得完了".to_string()
-                });
                 data
             },
             Err(e)=>{

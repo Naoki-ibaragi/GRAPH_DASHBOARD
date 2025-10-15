@@ -16,7 +16,7 @@ export default function Sidebar({ onSelect,openSideBar,setOpenSideBar }) {
           backgroundColor:"#1976d2",
           color:"white",
           zIndex:1000,
-          width:150,
+          width:180,
           paddingY:8,
         }
       }}
