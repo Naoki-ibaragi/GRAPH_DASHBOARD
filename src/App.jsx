@@ -3,13 +3,12 @@ import Sidebar from "./components/Sidebar";
 import ChartCard1 from "./components/ChartCard1";
 import Downloads from "./components/Downloads";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
-import LotDataDownloads from "./components/LotDataDownloads";
 import Header from "./components/Header";
 import Settings from "./components/Settings";
 import { Typography,Box } from "@mui/material";
 
 function App() {
-  const [selectedPage, setSelectedPage] = useState("LotDataDownloads");
+  const [selectedPage, setSelectedPage] = useState("dashboard");
   const [openSideBar, setOpenSideBar] = useState(false);
   const [title,setTitle]=useState("Download");
 
@@ -17,8 +16,8 @@ function App() {
   const leftSpace=0;
 
   useEffect(() => {
-    if (selectedPage === "LotDataDownloads") {
-      setTitle("LotDataDownloads");
+    if (selectedPage === "downloads") {
+      setTitle("Downloads");
     }else if(selectedPage==="AlarmDataDownloads"){
       setTitle("Alarm Data Download");
     } else if (selectedPage === "dashboard") {
@@ -42,8 +41,8 @@ function App() {
       {openSideBar ? <Sidebar onSelect={setSelectedPage} openSideBar={openSideBar} setOpenSideBar={setOpenSideBar}/>:<></>}
       <main style={{ marginLeft: leftSpace, padding: "10px", flex: 1 }}>
         {/* Downloads */}
-        <div hidden={selectedPage !== "LotDataDownloads"}>
-          <LotDataDownloads />
+        <div hidden={selectedPage !== "downloads"}>
+          <Downloads />
         </div>
         {/* Alarmデータのダウンロードページ */}
         <div hidden={selectedPage !== "AlarmDataDownloads"}>

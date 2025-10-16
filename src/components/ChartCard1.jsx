@@ -1,5 +1,5 @@
 import Highcharts from "highcharts";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import HighchartsReact from "highcharts-react-official";
 import dayjs from "dayjs";
 import {
@@ -19,22 +19,34 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import GraphSetting from "../graphComponents/GraphSetting";
+import { line_plot_x_axis_items,line_plot_y_axis_items } from "../Variables/LinePlotData";
+import { scatter_plot_x_axis_items,scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
 
 export default function ChartCard1() {
   const [graphType, setGraphType] = useState("ScatterPlot"); //グラフの種類
-  const [xdimItem, setXdimItem] = useState("LD_COORD_X"); //x軸の項目
-  const [ydimItem, setYdimItem] = useState("LD_COORD_Y"); //y軸の項目
+  const [xdimItem, setXdimItem] = useState(""); //x軸の項目
+  const [ydimItem, setYdimItem] = useState(""); //y軸の項目
   const [alarmUnit, setAlarmUnit] = useState("LD"); //アラームユニットの設定
   const [alarmNumbers, setAlarmNumbers] = useState([]); //アラームユニットの設定
   const [operator, setOperator] = useState("and"); //フィルターの接続詞
   const [closeSettingCard, setCloseSettingCard] = useState(false); //設定カードを閉じるかどうか(グラフを見やすくするため)
   const today=new Date();
-  //let oneMonthAgo=new Date();
-  //oneMonthAgo.setMonth(oneMonthAgo.getMonth()-1);
-  //const [startDate,setStartDate]=useState(oneMonthAgo.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit"}).replaceAll("/","-"));
-  //const [endDate,setEndDate]=useState(today.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit"}).replaceAll("/","-"));
   const [startDate,setStartDate]=useState(dayjs().subtract(1,"month"));
   const [endDate,setEndDate]=useState(dayjs());
+  const [xDimItems,setXDimItems]=useState(scatter_plot_x_axis_items); //X軸の項目
+  const [yDimItems,setYDimItems]=useState(scatter_plot_y_axis_items); //Y軸の項目
+
+  useEffect(()=>{
+      setXdimItem("");
+      setYdimItem("");
+      if(graphType=="ScatterPlot"){
+          setXDimItems(scatter_plot_x_axis_items);
+          setYDimItems(scatter_plot_y_axis_items);
+      }else if(graphType=="LinePlot"){
+          setXDimItems(line_plot_x_axis_items);
+          setYDimItems(line_plot_y_axis_items);
+      }
+  },[graphType])
 
   //filerオブジェクトを入れる配列
   const [filters, setFilters] = useState(
@@ -89,6 +101,8 @@ export default function ChartCard1() {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
+          xDimItems={xDimItems}
+          yDimItems={yDimItems}
         />
       ):null}
 

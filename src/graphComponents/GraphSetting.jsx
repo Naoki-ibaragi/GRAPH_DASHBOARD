@@ -14,13 +14,13 @@ import {
   RadioGroup,
   FormControlLabel,
 } from "@mui/material";
+import { useEffect, useState } from "react";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { jaJP } from "@mui/x-date-pickers/locales";
-import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { filter_items } from "../Variables/FilterData";
 
 
 export default function GraphSetting(props) {
@@ -43,17 +43,16 @@ export default function GraphSetting(props) {
     const setStartDate=props.setStartDate;
     const endDate=props.endDate; //集計終了日
     const setEndDate=props.setEndDate;
+    const xDimItems=props.xDimItems;
+    const yDimItems=props.yDimItems;
 
     //グラフの種類一覧
     const graph_items = {
         "散布図": "ScatterPlot",
         "折れ線グラフ": "LinePlot",
-        "ヒストグラム": "Histogram",
-        "2軸ヒートマップ": "2DHeatmap",
-        "3軸ヒートマップ": "3DHeatmap",
     };
 
-    //ユニット一覧
+    //アラームをグラフに重ねる際に表示するユニット一覧
     const unit_items={
         "LD":"LD",
         "DC1":"DC1",
@@ -62,14 +61,6 @@ export default function GraphSetting(props) {
         "DC2":"DC2",
         "IP":"IP",
         "ULD":"ULD",
-    };
-
-    //軸項目一覧
-    const dim_items = {
-        "LDポケット座標X": "LD_COORD_X",
-        "LDポケット座標Y": "LD_COORD_Y",
-        "DC1検査ステージアライメントX": "DC1_TEST_ALIGN_X",
-        "DC1検査ステージアライメントY": "DC1_TEST_ALIGN_Y",
     };
 
     //フィルターの比較詞
@@ -151,8 +142,8 @@ export default function GraphSetting(props) {
                         value={xdimItem}
                         onChange={(e) => setXdimItem(e.target.value)}
                     >
-                        {Object.keys(dim_items).map((key) => (
-                        <MenuItem key={key} value={dim_items[key]}>
+                        {Object.keys(xDimItems).map((key) => (
+                        <MenuItem key={key} value={xDimItems[key]}>
                             {key}
                         </MenuItem>
                         ))}
@@ -164,8 +155,8 @@ export default function GraphSetting(props) {
                         value={ydimItem}
                         onChange={(e) => setYdimItem(e.target.value)}
                     >
-                        {Object.keys(dim_items).map((key) => (
-                        <MenuItem key={key} value={dim_items[key]}>
+                        {Object.keys(yDimItems).map((key) => (
+                        <MenuItem key={key} value={yDimItems[key]}>
                             {key}
                         </MenuItem>
                         ))}
@@ -262,8 +253,8 @@ export default function GraphSetting(props) {
                             handleFilterChange(index, "dimItem", e.target.value)
                         }
                         >
-                        {Object.keys(dim_items).map((key) => (
-                            <MenuItem key={key} value={dim_items[key]}>
+                        {Object.keys(filter_items).map((key) => (
+                            <MenuItem key={key} value={filter_items[key]}>
                             {key}
                             </MenuItem>
                         ))}
