@@ -12,6 +12,7 @@ import {
   Stack,
   Radio,
   RadioGroup,
+  FormControl,
   FormControlLabel,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -43,8 +44,9 @@ export default function GraphSetting(props) {
     const setStartDate=props.setStartDate;
     const endDate=props.endDate; //集計終了日
     const setEndDate=props.setEndDate;
-    const xDimItems=props.xDimItems;
-    const yDimItems=props.yDimItems;
+    const xDimItems=props.xDimItems; //x軸の項目(グラフ種類で変更)
+    const yDimItems=props.yDimItems; //y軸の項目(グラフ種類で変更)
+    const setGraphCondition=props.setGraphCondition; //グラフの項目を入れる->ChartCard側で描画
 
     //グラフの種類一覧
     const graph_items = {
@@ -65,10 +67,10 @@ export default function GraphSetting(props) {
 
     //フィルターの比較詞
     const operator_items = {
-        "に等しい": "equal",
-        "に等しくない": "not_equal",
-        "より大きい": "greater_than",
-        "より小さい": "less_than",
+        "に等しい": "=",
+        "に等しくない": "<>",
+        "より大きい": ">",
+        "より小さい": "<",
     };
 
     //アラーム設定のテキストボックス書き換え時のハンドラ
@@ -94,9 +96,9 @@ export default function GraphSetting(props) {
         newFilters.push(
         {
             enable:true,
-            dimItem: "LD_COORD_X",
+            dimItem: "",
             dimVal: "",
-            dimOperator: "equal",
+            dimOperator: "",
         });
         setFilters(newFilters);
     };
@@ -109,6 +111,28 @@ export default function GraphSetting(props) {
         ];
         setFilters(newFilters);
     };
+
+    //グラフ描画ボタンを押したときにグラフの描画条件をまとめる->ChartCard側でバックエンドとのプロセス間通信実施
+    const onClickButton=()=>{
+        //各値のバリデーションを実施
+        if(!["scatterPlot","LinePlot"].includes(graphType)){
+            return;
+        }else if(!xDimItems.includes(xdimItem) || !yDimItems.includes(ydimItem)){
+            return;
+        }
+
+        const cond={
+            graphType:graphType,
+            xDimItem:xdimItem,
+            yDimItem:ydimItem,
+            alarmUnit:alarmUnit,
+            alarmNumbers:alarmNumbers,
+            filters:filters,
+            startDate:startDate,
+            endDate:endDate
+        }
+        setGraphCondition(cond);
+    }
 
     return (
         <Card sx={{my:0,p:0}}>
@@ -123,18 +147,20 @@ export default function GraphSetting(props) {
                     flexWrap="wrap"
                     >
                     <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>グラフの種類</Typography>
-                    <Select
-                        size="small"
-                        sx={{mr:3,height:32,width:200}}
-                        value={graphType}
-                        onChange={(e) => setGraphType(e.target.value)}
-                    >
-                        {Object.keys(graph_items).map((key) => (
-                        <MenuItem key={key} value={graph_items[key]}>
-                            {key}
-                        </MenuItem>
-                        ))}
-                    </Select>
+                    <FormControl error>
+                        <Select
+                            size="small"
+                            sx={{mr:3,height:32,width:200}}
+                            value={graphType}
+                            onChange={(e) => setGraphType(e.target.value)}
+                        >
+                            {Object.keys(graph_items).map((key) => (
+                            <MenuItem key={key} value={graph_items[key]}>
+                                {key}
+                            </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>X軸の項目</Typography>
                     <Select
                         size="small"
@@ -349,6 +375,7 @@ export default function GraphSetting(props) {
                 <Button
                 variant="contained"
                 color="primary"
+                onClick={()=>onClickButton()}
                 >
                 グラフ作成開始
                 </Button>
