@@ -14,6 +14,7 @@ import {
   RadioGroup,
   FormControl,
   FormControlLabel,
+  FormHelperText,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -23,9 +24,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { filter_items } from "../Variables/FilterData";
 
-
 export default function GraphSetting(props) {
-
     const graphType=props.graphType; //グラフの種類
     const setGraphType=props.setGraphType;
     const xdimItem=props.xdimItem; //x軸の項目
@@ -38,6 +37,8 @@ export default function GraphSetting(props) {
     const setAlarmNumbers=props.setAlarmNumbers;
     const operator=props.operator; //フィルターの結び方
     const setOperator=props.setOperator;
+    const plotUnit=props.plotUnit;
+    const setPlotUnit=props.setPlotUnit;
     const filters=props.filters; //フィルターの中身(配列)
     const setFilters=props.setFilters;
     const startDate=props.startDate; //集計開始日
@@ -47,6 +48,12 @@ export default function GraphSetting(props) {
     const xDimItems=props.xDimItems; //x軸の項目(グラフ種類で変更)
     const yDimItems=props.yDimItems; //y軸の項目(グラフ種類で変更)
     const setGraphCondition=props.setGraphCondition; //グラフの項目を入れる->ChartCard側で描画
+    const graphTypeError=props.graphTypeError; //グラフタイプのバリデーション
+    const xDimItemError=props.xDimItemError; //x軸の項目のバリデーション
+    const yDimItemError=props.xDimItemError; //y軸の項目のバリデーション
+    const alarmUnitError=props.alarmUnitError; //アラーム項目のバリデーション
+    const filterItemError=props.filterItemError; //フィルター項目のバリデーション
+    const getGraphDataFromBackend=props.getGraphDataFromBackend; //グラフ描画ボタン押し下げ時の実行関数
 
     //グラフの種類一覧
     const graph_items = {
@@ -85,20 +92,15 @@ export default function GraphSetting(props) {
         setFilters(newFilters);
     };
 
-    //フィルターのラジオボタンクリック時のハンドラー
-    const handleRadioButton=(e)=>{
-        setOperator(e.target.value);
-    };
-
     //フィルターを追加する
     const addFilter=()=>{
         const newFilters = [...filters];
         newFilters.push(
         {
             enable:true,
-            dimItem: "",
-            dimVal: "",
-            dimOperator: "",
+            item: "",
+            value: "",
+            comparison: "=",
         });
         setFilters(newFilters);
     };
@@ -111,28 +113,6 @@ export default function GraphSetting(props) {
         ];
         setFilters(newFilters);
     };
-
-    //グラフ描画ボタンを押したときにグラフの描画条件をまとめる->ChartCard側でバックエンドとのプロセス間通信実施
-    const onClickButton=()=>{
-        //各値のバリデーションを実施
-        if(!["scatterPlot","LinePlot"].includes(graphType)){
-            return;
-        }else if(!xDimItems.includes(xdimItem) || !yDimItems.includes(ydimItem)){
-            return;
-        }
-
-        const cond={
-            graphType:graphType,
-            xDimItem:xdimItem,
-            yDimItem:ydimItem,
-            alarmUnit:alarmUnit,
-            alarmNumbers:alarmNumbers,
-            filters:filters,
-            startDate:startDate,
-            endDate:endDate
-        }
-        setGraphCondition(cond);
-    }
 
     return (
         <Card sx={{my:0,p:0}}>
@@ -147,7 +127,7 @@ export default function GraphSetting(props) {
                     flexWrap="wrap"
                     >
                     <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>グラフの種類</Typography>
-                    <FormControl error>
+                    <FormControl error={graphTypeError}>
                         <Select
                             size="small"
                             sx={{mr:3,height:32,width:200}}
@@ -160,6 +140,7 @@ export default function GraphSetting(props) {
                             </MenuItem>
                             ))}
                         </Select>
+                        {graphTypeError ? <FormHelperText>グラフの種類が不適切です</FormHelperText>:null}
                     </FormControl>
                     <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>X軸の項目</Typography>
                     <Select
@@ -242,9 +223,7 @@ export default function GraphSetting(props) {
                         value={operator}
                         aria-labelledby="demo-row-radio-buttons-group-label"
                         name="row-radio-buttons-group"
-                        onChange={(e) =>
-                        handleRadioButton(e)
-                        }
+                        onChange={(e) =>setOperator(e.target.value)}
                     >
                         <FormControlLabel value="and" control={<Radio />} label="ANDで結ぶ" />
                         <FormControlLabel value="or" control={<Radio />} label="ORで結ぶ" />
@@ -274,9 +253,9 @@ export default function GraphSetting(props) {
                         <Select
                         size="small"
                         sx={{height:32,width:300}}
-                        value={filter.dimItem}
+                        value={filter.item}
                         onChange={(e) =>
-                            handleFilterChange(index, "dimItem", e.target.value)
+                            handleFilterChange(index, "item", e.target.value)
                         }
                         >
                         {Object.keys(filter_items).map((key) => (
@@ -291,9 +270,9 @@ export default function GraphSetting(props) {
                         size="small"
                         fullWidth
                         label="値"
-                        value={filter.dimVal}
+                        value={filter.value}
                         onChange={(e) =>
-                            handleFilterChange(index, "dimVal", e.target.value)
+                            handleFilterChange(index, "value", e.target.value)
                         }
                         />
                     </Grid>
@@ -302,9 +281,9 @@ export default function GraphSetting(props) {
                         size="small"
                         sx={{height:32}}
                         fullWidth
-                        value={filter.dimOperator}
+                        value={filter.comparison}
                         onChange={(e) =>
-                            handleFilterChange(index, "dimOperator", e.target.value)
+                            handleFilterChange(index, "comparison", e.target.value)
                         }
                         >
                         {Object.keys(operator_items).map((key) => (
@@ -330,6 +309,24 @@ export default function GraphSetting(props) {
                     </Grid>
                     </Grid>
                 ))}
+            </Box>
+            {/*プロット分割設定*/}
+            <Box component={"fieldset"} mt={2} mb={2}>
+                <legend>プロット分割設定</legend>
+                <Grid item xs={12} sm={3}>
+                    <RadioGroup 
+                        row
+                        value={plotUnit}
+                        aria-labelledby="demo-row-radio-buttons-group-label"
+                        name="row-radio-buttons-group"
+                        onChange={(e) =>setPlotUnit(e.target.value)}
+                    >
+                        <FormControlLabel value="None" control={<Radio />} label="分割なし" />
+                        <FormControlLabel value="Lot" control={<Radio />} label="ロット単位" />
+                        <FormControlLabel value="Machine" control={<Radio />} label="設備単位" />
+                        <FormControlLabel value="Type" control={<Radio />} label="機種名単位" />
+                    </RadioGroup>
+                </Grid>
             </Box>
             {/*集計開始日の設定*/}
             <Box component={"fieldset"} mt={2} mb={2}>
@@ -375,7 +372,7 @@ export default function GraphSetting(props) {
                 <Button
                 variant="contained"
                 color="primary"
-                onClick={()=>onClickButton()}
+                onClick={()=>getGraphDataFromBackend()}
                 >
                 グラフ作成開始
                 </Button>

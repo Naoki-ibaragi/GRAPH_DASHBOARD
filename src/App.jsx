@@ -1,7 +1,7 @@
 import { useState,useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import ChartCard1 from "./components/ChartCard1";
-import Downloads from "./components/Downloads";
+import LotDataDownloads from "./components/LotDataDownloads";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import Header from "./components/Header";
 import Settings from "./components/Settings";
@@ -16,8 +16,8 @@ function App() {
   const leftSpace=0;
 
   useEffect(() => {
-    if (selectedPage === "downloads") {
-      setTitle("Downloads");
+    if (selectedPage === "LotDataDownloads") {
+      setTitle("Lot Data Downloads");
     }else if(selectedPage==="AlarmDataDownloads"){
       setTitle("Alarm Data Download");
     } else if (selectedPage === "dashboard") {
@@ -41,8 +41,8 @@ function App() {
       {openSideBar ? <Sidebar onSelect={setSelectedPage} openSideBar={openSideBar} setOpenSideBar={setOpenSideBar}/>:<></>}
       <main style={{ marginLeft: leftSpace, padding: "10px", flex: 1 }}>
         {/* Downloads */}
-        <div hidden={selectedPage !== "downloads"}>
-          <Downloads />
+        <div hidden={selectedPage !== "LotDataDownloads"}>
+          <LotDataDownloads />
         </div>
         {/* Alarmデータのダウンロードページ */}
         <div hidden={selectedPage !== "AlarmDataDownloads"}>
