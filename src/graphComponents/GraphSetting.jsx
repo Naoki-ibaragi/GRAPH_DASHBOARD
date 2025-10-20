@@ -322,9 +322,9 @@ export default function GraphSetting(props) {
                         onChange={(e) =>setPlotUnit(e.target.value)}
                     >
                         <FormControlLabel value="None" control={<Radio />} label="分割なし" />
-                        <FormControlLabel value="Lot" control={<Radio />} label="ロット単位" />
-                        <FormControlLabel value="Machine" control={<Radio />} label="設備単位" />
-                        <FormControlLabel value="Type" control={<Radio />} label="機種名単位" />
+                        <FormControlLabel value="LOT_NAME" control={<Radio />} label="ロット単位" />
+                        <FormControlLabel value="MACHINE_NAME" control={<Radio />} label="設備単位" />
+                        <FormControlLabel value="TYPE_NAME" control={<Radio />} label="機種名単位" />
                     </RadioGroup>
                 </Grid>
             </Box>

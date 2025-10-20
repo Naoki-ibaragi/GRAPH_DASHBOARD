@@ -1,8 +1,10 @@
 use rusqlite::{Connection, Result};
 use std::error::Error;
 use tauri::{Emitter,Window};
-use serde::Deserialize;
+use serde::{Deserialize,Serialize};
+use std::collections::HashMap;
 
+//グラフ作成条件
 #[derive(Debug,Deserialize)]
 pub struct GraphCondition{ //グラフ描画に必要な情報を全て入れる構造体
     graph_type:String,          //グラフ種類
@@ -28,6 +30,40 @@ impl Filter{
     }
 }
 
+//x,yともに数値型の場合のプロットデータ
+#[derive(Debug,Serialize)]
+struct NumberData{
+    x:i32,
+    y:i32,
+}
+
+impl NumberData{
+    fn new(x:i32,y:i32)->Self{
+        NumberData{x:x,y:y}
+    }
+}
+
+//xが日付の場合のプロットデータ
+#[derive(Debug,Serialize)]
+struct CalenderData{
+    x:String,
+    y:f64,
+}
+
+impl CalenderData{
+    fn new(x:String,y:f64)->Self{
+        CalenderData{x:x,y:y}
+    }
+}
+
+#[derive(Serialize)]
+#[serde(untagged)] // JSON出力時に型名を省略
+enum PlotData {
+    Number(NumberData),
+    Calendar(CalenderData),
+}
+
+
 // 進捗報告用のイベントペイロード
 #[derive(Clone, serde::Serialize)]
 struct ProgressPayload {
@@ -50,13 +86,25 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
 
     // X, Yデータ取得
     if graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot" {
-        sql += &format!(
-            "{}, {} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
-            graph_condition.graph_x_item,
-            graph_condition.graph_y_item,
-            graph_condition.start_date,
-            graph_condition.end_date
-        );
+        //プロット単位をまとめるかどうかで決める
+        if graph_condition.plot_unit=="None" {
+            sql += &format!(
+                "{}, {} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.graph_x_item,
+                graph_condition.graph_y_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }else{
+            sql += &format!(
+                "{}, {}, {} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.plot_unit,
+                graph_condition.graph_x_item,
+                graph_condition.graph_y_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }
     }
 
     // フィルター情報追加
@@ -81,7 +129,7 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
 }
 
 //DBからデータを取得してHighChartで使用可能なデータに成形する
-pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCondition)->Result<Vec<Vec<i32>>,Box<dyn Error>>{
+pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCondition)->Result<HashMap<String,Vec<PlotData>>,Box<dyn Error>>{
     //DBに接続
     let conn=Connection::open(db_path);
 
@@ -106,40 +154,65 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
     let total_count: i64 = db.query_row(&count_sql, [], |row| row.get(0))?;
     report_progress(&window, "count records", 25, &format!("総件数: {} 件", total_count));
 
-    let mut rows = Vec::new();
+    //let mut rows = Vec::new();
 
-    let query_rows: Vec<Vec<i32>> = stmt.query_map([], |row| {
-        let x_value: String = row.get(0)?;
-        let y_value: String = row.get(1)?;
-        Ok((x_value, y_value))
-    })?
-    .filter_map(|r| {
-        let (x_val, y_val) = r.ok()?;
-        let x = x_val.parse::<i32>().ok()?;
-        let y = y_val.parse::<i32>().ok()?;
-        Some(vec![x, y])
-    })
-    .collect();
+    let mut data_map:HashMap<String,Vec<PlotData>>=HashMap::new();
 
-    // 最初に全ての行をカウント（オプション：パフォーマンスが心配な場合は別途COUNT(*)で取得）
-    // 以下のコードでは処理しながら報告していく方式を使用
-    for (index,record) in query_rows.into_iter().enumerate(){
-        rows.push(record);
+    if graph_condition.graph_type=="ScatterPlot" && graph_condition.plot_unit=="None" { //プロット分割無し
 
-        // 1000行ごとに進捗を報告
-        if (index+1) % 1000 == 0 {
-            report_progress(
-                &window,
-                "processing",
-                40,
-                &format!("{}/{} 処理完了", index+1,total_count)
-            );
+        data_map.entry("data".to_string()).or_insert(vec![]);
+
+        let query_rows: Vec<Vec<i32>> = stmt.query_map([], |row| {
+            let x_value: String = row.get(0)?;
+            let y_value: String = row.get(1)?;
+            Ok((x_value, y_value))
+        })?
+        .filter_map(|r| {
+            let (x_val, y_val) = r.ok()?;
+            let x = x_val.parse::<i32>().ok()?;
+            let y = y_val.parse::<i32>().ok()?;
+            Some(vec![x, y])
+        })
+        .collect();
+
+        // 最初に全ての行をカウント（オプション：パフォーマンスが心配な場合は別途COUNT(*)で取得）
+        // 以下のコードでは処理しながら報告していく方式を使用
+        let mut rows=data_map.get("data")?;
+        for (index,record) in query_rows.into_iter().enumerate(){
+            rows.push(PlotData::Number(NumberData::new(record[0],record[1])));
+
+            // 1000行ごとに進捗を報告
+            if (index+1) % 1000 == 0 {
+                report_progress(
+                    &window,
+                    "processing",
+                    40,
+                    &format!("{}/{} 処理完了", index+1,total_count)
+                );
+            }
         }
+
+    }else if (graph_condition.graph_type=="ScatterPlot" && graph_condition.plot_unit!="None"){//プロット分割あり
+        let query_rows: Vec<Vec<i32>> = stmt.query_map([], |row| {
+            let unit_name: String=row.get(0)?;
+            let x_value: String = row.get(1)?;
+            let y_value: String = row.get(2)?;
+            Ok((unit_name,x_value, y_value))
+        })?
+        .filter_map(|r| {
+            let (unit_name,x_val, y_val) = r.ok()?;
+            let x = x_val.parse::<i32>().ok()?;
+            let y = y_val.parse::<i32>().ok()?;
+            Some(vec![unit_name,x, y])
+        })
+        .collect();
+
+
     }
 
     report_progress(&window, "completed", 90, "グラフの描画を実施"); //フロントエンドに報告
 
     //SQL文を定義
-    Ok(rows)
+    Ok(data_map)
 
 }
