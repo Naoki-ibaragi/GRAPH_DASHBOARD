@@ -147,7 +147,7 @@ export default function ChartCard1() {
           },
           series: [
               {
-                data: newData,
+                data: newData.data.map((p)=>[p.x,p.y])
               }
             ]
         });

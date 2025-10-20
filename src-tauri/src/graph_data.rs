@@ -58,11 +58,24 @@ impl CalenderData{
 
 #[derive(Serialize)]
 #[serde(untagged)] // JSON出力時に型名を省略
-enum PlotData {
+pub enum PlotData {
     Number(NumberData),
     Calendar(CalenderData),
 }
 
+//plot分割する場合の仮データ
+#[derive(Debug,Serialize)]
+struct TmpData{
+    unit:String,
+    x:i32,
+    y:i32,
+}
+
+impl TmpData{
+    fn new(unit:String,x:i32,y:i32)->Self{
+        TmpData{unit:unit,x:x,y:y}
+    }
+}
 
 // 進捗報告用のイベントペイロード
 #[derive(Clone, serde::Serialize)]
@@ -177,7 +190,7 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
 
         // 最初に全ての行をカウント（オプション：パフォーマンスが心配な場合は別途COUNT(*)で取得）
         // 以下のコードでは処理しながら報告していく方式を使用
-        let mut rows=data_map.get("data")?;
+        let rows= data_map.get_mut("data").unwrap();
         for (index,record) in query_rows.into_iter().enumerate(){
             rows.push(PlotData::Number(NumberData::new(record[0],record[1])));
 
@@ -191,9 +204,9 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
                 );
             }
         }
+    }else if graph_condition.graph_type=="ScatterPlot" && graph_condition.plot_unit!="None" {//プロット分割あり
 
-    }else if (graph_condition.graph_type=="ScatterPlot" && graph_condition.plot_unit!="None"){//プロット分割あり
-        let query_rows: Vec<Vec<i32>> = stmt.query_map([], |row| {
+        let query_rows: Vec<TmpData> = stmt.query_map([], |row| {
             let unit_name: String=row.get(0)?;
             let x_value: String = row.get(1)?;
             let y_value: String = row.get(2)?;
@@ -203,10 +216,30 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
             let (unit_name,x_val, y_val) = r.ok()?;
             let x = x_val.parse::<i32>().ok()?;
             let y = y_val.parse::<i32>().ok()?;
-            Some(vec![unit_name,x, y])
+            Some(TmpData::new(unit_name,x,y))
         })
         .collect();
 
+        for (index,record) in query_rows.into_iter().enumerate(){
+
+            //unitがHashMapになければ追加
+            if data_map.contains_key(&record.unit){
+                let rows=data_map.get_mut(&record.unit).unwrap();
+                rows.push(PlotData::Number(NumberData::new(record.x,record.y)));
+            }else{
+                data_map.entry(record.unit).or_insert(vec![PlotData::Number(NumberData::new(record.x,record.y))]);
+            }
+
+            // 1000行ごとに進捗を報告
+            if (index+1) % 1000 == 0 {
+                report_progress(
+                    &window,
+                    "processing",
+                    40,
+                    &format!("{}/{} 処理完了", index+1,total_count)
+                );
+            }
+        }
 
     }
 
