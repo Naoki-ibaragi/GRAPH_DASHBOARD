@@ -5,7 +5,20 @@ import LotDataDownloads from "./components/LotDataDownloads";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import Header from "./components/Header";
 import Settings from "./components/Settings";
-import { Typography,Box } from "@mui/material";
+import { Box } from "@mui/material";
+import { createTheme, ThemeProvider, Button } from "@mui/material";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#00796b",   // メインカラー
+      contrastText: "#fff",
+    },
+    secondary: {
+      main: "#d32f2f",
+    },
+  },
+});
 
 function App() {
   const [selectedPage, setSelectedPage] = useState("dashboard");
@@ -20,8 +33,8 @@ function App() {
       setTitle("Lot Data Downloads");
     }else if(selectedPage==="AlarmDataDownloads"){
       setTitle("Alarm Data Download");
-    } else if (selectedPage === "dashboard") {
-      setTitle("Dashboard");
+    } else if (selectedPage === "dashboard1") {
+      setTitle("Dashboard1");
     } else if (selectedPage === "settings") {
       setTitle("Settings");
     } else {
@@ -31,33 +44,35 @@ function App() {
 
   return (
     <div>
-    <Header openSideBar={openSideBar} setOpenSideBar={setOpenSideBar} title={title}></Header>
-    <Box 
-    sx={{
-      display:"flex",
-      paddingY:7
-    }}
-    >
-      {openSideBar ? <Sidebar onSelect={setSelectedPage} openSideBar={openSideBar} setOpenSideBar={setOpenSideBar}/>:<></>}
-      <main style={{ marginLeft: leftSpace, padding: "10px", flex: 1 }}>
-        {/* Downloads */}
-        <div hidden={selectedPage !== "LotDataDownloads"}>
-          <LotDataDownloads />
-        </div>
-        {/* Alarmデータのダウンロードページ */}
-        <div hidden={selectedPage !== "AlarmDataDownloads"}>
-          <AlarmDataDownloads />
-        </div>
-        {/* Dashboard */}
-        <div hidden={selectedPage !== "dashboard"}>
-          <ChartCard1 />
-        </div>
-        {/* Settings */}
-        <div hidden={selectedPage !== "settings"}>
-          <Settings />
-        </div>
-      </main>
-    </Box>
+      <ThemeProvider theme={theme}>
+        <Header openSideBar={openSideBar} setOpenSideBar={setOpenSideBar} title={title}></Header>
+        <Box 
+        sx={{
+          display:"flex",
+          paddingY:7
+        }}
+        >
+          {openSideBar ? <Sidebar onSelect={setSelectedPage} openSideBar={openSideBar} setOpenSideBar={setOpenSideBar}/>:<></>}
+          <main style={{ marginLeft: leftSpace, padding: "10px", flex: 1 }}>
+            {/* Downloads */}
+            <div hidden={selectedPage !== "LotDataDownloads"}>
+              <LotDataDownloads />
+            </div>
+            {/* Alarmデータのダウンロードページ */}
+            <div hidden={selectedPage !== "AlarmDataDownloads"}>
+              <AlarmDataDownloads />
+            </div>
+            {/* Dashboard */}
+            <div hidden={selectedPage !== "dashboard1"}>
+              <ChartCard1 />
+            </div>
+            {/* Settings */}
+            <div hidden={selectedPage !== "settings"}>
+              <Settings />
+            </div>
+          </main>
+        </Box>
+      </ThemeProvider>
     </div>
   );
 }

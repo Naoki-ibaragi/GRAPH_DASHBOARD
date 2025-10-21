@@ -45,15 +45,15 @@ export default function ChartCard1() {
 
   //グラフ種種によって軸の項目を変える
   useEffect(()=>{
-      setXdimItem("");
-      setYdimItem("");
-      if(graphType=="ScatterPlot"){
-          setXDimItems(scatter_plot_x_axis_items);
-          setYDimItems(scatter_plot_y_axis_items);
-      }else if(graphType=="LinePlot"){
-          setXDimItems(line_plot_x_axis_items);
-          setYDimItems(line_plot_y_axis_items);
-      }
+    setXdimItem("");
+    setYdimItem("");
+    if(graphType=="ScatterPlot"){
+        setXDimItems(scatter_plot_x_axis_items);
+        setYDimItems(scatter_plot_y_axis_items);
+    }else if(graphType=="LinePlot"){
+        setXDimItems(line_plot_x_axis_items);
+        setYDimItems(line_plot_y_axis_items);
+    }
   },[graphType])
 
   //graphConditionの内容をバリデーションする
@@ -81,11 +81,9 @@ export default function ChartCard1() {
   const getGraphDataFromBackend=async ()=>{
 
     //filtersからenableがfalseのものを抜く
-    const filters_result=filters.map((filter)=>{
-      if(filter.enable){
-        return {item:filter.item,value:filter.value,comparison:filter.comparison}
-      }
-    });
+    const filters_result = filters
+    .filter(f => f.enable)
+    .map(f => ({ item: f.item, value: f.value, comparison: f.comparison }));
 
     const newGraphCondition={ //ローカル変数でデータを作成
       graph_type:graphType,
@@ -116,7 +114,17 @@ export default function ChartCard1() {
       if (payload.success) {
         const newData=payload.data.graph_data;
         console.log('処理成功:', newData);
-        // setDownloads(false); // ← 定義されていない場合は削除
+        let series = [];
+        Object.keys(newData).forEach((key) => {
+          console.log(key, newData[key]); // ← まず確認
+          const series_unit = {
+            name: key,
+            data: newData[key].map((p) => [p.x, p.y]),
+          };
+          series.push(series_unit);
+        });
+        console.log(series);
+
         setOptions({
           chart: {
               type: 'scatter',
@@ -145,11 +153,7 @@ export default function ChartCard1() {
               }
             }
           },
-          series: [
-              {
-                data: newData.data.map((p)=>[p.x,p.y])
-              }
-            ]
+          series: series
         });
         setIsProcess(false); // ← ここで処理中フラグを解除
         setIsGraph(true);

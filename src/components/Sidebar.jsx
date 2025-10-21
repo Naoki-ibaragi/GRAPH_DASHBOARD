@@ -13,8 +13,6 @@ export default function Sidebar({ onSelect,openSideBar,setOpenSideBar }) {
       anchor="left"
       PaperProps={{
         sx:{
-          backgroundColor:"#1976d2",
-          color:"white",
           zIndex:1000,
           width:180,
           paddingY:8,
@@ -28,11 +26,8 @@ export default function Sidebar({ onSelect,openSideBar,setOpenSideBar }) {
         <ListItem button onClick={()=>onClickSideBarItem("AlarmDataDownloads")}>
           <ListItemText primary="AlarmDownloads" />
         </ListItem>
-        <ListItem button onClick={()=>onClickSideBarItem("dashboard")}>
+        <ListItem button onClick={()=>onClickSideBarItem("dashboard1")}>
           <ListItemText primary="Graph1" />
-        </ListItem>
-        <ListItem button onClick={()=>onClickSideBarItem("dashboard")}>
-          <ListItemText primary="Graph2" />
         </ListItem>
         <ListItem button onClick={()=>onClickSideBarItem("settings")}>
           <ListItemText primary="Settings" />

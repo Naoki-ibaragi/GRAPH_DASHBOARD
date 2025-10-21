@@ -131,7 +131,7 @@ async fn download_alarm(window:Window, machine_name: String) -> Result<(), Strin
 #[command]
 async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(),String> {
     thread::spawn( move || {
-        let db_path = "D:\\testspace\\chiptest.db";
+        let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
 
         let graph_data=match get_graphdata_from_db(&window,db_path,graphCondition){
             Ok(d)=>d,

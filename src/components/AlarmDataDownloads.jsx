@@ -187,7 +187,6 @@ export default function AlarmDataDownloads() {
               />
               <Button
                 variant="contained"
-                color="secondary"
                 disabled={downloads}
                 onClick={() => downloadAlarm()}
               >
