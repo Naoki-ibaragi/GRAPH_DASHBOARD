@@ -154,9 +154,20 @@ async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(
     Ok(())
 }
 
+//txtファイルのデータをDBに登録する
+#[command]
+fn register_data(window:Window,file_path:String)->Result<(),String>{
+    println!("register_data @ main.rs");
+    thread::spawn(move || {
+        println!("{}",file_path);
+    });
+
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![download_lot, download_alarm,get_graphdata])
+        .invoke_handler(tauri::generate_handler![download_lot, download_alarm,get_graphdata,register_data])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .run(tauri::generate_context!())

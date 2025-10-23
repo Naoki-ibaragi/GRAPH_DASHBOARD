@@ -21,9 +21,9 @@ const theme = createTheme({
 });
 
 function App() {
-  const [selectedPage, setSelectedPage] = useState("dashboard");
+  const [selectedPage, setSelectedPage] = useState("dashboard1");
   const [openSideBar, setOpenSideBar] = useState(false);
-  const [title,setTitle]=useState("Download");
+  const [title,setTitle]=useState("dashboard1");
 
   //const leftSpace=openSideBar ? 150 : 0;
   const leftSpace=0;

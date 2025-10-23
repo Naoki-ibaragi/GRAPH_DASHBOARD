@@ -116,7 +116,6 @@ export default function ChartCard1() {
         console.log('処理成功:', newData);
         let series = [];
         Object.keys(newData).forEach((key) => {
-          console.log(key, newData[key]); // ← まず確認
           const series_unit = {
             name: key,
             data: newData[key].map((p) => [p.x, p.y]),
@@ -125,9 +124,16 @@ export default function ChartCard1() {
         });
         console.log(series);
 
+        let option_graph_type="";
+        switch(graphType){
+          case "ScatterPlot": option_graph_type='scatter';
+          case "LinePlot": option_graph_type='line';
+        };
+        console.log(option_graph_type);
+
         setOptions({
           chart: {
-              type: 'scatter',
+              type: option_graph_type,
               animation: false, // アニメーション無効化で高速化
               reflow: true
             },

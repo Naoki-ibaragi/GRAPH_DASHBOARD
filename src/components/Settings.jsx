@@ -12,23 +12,23 @@ import { open } from "@tauri-apps/plugin-dialog"; // ファイルダイアログ
 import { invoke } from "@tauri-apps/api/core"; //rustバックエンドでの処理用
 
 function Settings() {
-    const [folderPath, setFolderPath] = useState("D:\\testspace\\csv_data"); // DB登録用のテキストデータのパス
+    const [filePath, setFilePath] = useState("D:\\testspace\\csv_data"); // DB登録用のテキストデータのパス
 
-    const selectFolderPath = async () => {
+    const selectFilePath = async () => {
         const selected = await open({
-        directory: true,   // フォルダ選択モード
+        directory: false,   // フォルダ選択モード
         multiple: false,   // 複数選択しない
         });
 
         if (selected) {
-        setFolderPath(selected); // 選択されたフォルダパスを state に反映
+            setFilePath(selected); // 選択されたフォルダパスを state に反映
         }
     };
 
     // バックエンドにフォルダパスを送って登録処理を走らせる
     const registData = async () => {
         try {
-            await invoke("regist_data", { folderPath: folderPath }); //tauriでプログラムを走らせる
+            await invoke("register_data", { filePath: filePath }); //tauriでプログラムを走らせる
         } catch (e) {
             console.error(e);
         }
@@ -51,21 +51,21 @@ function Settings() {
                 sx={{
                     width: 500,
                 }}
-                value={folderPath}
-                onChange={(e) => setFolderPath(e.target.value)}
+                value={filePath}
+                onChange={(e) => setFilePath(e.target.value)}
                 />
                 <Button
                 variant="contained"
                 color="primary"
-                onClick={selectFolderPath}
+                onClick={selectFilePath}
                 >
-                フォルダ選択
+                ファイル選択
                 </Button>
             </Stack>
             <Button
                 variant="contained"
                 color="primary"
-                disabled={!folderPath}
+                disabled={!filePath}
                 onClick={registData}
             >
                 DBへデータを登録

@@ -5,7 +5,7 @@ use serde::{Deserialize,Serialize};
 use std::collections::HashMap;
 use chrono::NaiveDateTime;
 
-//グラフ作成条件
+/*グラフ作成条件*/
 #[derive(Debug,Deserialize)]
 pub struct GraphCondition{ //グラフ描画に必要な情報を全て入れる構造体
     graph_type:String,          //グラフ種類
@@ -25,6 +25,9 @@ pub struct Filter{ //各フィルターの内容を入れる構造体
     comparison:String
 }
 
+/* ------------------------------------------- */
+
+/*プロットデータ型の定義 */
 //x,yともに数値型の場合のプロットデータ
 #[derive(Debug,Serialize)]
 struct NumberData{
@@ -51,32 +54,29 @@ impl CalenderData{
     }
 }
 
-#[derive(Serialize)]
+//各プロット型をまとめた列挙型
+#[derive(Debug,Serialize)]
 #[serde(untagged)] // JSON出力時に型名を省略
 pub enum PlotData {
     Number(NumberData),
     Calendar(CalenderData),
 }
 
-pub enum GraphData{
-    NumberData(Vec<NumberData>),
-    CalenderData(Vec<CalenderData>),
-}
-
-//plot分割する場合の仮データ
+//plot分割する場合のunit付データ
 #[derive(Debug,Serialize)]
 struct TmpData{
     unit:String,
-    x:i32,
-    y:i32,
+    data:PlotData,
 }
 
 impl TmpData{
-    fn new(unit:String,x:i32,y:i32)->Self{
-        TmpData{unit:unit,x:x,y:y}
+    fn new(unit:String,data:PlotData)->Self{
+        TmpData{unit:unit,data}
     }
 }
+/*--------------ここまでデータ型定義-------------------------- */
 
+/* ----------------tauri関係------------------------------ */
 // 進捗報告用のイベントペイロード
 #[derive(Clone, serde::Serialize)]
 struct ProgressPayload {
@@ -92,6 +92,7 @@ fn report_progress(window:&Window,step:&str,progress:u32,message:&str){
         message: message.to_string(),
     });
 }
+/* -------------ここまでtauri関係--------------------------- */
 
 //プロット分割しない散布図のデータを取得
 fn plot_scatterplot_without_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
@@ -130,7 +131,7 @@ fn plot_scatterplot_without_unit(window:&Window,total_count:i64,data_map:&mut Ha
     Ok(())
 }
 
-//プロット分割しない散布図のデータを取得
+//プロット分割する散布図のデータを取得
 fn plot_scatterplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
     let query_rows: Vec<TmpData> = stmt.query_map([], |row| {
         let unit_name: String=row.get(0)?;
@@ -142,7 +143,8 @@ fn plot_scatterplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashM
         let (unit_name,x_val, y_val) = r.ok()?;
         let x = x_val.parse::<i32>().ok()?;
         let y = y_val.parse::<i32>().ok()?;
-        Some(TmpData::new(unit_name,x,y))
+        let plot_data=PlotData::Number(NumberData::new(x,y));
+        Some(TmpData::new(unit_name,plot_data))
     })
     .collect();
 
@@ -151,9 +153,17 @@ fn plot_scatterplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashM
         //unitがHashMapになければ追加
         if data_map.contains_key(&record.unit){
             let rows=data_map.get_mut(&record.unit).unwrap();
-            rows.push(PlotData::Number(NumberData::new(record.x,record.y)));
+            rows.push(match record.data{
+                PlotData::Number(num_data)=>PlotData::Number(NumberData::new(num_data.x,num_data.y)),
+                PlotData::Calendar(calender_data)=>PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y))
+            });
         }else{
-            data_map.entry(record.unit).or_insert(vec![PlotData::Number(NumberData::new(record.x,record.y))]);
+            data_map.entry(record.unit).or_insert(
+        match record.data{
+                    PlotData::Number(num_data)=>vec![PlotData::Number(NumberData::new(num_data.x,num_data.y))],
+                    PlotData::Calendar(calender_data)=>vec![PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y))],
+                }
+            );
         }
 
         // 1000行ごとに進捗を報告
@@ -173,48 +183,37 @@ fn plot_scatterplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashM
 
 //プロット分割しない折れ線グラフのデータを取得
 fn plot_lineplot_without_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement,graph_condition:GraphCondition)->Result<(),Box<dyn Error>>{
-    data_map.entry("LinePlotData".to_string()).or_insert(vec![]);
+    data_map.entry("data".to_string()).or_insert(vec![]);
 
-    let mut query_rows:Vec<GraphData> = Vec::new();
-
-    query_rows = if graph_condition.graph_x_item.contains("TIME") { //x軸が時刻の場合
-        stmt.query_map([], |row| {
-            let x_value: String = row.get(0)?;
-            let y_value: String = row.get(1)?;
-            Ok((x_value, y_value))
-        })?
-        .filter_map(|r| {
+    let query_rows:Vec<PlotData>=stmt.query_map([], |row| {
+        let x_value: String = row.get(0)?;
+        let y_value: String = row.get(1)?;
+        Ok((x_value, y_value))
+    })?
+    .filter_map(|r| {
+        if graph_condition.graph_x_item.contains("TIME"){
             let (x_val, y_val) = r.ok()?;
             if x_val.is_empty(){
-               return None; 
+                return None; 
             }
             let y = y_val.parse::<i32>().ok()?;
-            Some(GraphData::CalenderData(vec![CalenderData::new(x_val, y)]))
-        })
-        .collect()
-    }else{ //x軸が通常の数値の場合
-        stmt.query_map([], |row| {
-            let x_value: String = row.get(0)?;
-            let y_value: String = row.get(1)?;
-            Ok((x_value, y_value))
-        })?
-        .filter_map(|r| {
+            Some(PlotData::Calendar(CalenderData::new(x_val,y)))
+        }else{
             let (x_val, y_val) = r.ok()?;
             let x = x_val.parse::<i32>().ok()?;
             let y = y_val.parse::<i32>().ok()?;
-            Some(GraphData::NumberData(vec![NumberData::new(x, y)]))
-        })
-        .collect()
-    };
+            Some(PlotData::Number(NumberData::new(x, y)))
+        }
+    })
+    .collect();
 
     //HashMapのvecに書き込む
     let rows= data_map.get_mut("data").unwrap();
     for (index,record) in query_rows.into_iter().enumerate(){
-        if !graph_condition.graph_x_item.contains("TIME"){
-            rows.push(PlotData::Number(NumberData::new(record[0],record[1])));
-        }else{
-            rows.push(PlotData::Calendar(CalenderData::new(record[0],record[1])));
-        }
+        rows.push(match record{
+            PlotData::Number(num_data)=>PlotData::Number(NumberData::new(num_data.x,num_data.y)),
+            PlotData::Calendar(calender_data)=>PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y))
+        });
 
         // 1000行ごとに進捗を報告
         if (index+1) % 1000 == 0 {
@@ -230,7 +229,7 @@ fn plot_lineplot_without_unit(window:&Window,total_count:i64,data_map:&mut HashM
     Ok(())
 }
 
-//プロット分割しない折れ線グラフのデータを取得
+//プロット分割する折れ線グラフのデータを取得
 fn plot_lineplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
     let query_rows: Vec<TmpData> = stmt.query_map([], |row| {
         let unit_name: String=row.get(0)?;
@@ -242,18 +241,27 @@ fn plot_lineplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashMap<
         let (unit_name,x_val, y_val) = r.ok()?;
         let x = x_val.parse::<i32>().ok()?;
         let y = y_val.parse::<i32>().ok()?;
-        Some(TmpData::new(unit_name,x,y))
+        let plot_data=PlotData::Number(NumberData::new(x,y));
+        Some(TmpData::new(unit_name,plot_data))
     })
     .collect();
 
-    //HashMapのvecに書き込む
     for (index,record) in query_rows.into_iter().enumerate(){
+
         //unitがHashMapになければ追加
-        let rows=data_map.get_mut(&record.unit).unwrap();
         if data_map.contains_key(&record.unit){
-            rows.push(PlotData::Number(NumberData::new(record.x,record.y)));
+            let rows=data_map.get_mut(&record.unit).unwrap();
+            rows.push(match record.data{
+                PlotData::Number(num_data)=>PlotData::Number(NumberData::new(num_data.x,num_data.y)),
+                PlotData::Calendar(calender_data)=>PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y))
+            });
         }else{
-            data_map.entry(record.unit).or_insert(vec![PlotData::Number(NumberData::new(record.x,record.y))]);
+            data_map.entry(record.unit).or_insert(
+        match record.data{
+                    PlotData::Number(num_data)=>vec![PlotData::Number(NumberData::new(num_data.x,num_data.y))],
+                    PlotData::Calendar(calender_data)=>vec![PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y))],
+                }
+            );
         }
 
         // 1000行ごとに進捗を報告
@@ -270,6 +278,8 @@ fn plot_lineplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashMap<
     Ok(())
 
 }
+
+
 
 // グラフ条件から適切なSQL文を作成
 pub fn create_sql(graph_condition: &GraphCondition) -> String {
