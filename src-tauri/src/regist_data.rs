@@ -1,17 +1,12 @@
 use rusqlite::{Connection, Result};
-use std::collections::HashMap;
-use std::collections::BTreeMap;
 use std::error::Error;
-use std::thread;
-use std::env;
 use std::fs::File;
 use std::io::{self,BufRead,BufReader};
-use std::string;
-
 
 //各データの構造体を定義したenum
 enum UnitData{
-    Arm(ArmInfo),
+    Arm1(Arm1Info),
+    Arm2(Arm2Info),
     Test(TestInfo),
     LD(LDInfo),
     PreHeat(PreHeatInfo),
@@ -19,18 +14,31 @@ enum UnitData{
     ChipInsp(ChipInspInfo),
 }
 
-//アームの状態を入れる構造体
-struct ArmInfo{
-    ArmNumber:String,
+//上流アームの状態を入れる構造体
+struct Arm1Info{
     PF:String,
     LotName:String,
     Serial:String,
     Count:String
 }
 
-impl ArmInfo{
-    fn new(arm_number:&str,pf:&str,lot_name:&str,serial:&str,count:&str)->Self{
-        ArmInfo { ArmNumber: arm_number.to_string(), PF: pf.to_string(), LotName: lot_name.to_string(), Serial: serial.to_string(), Count: count.to_string() }
+impl Arm1Info{
+    fn new(pf:&str,lot_name:&str,serial:&str,count:&str)->Self{
+        Arm1Info { PF: pf.to_string(), LotName: lot_name.to_string(), Serial: serial.to_string(), Count: count.to_string() }
+    }
+}
+
+//下流アームの状態を入れる構造体
+struct Arm2Info{
+    PF:String,
+    LotName:String,
+    Serial:String,
+    Count:String
+}
+
+impl Arm2Info{
+    fn new(pf:&str,lot_name:&str,serial:&str,count:&str)->Self{
+        Arm2Info { PF: pf.to_string(), LotName: lot_name.to_string(), Serial: serial.to_string(), Count: count.to_string() }
     }
 }
 
@@ -54,36 +62,36 @@ struct TestInfo{
 
 impl TestInfo{ //コンストラクタのみ定義
     fn new(
-        pf:String,
-        lot_name:String,
-        serial:String,
-        stage_serial:String,
-        stage_count:String,
-        probe_serial:String,
-        probe_count:String,
-        probe_align_1x:String,
-        probe_align_1y:String,
-        probe_align_2x:String,
-        probe_align_2y:String,
-        chip_align_x:String,
-        chip_align_y:String,
-        chip_align_t:String,
+        pf:&str,
+        lot_name:&str,
+        serial:&str,
+        stage_serial:&str,
+        stage_count:&str,
+        probe_serial:&str,
+        probe_count:&str,
+        probe_align_1x:&str,
+        probe_align_1y:&str,
+        probe_align_2x:&str,
+        probe_align_2y:&str,
+        chip_align_x:&str,
+        chip_align_y:&str,
+        chip_align_t:&str,
     )->Self{
         TestInfo { 
-            PF: pf, 
-            LotName: lot_name, 
-            Serial: serial, 
-            StageSerial: stage_serial, 
-            StageCount: stage_count, 
-            ProbeSerial: probe_serial, 
-            ProbeCount: probe_count, 
-            ProbeAlign1X: probe_align_1x, 
-            ProbeAlign1Y: probe_align_1y, 
-            ProbeAlign2X: probe_align_2x, 
-            ProbeAlign2Y: probe_align_2y, 
-            ChipAlignX: chip_align_x, 
-            ChipAlignY: chip_align_y, 
-            ChipAlignT: chip_align_t,
+            PF: pf.to_string(), 
+            LotName: lot_name.to_string(), 
+            Serial: serial.to_string(), 
+            StageSerial: stage_serial.to_string(), 
+            StageCount: stage_count.to_string(), 
+            ProbeSerial: probe_serial.to_string(), 
+            ProbeCount: probe_count.to_string(), 
+            ProbeAlign1X: probe_align_1x.to_string(), 
+            ProbeAlign1Y: probe_align_1y.to_string(), 
+            ProbeAlign2X: probe_align_2x.to_string(), 
+            ProbeAlign2Y: probe_align_2y.to_string(), 
+            ChipAlignX: chip_align_x.to_string(), 
+            ChipAlignY: chip_align_y.to_string(), 
+            ChipAlignT: chip_align_t.to_string(),
         }
     }
 }
@@ -99,8 +107,8 @@ struct PreHeatInfo{
 }
 
 impl PreHeatInfo{ //コンストラクタのみ定義
-    fn new(pf:String,lot_name:String,serial:String,align_x:String,align_y:String,align_t:String)->Self{
-        PreHeatInfo { PF: pf, LotName: lot_name, Serial: serial, AlignX: align_x, AlignY: align_y, AlignT: align_t }
+    fn new(pf:&str,lot_name:&str,serial:&str,align_x:&str,align_y:&str,align_t:&str)->Self{
+        PreHeatInfo { PF: pf.to_string(), LotName: lot_name.to_string(), Serial: serial.to_string(), AlignX: align_x.to_string(), AlignY: align_y.to_string(), AlignT: align_t.to_string() }
     }
 }
 
@@ -118,16 +126,25 @@ struct LDInfo{
 
 impl LDInfo{ //コンストラクタのみ定義
     fn new( 
-        pf:String,
-        lot_name:String,
-        serial:String,
-        tray_arm:String,
-        pocket_x:String,
-        pocket_y:String,
-        pocket_align_x:String,
-        pocket_align_y:String
+        pf:&str,
+        lot_name:&str,
+        serial:&str,
+        tray_arm:&str,
+        pocket_x:&str,
+        pocket_y:&str,
+        pocket_align_x:&str,
+        pocket_align_y:&str
     )->Self{
-        LDInfo { PF: pf, LotName: lot_name, Serial: serial, TrayArm: tray_arm, PocketX: pocket_x, PocketY: pocket_y, PocketAlignX: pocket_align_x, PocketAlignY: pocket_align_y }
+        LDInfo { 
+            PF: pf.to_string(), 
+            LotName: lot_name.to_string(), 
+            Serial: serial.to_string(), 
+            TrayArm: tray_arm.to_string(), 
+            PocketX: pocket_x.to_string(), 
+            PocketY: pocket_y.to_string(), 
+            PocketAlignX: pocket_align_x.to_string(), 
+            PocketAlignY: pocket_align_y.to_string()
+        }
     }
 }
 
@@ -143,9 +160,17 @@ struct PocketInspInfo{
 }
 
 impl PocketInspInfo{ //コンストラクタのみ定義
-    fn new(pf:String,lot_name:String,serial:String,pocket_x:String,pocket_y:String,align_x:String,align_y:String)->Self
+    fn new(pf:&str,lot_name:&str,serial:&str,pocket_x:&str,pocket_y:&str,align_x:&str,align_y:&str)->Self
     {
-        PocketInspInfo { PF: pf, LotName: lot_name, Serial: serial, PocketX: pocket_x, PocketY: pocket_y, AlignX: align_x, AlignY: align_y }
+        PocketInspInfo { 
+            PF: pf.to_string(), 
+            LotName: lot_name.to_string(), 
+            Serial: serial.to_string(), 
+            PocketX: pocket_x.to_string(), 
+            PocketY: pocket_y.to_string(), 
+            AlignX: align_x.to_string(), 
+            AlignY: align_y.to_string(),
+        }
     }
 }
 
@@ -161,15 +186,162 @@ struct ChipInspInfo{
 }
 
 impl ChipInspInfo{ //コンストラクタのみ定義
-    fn new(pf:String,lot_name:String,serial:String,pocket_x:String,pocket_y:String,align_x:String,align_y:String)->Self
+    fn new(pf:&str,lot_name:&str,serial:&str,pocket_x:&str,pocket_y:&str,align_x:&str,align_y:&str)->Self
     {
-        ChipInspInfo { PF: pf, LotName: lot_name, Serial: serial, PocketX: pocket_x, PocketY: pocket_y, AlignX: align_x, AlignY: align_y }
+        ChipInspInfo { 
+            PF: pf.to_string(), 
+            LotName: lot_name.to_string(), 
+            Serial: serial.to_string(), 
+            PocketX: pocket_x.to_string(), 
+            PocketY: pocket_y.to_string(), 
+            AlignX: align_x.to_string(), 
+            AlignY: align_y.to_string(),
+        }
     }
 }
 
 fn read_textdata(txt_path:&str,db_path:&str,type_name:&str)->Result<(),Box<dyn Error>>{
-    //dbに接続
+    //dbに接続しなければ作成する
     let conn=Connection::open(db_path)?;
+    // テーブルが存在しない場合は作成
+    conn.execute(
+    "CREATE TABLE chipdatah (
+	ID	INTEGER NOT NULL,
+	MACHINE_NAME	VARCHAR,
+	TYPE_NAME	VARCHAR,
+	LOT_NAME	VARCHAR,
+	SERIAL	VARCHAR,
+	LD_TRAY_TIME	VARCHAR,
+	LD_TRAY_PF	VARCHAR,
+	LD_TRAY_POS	VARCHAR,
+	LD_TRAY_POCKET_X	VARCHAR,
+	LD_TRAY_POCKET_Y	VARCHAR,
+	LD_TRAY_ALIGN_X	VARCHAR,
+	LD_TRAY_ALIGN_Y	VARCHAR,
+	LD_ARM1_TIME	VARCHAR,
+	LD_ARM1_PF	VARCHAR,
+	LD_ARM1_COLLET_COUNT	VARCHAR,
+	LD_ALARM	VARCHAR,
+	DC1_PRE_TIME	VARCHAR,
+	DC1_PRE_PF	VARCHAR,
+	DC1_PRE_ALIGN_X	VARCHAR,
+	DC1_PRE_ALIGN_Y	VARCHAR,
+	DC1_PRE_ALIGN_T	VARCHAR,
+	DC1_ARM1_TIME	VARCHAR,
+	DC1_ARM1_PF	VARCHAR,
+	DC1_ARM1_COLLET_COUNT	VARCHAR,
+	DC1_TEST_TIME	VARCHAR,
+	DC1_TEST_PF	VARCHAR,
+	DC1_TEST_STAGE_SERIAL	VARCHAR,
+	DC1_TEST_STAGE_COUNT	VARCHAR,
+	DC1_TEST_PROBE_SERIAL	VARCHAR,
+	DC1_TEST_PROBE_COUNT	VARCHAR,
+	DC1_TEST_PROBE_1_X	VARCHAR,
+	DC1_TEST_PROBE_1_Y	VARCHAR,
+	DC1_TEST_PROBE_2_X	VARCHAR,
+	DC1_TEST_PROBE_2_Y	VARCHAR,
+	DC1_TEST_ALIGN_X	VARCHAR,
+	DC1_TEST_ALIGN_Y	VARCHAR,
+	DC1_TEST_ALIGN_T	VARCHAR,
+	DC1_ARM2_TIME	VARCHAR,
+	DC1_ARM2_PF	VARCHAR,
+	DC1_ARM2_COLLET_COUNT	VARCHAR,
+	DC1_ALARM	VARCHAR,
+	AC1_ARM1_TIME	VARCHAR,
+	AC1_ARM1_PF	VARCHAR,
+	AC1_ARM1_COLLET_COUNT	VARCHAR,
+	AC1_TEST_TIME	VARCHAR,
+	AC1_TEST_PF	VARCHAR,
+	AC1_TEST_STAGE_SERIAL	VARCHAR,
+	AC1_TEST_STAGE_COUNT	VARCHAR,
+	AC1_TEST_PROBE_SERIAL	VARCHAR,
+	AC1_TEST_PROBE_COUNT	VARCHAR,
+	AC1_TEST_PROBE_1_X	VARCHAR,
+	AC1_TEST_PROBE_1_Y	VARCHAR,
+	AC1_TEST_PROBE_2_X	VARCHAR,
+	AC1_TEST_PROBE_2_Y	VARCHAR,
+	AC1_TEST_ALIGN_X	VARCHAR,
+	AC1_TEST_ALIGN_Y	VARCHAR,
+	AC1_TEST_ALIGN_T	VARCHAR,
+	AC1_ARM2_TIME	VARCHAR,
+	AC1_ARM2_PF	VARCHAR,
+	AC1_ARM2_COLLET_COUNT	VARCHAR,
+	AC1_ALARM	VARCHAR,
+	AC2_ARM1_TIME	VARCHAR,
+	AC2_ARM1_PF	VARCHAR,
+	AC2_ARM1_COLLET_COUNT	VARCHAR,
+	AC2_TEST_TIME	VARCHAR,
+	AC2_TEST_PF	VARCHAR,
+	AC2_TEST_STAGE_SERIAL	VARCHAR,
+	AC2_TEST_STAGE_COUNT	VARCHAR,
+	AC2_TEST_PROBE_SERIAL	VARCHAR,
+	AC2_TEST_PROBE_COUNT	VARCHAR,
+	AC2_TEST_PROBE_1_X	VARCHAR,
+	AC2_TEST_PROBE_1_Y	VARCHAR,
+	AC2_TEST_PROBE_2_X	VARCHAR,
+	AC2_TEST_PROBE_2_Y	VARCHAR,
+	AC2_TEST_ALIGN_X	VARCHAR,
+	AC2_TEST_ALIGN_Y	VARCHAR,
+	AC2_TEST_ALIGN_T	VARCHAR,
+	AC2_ARM2_TIME	VARCHAR,
+	AC2_ARM2_PF	VARCHAR,
+	AC2_ARM2_COLLET_COUNT	VARCHAR,
+	AC2_ALARM	VARCHAR,
+	DC2_ARM1_TIME	VARCHAR,
+	DC2_ARM1_PF	VARCHAR,
+	DC2_ARM1_COLLET_COUNT	VARCHAR,
+	DC2_TEST_TIME	VARCHAR,
+	DC2_TEST_PF	VARCHAR,
+	DC2_TEST_STAGE_SERIAL	VARCHAR,
+	DC2_TEST_STAGE_COUNT	VARCHAR,
+	DC2_TEST_PROBE_SERIAL	VARCHAR,
+	DC2_TEST_PROBE_COUNT	VARCHAR,
+	DC2_TEST_PROBE_1_X	VARCHAR,
+	DC2_TEST_PROBE_1_Y	VARCHAR,
+	DC2_TEST_PROBE_2_X	VARCHAR,
+	DC2_TEST_PROBE_2_Y	VARCHAR,
+	DC2_TEST_ALIGN_X	VARCHAR,
+	DC2_TEST_ALIGN_Y	VARCHAR,
+	DC2_TEST_ALIGN_T	VARCHAR,
+	DC2_ARM2_TIME	VARCHAR,
+	DC2_ARM2_PF	VARCHAR,
+	DC2_ARM2_COLLET_COUNT	VARCHAR,
+	DC2_ALARM	VARCHAR,
+	IP_ARM1_TIME	VARCHAR,
+	IP_ARM1_PF	VARCHAR,
+	IP_ARM1_COLLET_COUNT	VARCHAR,
+	IP_TEST_TIME	VARCHAR,
+	IP_TEST_PF	VARCHAR,
+	IP_TEST_STAGE_COUNT	VARCHAR,
+	IP_ARM2_TIME	VARCHAR,
+	IP_ARM2_PF	VARCHAR,
+	IP_ARM2_COLLET_COUNT	VARCHAR,
+	IP_ALARM	VARCHAR,
+	ULD_PRE_TIME	VARCHAR,
+	ULD_PRE_PF	VARCHAR,
+	ULD_PRE_ALIGN_X	VARCHAR,
+	ULD_PRE_ALIGN_Y	VARCHAR,
+	ULD_PRE_ALIGN_T	VARCHAR,
+	ULD_TRAY_POCKET_TIME	VARCHAR,
+	ULD_TRAY_POCKET_PF	VARCHAR,
+	ULD_TRAY_POCKET_X	VARCHAR,
+	ULD_TRAY_POCKET_Y	VARCHAR,
+	ULD_TRAY_POCKET_ALIGN_X	VARCHAR,
+	ULD_TRAY_POCKET_ALIGN_Y	VARCHAR,
+	ULD_ARM1_TIME	VARCHAR,
+	ULD_ARM1_PF	VARCHAR,
+	ULD_ARM1_COLLET_COUNT	VARCHAR,
+	ULD_TRAY_CHIP_TIME	VARCHAR,
+	ULD_TRAY_CHIP_ALIGN_X	VARCHAR,
+	ULD_TRAY_CHIP_ALIGN_Y	VARCHAR,
+	ULD_TRAY_CHIP_ALIGN_NUM	INTEGER,
+	ULD_ALARM	VARCHAR,
+	IP_BACK_ALIGN_X	TEXT,
+	IP_BACK_ALIGN_Y	TEXT,
+	IP_BACK_ALIGN_T	TEXT,
+	CONSTRAINT uix_lot_serial UNIQUE(LOT_NAME,SERIAL))",
+    [],
+    )?;
 
     let mut contents=String::new();
         // ファイルを開く
@@ -204,56 +376,56 @@ fn read_textdata(txt_path:&str,db_path:&str,type_name:&str)->Result<(),Box<dyn E
 
     for (i,item) in v.iter().enumerate(){
         match item.as_str(){
-            "TIME"=>now_time=v[i+1], //現在時刻の更新
+            "TIME"=>now_time=v[i+1].clone(), //現在時刻の更新
             "U1"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U1",now_time.as_str(),UnitData::Arm(ArmInfo::new("1",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "A2"=>add_to_db(&conn,"U1",now_time.as_str(),UnitData::Arm(ArmInfo::new("2",v[i+2],v[i+3],v[i+4],v[i+5]))),
+                "A1"=>add_to_db(&conn,"U1",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_to_db(&conn,"U1",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
                 _=>{}
             }
             "U2"=>
             match v[i+1].as_str(){
-                "PH"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7]))),
-                "A1"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Arm(ArmInfo::new("1",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "TS"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Test(TestInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7],v[i+8],v[i+9],v[i+10],v[i+11],v[i+12],v[i+13],v[i+14],v[i+15]))),
-                "A2"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Arm(ArmInfo::new("2",v[i+2],v[i+3],v[i+4],v[i+5]))),
+                "PH"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7]))),
+                "A1"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
+                "A2"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
                 _=>{}
             }
             "U3"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Arm(ArmInfo::new("1",&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "A2"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Arm(ArmInfo::new("2",&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "TS"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Test(TestInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7],v[i+8],v[i+9],v[i+10],v[i+11],v[i+12],v[i+13],v[i+14],v[i+15]))),
+                "A1"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U4"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Arm(ArmInfo::new("1",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "A2"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Arm(ArmInfo::new("2",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "TS"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Test(TestInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7],v[i+8],v[i+9],v[i+10],v[i+11],v[i+12],v[i+13],v[i+14],v[i+15]))),
+                "A1"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U5"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Arm(ArmInfo::new("1",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "A2"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Arm(ArmInfo::new("2",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "TS"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Test(TestInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7],v[i+8],v[i+9],v[i+10],v[i+11],v[i+12],v[i+13],v[i+14],v[i+15]))),
+                "A1"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U6"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Arm(ArmInfo::new("1",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "A2"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Arm(ArmInfo::new("2",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "TS"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Test(TestInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7],v[i+8],v[i+9],v[i+10],v[i+11],v[i+12],v[i+13],v[i+14],v[i+15]))),
+                "A1"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U7"=>
             match v[i+1].as_str(){
-                "PH"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7]))),
-                "A1"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::Arm(ArmInfo::new("1",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "A2"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::Arm(ArmInfo::new("2",v[i+2],v[i+3],v[i+4],v[i+5]))),
-                "PI"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::PocketInsp(PocketInspInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7],v[i+8]))),
-                "CI"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::ChipInsp(ChipInspInfo::new(v[i+2],v[i+3],v[i+4],v[i+5],v[i+6],v[i+7],v[i+8]))),
+                "PH"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7]))),
+                "A1"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "PI"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::PocketInsp(PocketInspInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8]))),
+                "CI"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::ChipInsp(ChipInspInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8]))),
                 _=>{}
             }
             _=>{}
@@ -276,7 +448,7 @@ fn add_armdata_to_db(conn:&Connection,unit_number:&str,time:&str,unit_struct:Uni
 
 fn main() -> Result<(),Box<dyn Error>> {
 
-    let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
+    let db_path = "./chiptest.db";
     let txt_path="C:\\workspace\\test_project\\2541F0532J_PLC_4.txt";
     let type_name="MH15376";
 
