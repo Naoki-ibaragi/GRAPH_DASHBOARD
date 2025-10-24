@@ -1,4 +1,4 @@
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result,params};
 use std::error::Error;
 use std::fs::File;
 use std::io::{self,BufRead,BufReader};
@@ -204,9 +204,9 @@ fn read_textdata(txt_path:&str,db_path:&str,type_name:&str)->Result<(),Box<dyn E
     //dbに接続しなければ作成する
     let conn=Connection::open(db_path)?;
     // テーブルが存在しない場合は作成
-    conn.execute(
-    "CREATE TABLE chipdatah (
-	ID	INTEGER NOT NULL,
+    match conn.execute(
+    "CREATE TABLE chipdata (
+	ID	INTEGER PRIMARY KEY AUTOINCREMENT,
 	MACHINE_NAME	VARCHAR,
 	TYPE_NAME	VARCHAR,
 	LOT_NAME	VARCHAR,
@@ -341,10 +341,13 @@ fn read_textdata(txt_path:&str,db_path:&str,type_name:&str)->Result<(),Box<dyn E
 	IP_BACK_ALIGN_T	TEXT,
 	CONSTRAINT uix_lot_serial UNIQUE(LOT_NAME,SERIAL))",
     [],
-    )?;
+    ){
+        Ok(v)=>{},
+        Err(e)=>println!("{}",e)
+    }
+    println!("complete create db");
 
-    let mut contents=String::new();
-        // ファイルを開く
+    // ファイルを開く
     let file = File::open(txt_path)?;
     let reader = BufReader::new(file);
 
@@ -379,53 +382,52 @@ fn read_textdata(txt_path:&str,db_path:&str,type_name:&str)->Result<(),Box<dyn E
             "TIME"=>now_time=v[i+1].clone(), //現在時刻の更新
             "U1"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U1",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "A2"=>add_to_db(&conn,"U1",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "PH"=>add_lddata_to_db(&conn,"LD",type_name,now_time.as_str(),UnitData::LD(LDInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9]))),
+                "A1"=>add_arm1data_to_db(&conn,"LD",type_name,now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
                 _=>{}
             }
             "U2"=>
             match v[i+1].as_str(){
-                "PH"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7]))),
-                "A1"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "TS"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
-                "A2"=>add_to_db(&conn,"U2",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "PH"=>add_to_db(&conn,"DC1",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7]))),
+                "A1"=>add_arm1data_to_db(&conn,"DC1",type_name,now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"DC1",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
+                "A2"=>add_arm2data_to_db(&conn,"DC1",type_name,now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
                 _=>{}
             }
             "U3"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "A2"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "TS"=>add_to_db(&conn,"U3",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
+                "A1"=>add_arm1data_to_db(&conn,"AC1",type_name,now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_arm2data_to_db(&conn,"AC1",type_name,now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"AC1",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U4"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "A2"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "TS"=>add_to_db(&conn,"U4",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
+                "A1"=>add_arm1data_to_db(&conn,"AC2",type_name,now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_arm2data_to_db(&conn,"AC2",type_name,now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"AC2",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U5"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "A2"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "TS"=>add_to_db(&conn,"U5",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
+                "A1"=>add_arm1data_to_db(&conn,"DC2",type_name,now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_arm2data_to_db(&conn,"DC2",type_name,now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"DC2",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U6"=>
             match v[i+1].as_str(){
-                "A1"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "A2"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "TS"=>add_to_db(&conn,"U6",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
+                "A1"=>add_arm1data_to_db(&conn,"IP",type_name,now_time.as_str(),UnitData::Arm1g(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "A2"=>add_arm2data_to_db(&conn,"IP",type_name,now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "TS"=>add_to_db(&conn,"IP",now_time.as_str(),UnitData::Test(TestInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9],&v[i+10],&v[i+11],&v[i+12],&v[i+13],&v[i+14],&v[i+15]))),
                 _=>{}
             }
             "U7"=>
             match v[i+1].as_str(){
-                "PH"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7]))),
-                "A1"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "A2"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::Arm2(Arm2Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
-                "PI"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::PocketInsp(PocketInspInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8]))),
-                "CI"=>add_to_db(&conn,"U7",now_time.as_str(),UnitData::ChipInsp(ChipInspInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8]))),
+                "PH"=>add_to_db(&conn,"ULD",now_time.as_str(),UnitData::PreHeat(PreHeatInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7]))),
+                "A1"=>add_arm1data_to_db(&conn,"ULD",type_name,now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
+                "PI"=>add_to_db(&conn,"ULD",now_time.as_str(),UnitData::PocketInsp(PocketInspInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8]))),
+                "CI"=>add_to_db(&conn,"ULD",now_time.as_str(),UnitData::ChipInsp(ChipInspInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8]))),
                 _=>{}
             }
             _=>{}
@@ -435,25 +437,131 @@ fn read_textdata(txt_path:&str,db_path:&str,type_name:&str)->Result<(),Box<dyn E
     Ok(())
 }
 
-//データをDBに登録する
-fn add_to_db(conn:&Connection,unit_number:&str,time:&str,unit_struct:UnitData){
-
+fn add_to_db(conn:&Connection,unit:&str,time:&str,unit_struct: UnitData){
 
 }
 
-fn add_armdata_to_db(conn:&Connection,unit_number:&str,time:&str,unit_struct:UnitData){
-    
+//LDデータをDBに登録する
+fn add_lddata_to_db(conn:&Connection,unit:&str,type_name:&str,time:&str,unit_struct:UnitData){
+    // データ取り出し
+    let mut pf = String::new();
+    let mut lot_name = String::new();
+    let mut serial = String::new();
+    let mut tray_arm = String::new();
+    let mut pocket_x = String::new();
+    let mut pocket_y = String::new();
+    let mut pocket_align_x = String::new();
+    let mut pocket_align_y = String::new();
+
+    if let UnitData::LD(ref ld_info) = unit_struct {
+        pf = ld_info.PF.clone();
+        serial = ld_info.Serial.clone();
+        lot_name = ld_info.LotName.clone();
+        tray_arm = ld_info.TrayArm.clone();
+        pocket_x = ld_info.PocketX.clone();
+        pocket_y = ld_info.PocketY.clone();
+        pocket_align_x = ld_info.PocketAlignX.clone();
+        pocket_align_y = ld_info.PocketAlignY.clone();
+    }
+
+    // SQL文字列をformat!で構築
+    let sql = format!(
+        "INSERT INTO chipdata (lot_name, serial, type_name, ld_tray_time, ld_tray_pf, ld_tray_pos,ld_tray_pocket_x,ld_tray_pocket_y,ld_tray_align_x,ld_tray_align_y)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+         ON CONFLICT(lot_name, serial)
+         DO NOTHING;"
+    );
+
+    match conn.execute(&sql, params![lot_name, serial, type_name, time, pf, tray_arm,pocket_x,pocket_y,pocket_align_x,pocket_align_y]) {
+        Err(e) => println!("SQL Error: {}", e),
+        Ok(_) => {},
+    }
 }
 
+//アーム1データをDBに登録する
+fn add_arm1data_to_db(conn: &Connection,unit: &str,type_name: &str,time: &str,unit_struct: UnitData) {
+    // データ取り出し
+    let mut pf = String::new();
+    let mut serial = String::new();
+    let mut lot_name = String::new();
+    let mut count = String::new();
+
+    if let UnitData::Arm1(ref arm1_info) = unit_struct {
+        pf = arm1_info.PF.clone();
+        serial = arm1_info.Serial.clone();
+        lot_name = arm1_info.LotName.clone();
+        count = arm1_info.Count.clone();
+    }
+
+    // カラム名を動的に生成
+    let column1 = format!("{}_ARM1_TIME", unit);
+    let column2 = format!("{}_ARM1_PF", unit);
+    let column3 = format!("{}_ARM1_COLLET_COUNT", unit);
+
+    // SQL文字列をformat!で構築
+    let sql = format!(
+        "INSERT INTO chipdata (lot_name, serial, type_name, {c1}, {c2}, {c3})
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+        ON CONFLICT(lot_name, serial)
+        DO NOTHING;",
+        c1 = column1,
+        c2 = column2,
+        c3 = column3
+    );
+
+    match conn.execute(&sql, params![lot_name, serial, type_name, time, pf, count]) {
+        Err(e) => println!("SQL Error: {}", e),
+        Ok(_) => {},
+    }
+}
+
+fn add_arm2data_to_db(conn: &Connection,unit: &str,type_name: &str,time: &str,unit_struct: UnitData) {
+
+    // データ取り出し
+    let mut pf = String::new();
+    let mut serial = String::new();
+    let mut lot_name = String::new();
+    let mut count = String::new();
+
+    if let UnitData::Arm2(ref arm1_info) = unit_struct {
+        pf = arm1_info.PF.clone();
+        serial = arm1_info.Serial.clone();
+        lot_name = arm1_info.LotName.clone();
+        count = arm1_info.Count.clone();
+    }
+
+    // カラム名を動的に生成
+    let column1 = format!("{}_ARM2_TIME", unit);
+    let column2 = format!("{}_ARM2_PF", unit);
+    let column3 = format!("{}_ARM2_COLLET_COUNT", unit);
+
+    // SQL文字列をformat!で構築
+    let sql = format!(
+        "INSERT INTO chipdata (lot_name, serial, type_name, {c1}, {c2}, {c3})
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+         ON CONFLICT(lot_name, serial)
+         DO NOTHING;",
+        c1 = column1,
+        c2 = column2,
+        c3 = column3
+    );
+
+    match conn.execute(&sql, params![lot_name, serial, type_name, time, pf, count]) {
+        Err(e) => println!("SQL Error: {}", e),
+        Ok(_) => {},
+    }
+
+}
 
 fn main() -> Result<(),Box<dyn Error>> {
-
     let db_path = "./chiptest.db";
     let txt_path="C:\\workspace\\test_project\\2541F0532J_PLC_4.txt";
     let type_name="MH15376";
 
-    read_textdata(txt_path, db_path, type_name);
+    match read_textdata(txt_path, db_path, type_name){
+        Ok(v)=>{},
+        Err(e)=>println!("{}",e)
+    }
 
     Ok(())
-
 }
