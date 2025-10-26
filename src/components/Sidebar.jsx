@@ -29,8 +29,8 @@ export default function Sidebar({ onSelect,openSideBar,setOpenSideBar }) {
         <ListItem button="true" onClick={()=>onClickSideBarItem("dashboard1")}>
           <ListItemText primary="Graph1" />
         </ListItem>
-        <ListItem button="true" onClick={()=>onClickSideBarItem("settings")}>
-          <ListItemText primary="Settings" />
+        <ListItem button="true" onClick={()=>onClickSideBarItem("register")}>
+          <ListItemText primary="Regist Data" />
         </ListItem>
       </List>
     </Drawer>

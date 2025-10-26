@@ -10,6 +10,9 @@ use lot_log::{get_lotdata};
 mod graph_data;
 use graph_data::{get_graphdata_from_db,GraphCondition};
 
+mod regist_data;
+use regist_data::{read_textdata};
+
 // 進捗報告用のイベントペイロード
 #[derive(Clone, serde::Serialize)]
 struct ProgressPayload {
@@ -131,7 +134,8 @@ async fn download_alarm(window:Window, machine_name: String) -> Result<(), Strin
 #[command]
 async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(),String> {
     thread::spawn( move || {
-        let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
+        //let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
+        let db_path = "D:\\testspace\\chiptest.db";
 
         let graph_data=match get_graphdata_from_db(&window,db_path,graphCondition){
             Ok(d)=>d,
@@ -156,10 +160,17 @@ async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(
 
 //txtファイルのデータをDBに登録する
 #[command]
-fn register_data(window:Window,file_path:String)->Result<(),String>{
+fn regist_data(window:Window,file_path:String,type_name:String)->Result<(),String>{
     println!("register_data @ main.rs");
     thread::spawn(move || {
-        println!("{}",file_path);
+        let db_path = "D:\\testspace\\chiptest.db";
+        match read_textdata(&window,&file_path, db_path, &type_name){
+            Ok(v)=>{},
+            Err(e)=>report_complete(&window, "regist_data-complete", true, None, None)
+        }
+
+        // 完了通知
+        report_complete(&window, "regist_data-complete", true, None, None);
     });
 
     Ok(())
@@ -167,7 +178,7 @@ fn register_data(window:Window,file_path:String)->Result<(),String>{
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![download_lot, download_alarm,get_graphdata,register_data])
+        .invoke_handler(tauri::generate_handler![download_lot, download_alarm,get_graphdata,regist_data])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .run(tauri::generate_context!())

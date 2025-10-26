@@ -124,50 +124,61 @@ export default function GraphSetting(props) {
                     <Stack
                     direction="row"
                     alignItems="center"
-                    flexWrap="wrap"
                     >
-                    <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>グラフの種類</Typography>
-                    <FormControl error={graphTypeError}>
+                    <Box>
+                        <Stack direction="row" alignItems="center" flexWrap="wrap">
+                            <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>グラフの種類</Typography>
+                            <FormControl error={graphTypeError}>
+                                <Select
+                                    size="small"
+                                    sx={{mr:3,height:32,width:200}}
+                                    value={graphType}
+                                    onChange={(e) => setGraphType(e.target.value)}
+                                >
+                                    {Object.keys(graph_items).map((key) => (
+                                    <MenuItem key={key} value={graph_items[key]}>
+                                        {key}
+                                    </MenuItem>
+                                    ))}
+                                </Select>
+                                {graphTypeError ? <FormHelperText>グラフの種類が不適切です</FormHelperText>:null}
+                            </FormControl>
+                        </Stack>
+                    </Box>
+                    <Box>
+                        <Stack direction="row" alignItems="center" flexWrap="wrap">
+                        <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>X軸の項目</Typography>
                         <Select
                             size="small"
-                            sx={{mr:3,height:32,width:200}}
-                            value={graphType}
-                            onChange={(e) => setGraphType(e.target.value)}
+                            sx={{mr:3,height:32,width:300}}
+                            value={xdimItem}
+                            onChange={(e) => setXdimItem(e.target.value)}
                         >
-                            {Object.keys(graph_items).map((key) => (
-                            <MenuItem key={key} value={graph_items[key]}>
+                            {Object.keys(xDimItems).map((key) => (
+                            <MenuItem key={key} value={xDimItems[key]}>
                                 {key}
                             </MenuItem>
                             ))}
                         </Select>
-                        {graphTypeError ? <FormHelperText>グラフの種類が不適切です</FormHelperText>:null}
-                    </FormControl>
-                    <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>X軸の項目</Typography>
-                    <Select
-                        size="small"
-                        sx={{mr:3,height:32,width:300}}
-                        value={xdimItem}
-                        onChange={(e) => setXdimItem(e.target.value)}
-                    >
-                        {Object.keys(xDimItems).map((key) => (
-                        <MenuItem key={key} value={xDimItems[key]}>
-                            {key}
-                        </MenuItem>
-                        ))}
-                    </Select>
-                    <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>Y軸の項目</Typography>
-                    <Select
-                        size="small"
-                        sx={{mr:3,height:32,width:300}}
-                        value={ydimItem}
-                        onChange={(e) => setYdimItem(e.target.value)}
-                    >
-                        {Object.keys(yDimItems).map((key) => (
-                        <MenuItem key={key} value={yDimItems[key]}>
-                            {key}
-                        </MenuItem>
-                        ))}
-                    </Select>
+                        </Stack>
+                    </Box>
+                    <Box>
+                        <Stack direction="row" alignItems="center" flexWrap="wrap">
+                        <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>Y軸の項目</Typography>
+                        <Select
+                            size="small"
+                            sx={{mr:3,height:32,width:300}}
+                            value={ydimItem}
+                            onChange={(e) => setYdimItem(e.target.value)}
+                        >
+                            {Object.keys(yDimItems).map((key) => (
+                            <MenuItem key={key} value={yDimItems[key]}>
+                                {key}
+                            </MenuItem>
+                            ))}
+                        </Select>
+                        </Stack>
+                    </Box>
                     </Stack>
                 </Box>
                 {/* アラーム番号設定 */}
@@ -322,9 +333,9 @@ export default function GraphSetting(props) {
                         onChange={(e) =>setPlotUnit(e.target.value)}
                     >
                         <FormControlLabel value="None" control={<Radio />} label="分割なし" />
-                        <FormControlLabel value="LOT_NAME" control={<Radio />} label="ロット単位" />
-                        <FormControlLabel value="MACHINE_NAME" control={<Radio />} label="設備単位" />
-                        <FormControlLabel value="TYPE_NAME" control={<Radio />} label="機種名単位" />
+                        <FormControlLabel value="Lot" control={<Radio />} label="ロット単位" />
+                        <FormControlLabel value="Machine" control={<Radio />} label="設備単位" />
+                        <FormControlLabel value="Type" control={<Radio />} label="機種名単位" />
                     </RadioGroup>
                 </Grid>
             </Box>

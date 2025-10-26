@@ -14,6 +14,7 @@ pub struct GraphCondition{ //グラフ描画に必要な情報を全て入れる
     start_date:String,          //データ取得開始日
     end_date:String,            //データ取得終了日
     plot_unit:String,           //plotの分割設定
+    alarm:AlarmInfo,            //alarm関係の情報
     filters:Vec<Filter>,        //filter一覧
     filter_conjunction:String   //filterの接続方法AND or OR
 }
@@ -23,6 +24,12 @@ pub struct Filter{ //各フィルターの内容を入れる構造体
     item:String,
     value:String,
     comparison:String
+}
+
+#[derive(Debug,Deserialize)]
+pub struct AlarmInfo{ //アラームプロットを重ねる場合：アラームの内容を入れる構造体
+    unit:String,
+    codes:Vec<String>,
 }
 
 /* ------------------------------------------- */
@@ -182,7 +189,7 @@ fn plot_scatterplot_with_unit(window:&Window,total_count:i64,data_map:&mut HashM
 }
 
 //プロット分割しない折れ線グラフのデータを取得
-fn plot_lineplot_without_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement,graph_condition:GraphCondition)->Result<(),Box<dyn Error>>{
+fn plot_lineplot_without_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement,graph_condition:&GraphCondition)->Result<(),Box<dyn Error>>{
     data_map.entry("data".to_string()).or_insert(vec![]);
 
     let query_rows:Vec<PlotData>=stmt.query_map([], |row| {
@@ -286,7 +293,7 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
     let mut sql = String::from("SELECT ");
 
     // X, Yデータ取得
-    if graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot" {
+    if (graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot") {
         //プロット単位をまとめるかどうかで決める
         if graph_condition.plot_unit=="None" {
             sql += &format!(
@@ -329,7 +336,53 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
     sql
 }
 
+// アラーム条件にあうレコードのみ取得すようなSQL文を作成
+pub fn create_alarm_sql(graph_condition: &GraphCondition) -> String {
+    let mut sql = String::from("SELECT ");
 
+    // X, Yデータ取得
+    if (graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot") {
+        //プロット単位をまとめるかどうかで決める
+        if graph_condition.plot_unit=="None" {
+            sql += &format!(
+                "{}, {} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.graph_x_item,
+                graph_condition.graph_y_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }else{
+            sql += &format!(
+                "{}, {}, {} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.plot_unit,
+                graph_condition.graph_x_item,
+                graph_condition.graph_y_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }
+    }
+
+    // フィルター情報追加
+    if !graph_condition.filters.is_empty() {
+        sql += " AND ";
+        for (index, filter) in graph_condition.filters.iter().enumerate() {
+            let item = &filter.item;
+            let value = &filter.value;
+            let comparison = &filter.comparison;
+
+            sql += &format!("{} {} '{}'", item, comparison, value);
+
+            if index + 1 < graph_condition.filters.len() {
+                sql += &format!(" {}", graph_condition.filter_conjunction);
+            }
+        }
+    }
+
+    println!("{}",sql);
+
+    sql
+}
 
 //DBからデータを取得してHighChartで使用可能なデータに成形する
 pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCondition)->Result<HashMap<String,Vec<PlotData>>,Box<dyn Error>>{
@@ -363,15 +416,28 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
 
     match graph_condition.plot_unit.as_str() {
         "None" => match graph_condition.graph_type.as_str() {
-            "ScatterPlot" => plot_scatterplot_without_unit(window, total_count, &mut data_map, &mut stmt),
-            "LinePlot" => plot_lineplot_without_unit(window, total_count, &mut data_map, &mut stmt, graph_condition),
-            _ => Ok(()), // その他の型に対するフォールバック
+            "ScatterPlot" => plot_scatterplot_without_unit(window, total_count, &mut data_map, &mut stmt)?,
+            "LinePlot" => plot_lineplot_without_unit(window, total_count, &mut data_map, &mut stmt, &graph_condition)?,
+            _ => {},
         },
         _ => match graph_condition.graph_type.as_str() {
-            "ScatterPlot" => plot_scatterplot_with_unit(window, total_count, &mut data_map, &mut stmt),
-            _ => Ok(()),
+            "ScatterPlot" => plot_scatterplot_with_unit(window, total_count, &mut data_map, &mut stmt)?,
+            _ => {}, 
         },
     };
+
+    //アラームのプロットを重ねる場合の処理を入れる
+    if !graph_condition.alarm.codes.is_empty(){
+        report_progress(&window, "start get alarm plot data", 80, &format!("アラームデータの取得開始"));
+
+        //sql分を生成
+        let sql=create_alarm_sql(&graph_condition);
+        let mut stmt=db.prepare(&sql)?;
+
+
+    }
+
+
 
     report_progress(&window, "completed", 90, "グラフの描画を実施"); //フロントエンドに報告
 

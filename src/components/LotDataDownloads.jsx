@@ -144,8 +144,6 @@ export default function LotDataDownloads() {
               <Typography variant="h6" gutterBottom>
                 {`処理状況 - ${downloadsState}`}
               </Typography>
-              <Stack spacing={2}>
-              </Stack>
           </CardContent>
         </Card>
         ):null}

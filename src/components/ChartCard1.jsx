@@ -39,9 +39,10 @@ export default function ChartCard1() {
   const [alarmUnitError,setAlarmUnitError]=useState(false);
   const [filterItemError,setFilterItemError]=useState([false]);
 
-  //グラフの種類一覧
-  const graph_items = ["ScatterPlot","LinePlot"];
-  const unit_items=["LD","DC1","AC1","AC2","DC2","IP","ULD"];
+  //構造体の値からキーを逆算する関数
+  const getKeyByValue = (obj, value) => {
+    return Object.keys(obj).find((key) => obj[key] === value);
+  };
 
   //グラフ種種によって軸の項目を変える
   useEffect(()=>{
@@ -56,27 +57,6 @@ export default function ChartCard1() {
     }
   },[graphType])
 
-  //graphConditionの内容をバリデーションする
-  const graphConditionValidation=()=>{
-    graph_items.includes(graphType) || setGraphTypeError(true) //グラフの項目
-    xDimItems.includes(xdimItem) || setXdimItemError(true) //x軸の項目
-    yDimItems.includes(ydimItem) || setYdimItemError(true) //y軸の項目
-    (!alarmUnit || unit_items.includes(alarmUnit)) || setAlarmUnitError(true) //アラームのユニット
-
-    //filterバリデーションの更新
-    const nextFilterError=filterItemError.map((e,i)=>{
-      if (filters[i].enable && !filter_items.includes(filters[i].dimItem)){
-        return false;
-      }else{
-        return true;
-      }
-    });
-    setFilterItemError(nextFilterError);
-
-    //すべてのバリデーションに通ればtrueを返す
-    return (graphTypeError && xdimItemError && ydimItemError && alarmUnitError && filterItemError.every(Boolean)) ? true : false;
-  };
-
   //backendから取得する関数
   const getGraphDataFromBackend=async ()=>{
 
@@ -89,6 +69,7 @@ export default function ChartCard1() {
       graph_type:graphType,
       graph_x_item:xdimItem,
       graph_y_item:ydimItem,
+      alarm:{unit:alarmUnit,codes:alarmNumbers},
       start_date:startDate.format("YYYY-MM-DD 00:00:00"),
       end_date:endDate.format("YYYY-MM-DD 00:00:00"),
       plot_unit:plotUnit,
@@ -126,17 +107,37 @@ export default function ChartCard1() {
 
         let option_graph_type="";
         switch(graphType){
-          case "ScatterPlot": option_graph_type='scatter';
-          case "LinePlot": option_graph_type='line';
+          case "ScatterPlot": 
+            option_graph_type='scatter';
+            break;
+          case "LinePlot": 
+            option_graph_type='line';
+            break;
         };
-        console.log(option_graph_type);
 
+        console.log(xDimItems);
+        console.log(yDimItems);
+        console.log(xdimItem);
+        console.log(ydimItem);
         setOptions({
           chart: {
               type: option_graph_type,
               animation: false, // アニメーション無効化で高速化
               reflow: true
-            },
+          },
+          title:{
+            text:`${getKeyByValue(xDimItems,xdimItem)} / ${getKeyByValue(yDimItems,ydimItem)}`
+          },
+          xAxis:{
+            title:{
+              text:`${getKeyByValue(xDimItems,xdimItem)}`
+            }
+          },
+          yAxis:{
+            title:{
+              text:`${getKeyByValue(yDimItems,ydimItem)}`
+            }
+          },
           boost:{
             useGPUTranslations:true,
             seriesThreshold:5000

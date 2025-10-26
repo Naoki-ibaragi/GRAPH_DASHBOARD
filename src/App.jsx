@@ -4,7 +4,7 @@ import ChartCard1 from "./components/ChartCard1";
 import LotDataDownloads from "./components/LotDataDownloads";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import Header from "./components/Header";
-import Settings from "./components/Settings";
+import RegistData from "./components/RegistData";
 import { Box } from "@mui/material";
 import { createTheme, ThemeProvider, Button } from "@mui/material";
 
@@ -35,8 +35,8 @@ function App() {
       setTitle("Alarm Data Download");
     } else if (selectedPage === "dashboard1") {
       setTitle("Dashboard1");
-    } else if (selectedPage === "settings") {
-      setTitle("Settings");
+    } else if (selectedPage === "register") {
+      setTitle("Regist Data");
     } else {
       setTitle("Settings");
     }
@@ -67,8 +67,8 @@ function App() {
               <ChartCard1 />
             </div>
             {/* Settings */}
-            <div hidden={selectedPage !== "settings"}>
-              <Settings />
+            <div hidden={selectedPage !== "register"}>
+              <RegistData />
             </div>
           </main>
         </Box>
