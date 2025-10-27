@@ -97,10 +97,19 @@ export default function ChartCard1() {
         console.log('処理成功:', newData);
         let series = [];
         Object.keys(newData).forEach((key) => {
-          const series_unit = {
-            name: key,
-            data: newData[key].map((p) => [p.x, p.y]),
-          };
+            const series_unit = key.includes("alarm") ? 
+            {
+              name: key,
+              data: newData[key].map((p) => [p.x, p.y]),
+              zIndex:100,
+              color:"#FF0000"
+            }
+            :
+            {
+              name: key,
+              data: newData[key].map((p) => [p.x, p.y]),
+            };
+
           series.push(series_unit);
         });
         console.log(series);
@@ -115,10 +124,6 @@ export default function ChartCard1() {
             break;
         };
 
-        console.log(xDimItems);
-        console.log(yDimItems);
-        console.log(xdimItem);
-        console.log(ydimItem);
         setOptions({
           chart: {
               type: option_graph_type,

@@ -375,10 +375,6 @@ fn plot_scatterplot_with_unit_only_alarm_data(window:&Window,total_count:i64,dat
 
 }
 
-
-
-
-
 // グラフ条件から適切なSQL文を作成
 pub fn create_sql(graph_condition: &GraphCondition) -> String {
     let mut sql = String::from("SELECT ");
