@@ -134,8 +134,8 @@ async fn download_alarm(window:Window, machine_name: String) -> Result<(), Strin
 #[command]
 async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(),String> {
     thread::spawn( move || {
-        //let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
-        let db_path = "D:\\testspace\\chiptest.db";
+        let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
+        //let db_path = "D:\\testspace\\chiptest.db";
 
         let graph_data=match get_graphdata_from_db(&window,db_path,graphCondition){
             Ok(d)=>d,
@@ -163,7 +163,8 @@ async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(
 fn regist_data(window:Window,file_path:String,type_name:String)->Result<(),String>{
     println!("register_data @ main.rs");
     thread::spawn(move || {
-        let db_path = "D:\\testspace\\chiptest.db";
+        //let db_path = "D:\\testspace\\chiptest.db";
+        let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
         match read_textdata(&window,&file_path, db_path, &type_name){
             Ok(v)=>{},
             Err(e)=>report_complete(&window, "regist_data-complete", true, None, None)
