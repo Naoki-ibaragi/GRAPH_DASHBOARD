@@ -549,14 +549,7 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
         },
     };
 
-
-
-
-
-
     }
-
-
 
     report_progress(&window, "completed", 90, "グラフの描画を実施"); //フロントエンドに報告
 

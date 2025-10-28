@@ -1,5 +1,9 @@
 use tauri::{command,Emitter,Window};
 use std::thread;
+mod utils;
+mod db;
+mod models;
+mod commands;
 
 mod alarm_log;
 use alarm_log::{read_jsondata,get_alarmdata};
@@ -7,11 +11,11 @@ use alarm_log::{read_jsondata,get_alarmdata};
 mod lot_log;
 use lot_log::{get_lotdata};
 
-mod graph_data;
-use graph_data::{get_graphdata_from_db,GraphCondition};
-
 mod regist_data;
 use regist_data::{read_textdata};
+
+use crate::models::graph_model::GraphCondition;
+use crate::commands::graph::get_graphdata_from_db;
 
 // 進捗報告用のイベントペイロード
 #[derive(Clone, serde::Serialize)]
