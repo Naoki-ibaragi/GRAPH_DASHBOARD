@@ -31,6 +31,12 @@ export default function GraphSetting(props) {
     const setXdimItem=props.setXdimItem;
     const ydimItem=props.ydimItem; //Y軸の項目
     const setYdimItem=props.setYdimItem;
+    const binNumber=props.binNumber; //ヒストグラムで使用するBin数
+    const setBinNumber=props.setBinNumber;
+    const binsX=props.binsX; //密度プロットで使用するX軸のBin数
+    const setBinsX=props.setBinsX;
+    const binsY=props.binsY; //密度プロットで使用するY軸のBin数
+    const setBinsY=props.setBinsY;
     const alarmUnit=props.alarmUnit; //グラフに表示するアラームのユニット
     const setAlarmUnit=props.setAlarmUnit;
     const alarmNumbers=props.alarmNumbers; //アラームの番号
@@ -59,6 +65,8 @@ export default function GraphSetting(props) {
     const graph_items = {
         "散布図": "ScatterPlot",
         "折れ線グラフ": "LinePlot",
+        "ヒストグラム": "Histogram",
+        "密度プロット": "DensityPlot"
     };
 
     //アラームをグラフに重ねる際に表示するユニット一覧
@@ -162,6 +170,7 @@ export default function GraphSetting(props) {
                         </Select>
                         </Stack>
                     </Box>
+                    {graphType !== "Histogram" ?
                     <Box>
                         <Stack direction="row" alignItems="center" flexWrap="wrap">
                         <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>Y軸の項目</Typography>
@@ -178,12 +187,25 @@ export default function GraphSetting(props) {
                             ))}
                         </Select>
                         </Stack>
-                    </Box>
+                    </Box>:null
+                    }
+                    {graphType === "Histogram" ?
+                    <Box>
+                        <Stack direction="row" alignItems="center" flexWrap="wrap">
+                        <Typography sx={{mr:1}} variant="subtitle2" gutterBottom>ビン数</Typography>
+                            <TextField
+                                size="small"
+                                value={binNumber}
+                                onChange={(e) =>setBinNumber(e.target.value)}
+                            />
+                        </Stack>
+                    </Box>:null
+                    }
                     </Stack>
                 </Box>
                 {/* アラーム番号設定 */}
                 {/* 散布図と2Dヒートマップが設定されているときだけ表示するようにする */}
-                {graphType === "ScatterPlot" || graphType==="2DHeatmap" ? (
+                {graphType === "ScatterPlot" || graphType==="Histogram" ? (
                     <Box mb={1}>
                     <Stack direction="row" alignItems="center" flexWrap="wrap">
                         <Typography sx={{ mr: 1 }} variant="subtitle2" gutterBottom>
@@ -211,6 +233,32 @@ export default function GraphSetting(props) {
                         onChange={(e) =>
                             handleAlarmNumberChange(e.target.value)
                         }
+                        />
+                    </Stack>
+                    </Box>
+                ) : null}
+                {/* X,YのBIN数設定 */}
+                {/* 密度プロットの場合だけ表示するようにする */}
+                {graphType === "DensityPlot" ? (
+                    <Box mb={1}>
+                    <Stack direction="row" alignItems="center" flexWrap="wrap">
+                        <Typography sx={{ mr: 1 }} variant="subtitle2" gutterBottom>
+                        X軸の分割数
+                        </Typography>
+                        <TextField
+                        size="small"
+                        value={binsX}
+                        sx={{width:200, mr:2}}
+                        onChange={(e) =>setBinsX(e.target.value)}
+                        />
+                        <Typography sx={{ mr: 1 }} variant="subtitle2" gutterBottom>
+                        Y軸の分割数
+                        </Typography>
+                        <TextField
+                        size="small"
+                        sx={{width:200}}
+                        value={binsY}
+                        onChange={(e) =>setBinsY(e.target.value)}
                         />
                     </Stack>
                     </Box>

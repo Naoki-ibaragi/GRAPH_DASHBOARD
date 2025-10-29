@@ -4,7 +4,7 @@ import {Box,Button,Card,CardContent,Typography,LinearProgress} from "@mui/materi
 import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_x_axis_items,line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items,scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
-import { filter_items } from "../Variables/FilterData";
+import { histogram_axis_items } from "../Variables/HistogramData";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import Highcharts, { seriesType } from 'highcharts';
@@ -24,8 +24,10 @@ export default function ChartCard1() {
   const [endDate,setEndDate]=useState(dayjs());
   const [xDimItems,setXDimItems]=useState(scatter_plot_x_axis_items); //X軸の項目
   const [yDimItems,setYDimItems]=useState(scatter_plot_y_axis_items); //Y軸の項目
+  const [binNumber,setBinNumber]=useState(50); //ヒストグラムで使用するビン数
+  const [binsX,setBinsX]=useState(50); //密度プロットで使用するX軸の分割数
+  const [binsY,setBinsY]=useState(50); //密度プロットで使用するX軸の分割数
   const [graphCondition,setGraphCondition]=useState({}); //グラフの条件一覧
-  const [graphData,setGraphData]=useState({}); //グラフに表示するアイテム一覧
   const [filters,setFilters]=useState([{enable:false,item:"",value:"",comparison:"="}]); //フィルターの項目
   const [isGraph,setIsGraph]=useState(false); //グラフが描画されているか
   const [isProcess,setIsProcess]=useState(false); //バックエンドで処理中かどうか
@@ -48,12 +50,17 @@ export default function ChartCard1() {
   useEffect(()=>{
     setXdimItem("");
     setYdimItem("");
-    if(graphType=="ScatterPlot"){
+    if(graphType==="ScatterPlot"){
         setXDimItems(scatter_plot_x_axis_items);
         setYDimItems(scatter_plot_y_axis_items);
-    }else if(graphType=="LinePlot"){
+    }else if(graphType==="LinePlot"){
         setXDimItems(line_plot_x_axis_items);
         setYDimItems(line_plot_y_axis_items);
+    }else if(graphType==="Histogram"){
+      setXDimItems(histogram_axis_items);
+    }else if(graphType==="DensityPlot"){
+      setXDimItems(scatter_plot_x_axis_items);
+      setYDimItems(scatter_plot_y_axis_items);
     }
   },[graphType])
 
@@ -69,6 +76,7 @@ export default function ChartCard1() {
       graph_type:graphType,
       graph_x_item:xdimItem,
       graph_y_item:ydimItem,
+      bin_number:binNumber, //ヒストグラムでのみ使用
       alarm:{unit:alarmUnit,codes:alarmNumbers},
       start_date:startDate.format("YYYY-MM-DD 00:00:00"),
       end_date:endDate.format("YYYY-MM-DD 00:00:00"),
@@ -121,6 +129,9 @@ export default function ChartCard1() {
             break;
           case "LinePlot": 
             option_graph_type='line';
+            break;
+          case "Histogram": 
+            option_graph_type='histogram';
             break;
         };
 
@@ -209,6 +220,12 @@ export default function ChartCard1() {
           setXdimItem={setXdimItem}
           ydimItem={ydimItem}
           setYdimItem={setYdimItem}
+          binNumber={binNumber}
+          binsX={binsX}
+          setBinsX={setBinsX}
+          binsY={binsY}
+          setBinsY={setBinsY}
+          setBinNumber={setBinNumber}
           alarmNumbers={alarmNumbers} 
           setAlarmNumbers={setAlarmNumbers}
           alarmUnit={alarmUnit}

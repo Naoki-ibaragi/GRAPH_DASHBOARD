@@ -8,6 +8,9 @@ pub struct GraphCondition{ //グラフ描画に必要な情報を全て入れる
     pub graph_y_item:String,        //y軸の項目
     pub start_date:String,          //データ取得開始日
     pub end_date:String,            //データ取得終了日
+    pub bin_number:String,          //ヒストグラムのX軸の分割数
+    pub bins_x:String,              //密度プロットのX軸の分割数
+    pub binx_y:String,              //密度プロットのY軸軸分割数
     pub plot_unit:String,           //plotの分割設定
     pub alarm:AlarmInfo,            //alarm関係の情報
     pub filters:Vec<Filter>,        //filter一覧
@@ -26,7 +29,6 @@ pub struct AlarmInfo{ //アラームプロットを重ねる場合：アラー�
     pub unit:String,
     pub codes:Vec<String>,
 }
-
 /* ------------------------------------------- */
 
 /*プロットデータ型の定義 */
