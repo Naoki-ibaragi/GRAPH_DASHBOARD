@@ -43,15 +43,15 @@ function RegistData() {
                     setIsProcess(false);
                     setHistoryList((prev) => [
                         ...prev,
-                        { file_path: filePath, result: true },
+                        { file_path: payload.file_path, result: true },
                     ]);
                 } else {
                     console.error('処理失敗:', payload.error);
                     setIsError(true);
-                    setIsProcess(false); // これも追加
+                    setIsProcess(false);
                     setHistoryList((prev) => [
                         ...prev,
-                        { file_path: filePath, result: false },
+                        { file_path: payload.file_path, result: false },
                     ]);
                 }
             });

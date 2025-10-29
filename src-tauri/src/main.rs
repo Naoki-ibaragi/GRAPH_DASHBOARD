@@ -129,8 +129,13 @@ fn regist_data(window:Window,file_path:String,type_name:String)->Result<(),Strin
             Err(e)=>report_complete(&window, "regist_data-complete", false, None, None)
         }
 
+        //serde_json::value形式に変換
+        let response = serde_json::json!({
+            "file_path":file_path
+        });
+
         // 完了通知
-        report_complete(&window, "regist_data-complete", true, None, None);
+        report_complete(&window, "regist_data-complete", true, Some(response), None);
     });
 
     Ok(())
