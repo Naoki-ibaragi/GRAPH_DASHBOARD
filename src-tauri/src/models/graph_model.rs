@@ -16,15 +16,15 @@ pub struct GraphCondition{ //グラフ描画に必要な情報を全て入れる
 
 #[derive(Debug,Deserialize)]
 pub struct Filter{ //各フィルターの内容を入れる構造体
-    item:String,
-    value:String,
-    comparison:String
+    pub item:String,
+    pub value:String,
+    pub comparison:String
 }
 
 #[derive(Debug,Deserialize)]
 pub struct AlarmInfo{ //アラームプロットを重ねる場合：アラームの内容を入れる構造体
-    unit:String,
-    codes:Vec<String>,
+    pub unit:String,
+    pub codes:Vec<String>,
 }
 
 /* ------------------------------------------- */
@@ -33,8 +33,8 @@ pub struct AlarmInfo{ //アラームプロットを重ねる場合：アラー�
 //x,yともに数値型の場合のプロットデータ
 #[derive(Debug,Serialize)]
 pub struct NumberData{
-    x:i32,
-    y:i32,
+    pub x:i32,
+    pub y:i32,
 }
 
 impl NumberData{
@@ -46,8 +46,8 @@ impl NumberData{
 //xが日付の場合のプロットデータ
 #[derive(Debug,Serialize)]
 pub struct CalenderData{
-    x:String,
-    y:i32,
+    pub x:String,
+    pub y:i32,
 }
 
 impl CalenderData{
@@ -67,8 +67,8 @@ pub enum PlotData {
 //plot分割する場合のunit付データ
 #[derive(Debug,Serialize)]
 pub struct TmpData{
-    unit:String,
-    data:PlotData,
+    pub unit:String,
+    pub data:PlotData,
 }
 
 impl TmpData{

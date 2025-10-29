@@ -1,3 +1,3 @@
 pub mod graph_sql;
-pub mod plot_data;
-pub mod alarm_plot_data;
+pub mod create_table;
+pub mod db_regist;

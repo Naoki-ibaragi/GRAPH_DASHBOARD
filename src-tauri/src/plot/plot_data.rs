@@ -33,6 +33,7 @@ pub fn plot_scatterplot_without_unit(window:&Window,total_count:i64,data_map:&mu
         if (index+1) % 1000 == 0 {
             report_progress(
                 &window,
+                "graph_data-progress",
                 "processing",
                 40,
                 &format!("{}/{} 処理完了", index+1,total_count)
@@ -82,6 +83,7 @@ pub fn plot_scatterplot_with_unit(window:&Window,total_count:i64,data_map:&mut H
         if (index+1) % 1000 == 0 {
             report_progress(
                 &window,
+                "graph_data-progress",
                 "processing",
                 40,
                 &format!("{}/{} 処理完了", index+1,total_count)
@@ -131,6 +133,7 @@ pub fn plot_lineplot_without_unit(window:&Window,total_count:i64,data_map:&mut H
         if (index+1) % 1000 == 0 {
             report_progress(
                 &window,
+                "graph_data-progress",
                 "processing",
                 40,
                 &format!("{}/{} 処理完了", index+1,total_count)
@@ -180,6 +183,7 @@ pub fn plot_lineplot_with_unit(window:&Window,total_count:i64,data_map:&mut Hash
         if (index+1) % 1000 == 0 {
             report_progress(
                 &window,
+                "graph_data-progress",
                 "processing",
                 40,
                 &format!("{}/{} 処理完了", index+1,total_count)

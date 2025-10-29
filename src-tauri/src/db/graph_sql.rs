@@ -5,7 +5,7 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
     let mut sql = String::from("SELECT ");
 
     // X, Yデータ取得
-    if (graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot") {
+    if graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot" {
         //プロット単位をまとめるかどうかで決める
         if graph_condition.plot_unit=="None" {
             sql += &format!(
@@ -38,7 +38,7 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
             sql += &format!("{} {} '{}'", item, comparison, value);
 
             if index + 1 < graph_condition.filters.len() {
-                sql += &format!(" {}", graph_condition.filter_conjunction);
+                sql += &format!(" {} ", graph_condition.filter_conjunction);
             }
         }
     }
@@ -94,7 +94,7 @@ pub fn create_alarm_sql(graph_condition: &GraphCondition) -> String {
             sql += &format!("{} {} '{}'", item, comparison, value);
 
             if index + 1 < graph_condition.filters.len() {
-                sql += &format!(" {}", graph_condition.filter_conjunction);
+                sql += &format!(" {} ", graph_condition.filter_conjunction);
             }
         }
     }

@@ -8,7 +8,7 @@ use crate::models::graph_model::*;
 use crate::utils::events::{report_progress};
 
 //プロット分割しない散布図のアラーム部分だけのデータを取得
-fn plot_scatterplot_without_unit_only_alarm_data(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
+pub fn plot_scatterplot_without_unit_only_alarm_data(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
     data_map.entry("alarm_data".to_string()).or_insert(vec![]);
 
     let query_rows: Vec<Vec<i32>> = stmt.query_map([], |row| {
@@ -34,6 +34,7 @@ fn plot_scatterplot_without_unit_only_alarm_data(window:&Window,total_count:i64,
         if (index+1) % 1000 == 0 {
             report_progress(
                 &window,
+                "graph_data-progress",
                 "processing",
                 40,
                 &format!("{}/{} 処理完了", index+1,total_count)
@@ -45,7 +46,7 @@ fn plot_scatterplot_without_unit_only_alarm_data(window:&Window,total_count:i64,
 }
 
 //プロット分割する散布図のデータを取得
-fn plot_scatterplot_with_unit_only_alarm_data(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
+pub fn plot_scatterplot_with_unit_only_alarm_data(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
     let query_rows: Vec<TmpData> = stmt.query_map([], |row| {
         let unit_name: String=row.get(0)?;
         let x_value: String = row.get(1)?;
@@ -83,6 +84,7 @@ fn plot_scatterplot_with_unit_only_alarm_data(window:&Window,total_count:i64,dat
         if (index+1) % 1000 == 0 {
             report_progress(
                 &window,
+                "graph_data-progress",
                 "processing",
                 40,
                 &format!("{}/{} 処理完了", index+1,total_count)

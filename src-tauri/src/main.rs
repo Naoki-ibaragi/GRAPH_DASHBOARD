@@ -1,55 +1,22 @@
-use tauri::{command,Emitter,Window};
+use tauri::{command,Window};
 use std::thread;
-mod utils;
-mod db;
-mod models;
+use serde_json;
+
+
+// 独自クレートの定義
 mod commands;
+mod db;
+mod plot;
+mod models;
+mod utils;
 
-mod alarm_log;
-use alarm_log::{read_jsondata,get_alarmdata};
-
-mod lot_log;
-use lot_log::{get_lotdata};
-
-mod regist_data;
-use regist_data::{read_textdata};
-
+// 独自モジュールの定義
 use crate::models::graph_model::GraphCondition;
 use crate::commands::graph::get_graphdata_from_db;
-
-// 進捗報告用のイベントペイロード
-#[derive(Clone, serde::Serialize)]
-struct ProgressPayload {
-    step: String,
-    progress: u32,
-    message: String,
-}
-
-// 完了イベントのペイロード
-#[derive(Clone, serde::Serialize)]
-struct CompletionPayload {
-    success: bool,
-    data: Option<serde_json::Value>,
-    error: Option<String>,
-}
-
-//フロントエンドに進捗状況を送信
-fn report_progress(window:&Window,event:&str,step:&str,progress:u32,message:&str){
-    let _ = window.emit(event, ProgressPayload {
-        step: step.to_string(),
-        progress: progress,
-        message: message.to_string(),
-    });
-}
-
-//フロントエンドに完了を送信
-fn report_complete(window:&Window,event:&str,success:bool,data:Option<serde_json::Value>,error:Option<String>){
-    let _ = window.emit(event, CompletionPayload {
-        success: success,
-        data: data,
-        error: error,
-    });
-}
+use crate::commands::regist::regist_txtdata_to_db;
+use crate::commands::lotdata::get_lotdata;
+use crate::commands::alarmdata::get_alarmdata;
+use crate::utils::events::{report_progress,report_complete};
 
 //1ロット分のデータを取得して返す
 #[command]
@@ -93,25 +60,13 @@ async fn download_alarm(window:Window, machine_name: String) -> Result<(), Strin
     thread::spawn(move || {
         let json_path = "D:\\testspace\\alarm.json";
         let db_path = "D:\\testspace\\chiptest.db";
-        // ステップ1: JSON読み込み開始
-        report_progress(&window, "alarm-progress", "json_loading", 10, "JSON読み込み中"); // フロントエンドに状況を通知
-        
-        let alarm_data = match read_jsondata(json_path) {
+
+        //フロントエンドに状況報告
+        report_progress(&window, "alarm-progress", "db_loading", 0, "処理開始");
+
+        let (return_hashmap,alarm_data) = match get_alarmdata(db_path, &machine_name, db_path) {
             Ok(data) => {
-                report_progress(&window, "alarm-progress", "json_loaded", 30, "JSON読み込み完了"); // フロントエンドに状況を通知
-                data
-            },
-            Err(e) => {
-                report_complete(&window, "alarm-complete", false, None, Some(format!("Failed to read json:{}",e))); //エラーをフロントエンドに返す
-                return;
-            }
-        };
-        
-        // ステップ2: DB処理開始
-        report_progress(&window, "alarm-progress", "db_loading", 50, "データベースからデータ取得中"); // フロントエンドに状況を通知
-        let return_hashmap = match get_alarmdata(db_path, &machine_name, &alarm_data) {
-            Ok(data) => {
-                report_progress(&window, "alarm-progress", "db_loaded", 90, "データベース読込完了");
+                report_progress(&window, "alarm-progress", "complete getting data", 90, "データ取得完了");
                 data
             },
             Err(e) => {
@@ -138,8 +93,8 @@ async fn download_alarm(window:Window, machine_name: String) -> Result<(), Strin
 #[command]
 async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(),String> {
     thread::spawn( move || {
-        //let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
-        let db_path = "D:\\testspace\\chiptest.db";
+        let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
+        //let db_path = "D:\\testspace\\chiptest.db";
 
         let graph_data=match get_graphdata_from_db(&window,db_path,graphCondition){
             Ok(d)=>d,
@@ -169,9 +124,9 @@ fn regist_data(window:Window,file_path:String,type_name:String)->Result<(),Strin
     thread::spawn(move || {
         //let db_path = "D:\\testspace\\chiptest.db";
         let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
-        match read_textdata(&window,&file_path, db_path, &type_name){
+        match regist_txtdata_to_db(&window,&file_path, db_path, &type_name){
             Ok(v)=>{},
-            Err(e)=>report_complete(&window, "regist_data-complete", true, None, None)
+            Err(e)=>report_complete(&window, "regist_data-complete", false, None, None)
         }
 
         // 完了通知

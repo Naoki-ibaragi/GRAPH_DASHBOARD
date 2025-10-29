@@ -1,14 +1,16 @@
-/* グラフ描画時に呼ぶ関数 */
+/* グラフ描画用のデータを取得するクレート */
 use rusqlite::{Connection, Result,Statement};
 use std::error::Error;
-use tauri::{Emitter,Window};
-use serde::{Deserialize,Serialize};
+use tauri::{Window};
 use std::collections::HashMap;
 use chrono::NaiveDateTime;
 
-use crate::models::graph_model::{*};
-use crate::utils::events::{report_complete,report_progress};
+//独自クレートのimport
+use crate::models::graph_model::*;
+use crate::utils::events::report_progress;
 use crate::db::graph_sql::{create_alarm_sql,create_sql};
+use crate::plot::alarm_plot_data::*;
+use crate::plot::plot_data::*;
 
 //DBからデータを取得してHighChartで使用可能なデータに成形する
 pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCondition)->Result<HashMap<String,Vec<PlotData>>,Box<dyn Error>>{
@@ -21,13 +23,13 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
         Err(e)=>return Err(Box::new(e)),
     };
 
-    report_progress(&window, "connect to db ", 10, "DBと接続完了"); //フロントエンドに報告
+    report_progress(&window, "graph_data-progress", "connect to db",10, "DBと接続完了");
 
     //sql分を生成
     let sql=create_sql(&graph_condition);
     let mut stmt=db.prepare(&sql)?;
 
-    report_progress(&window, "get data from db ", 30, "DBからデータ取得中"); //フロントエンドに報告
+    report_progress(&window, "graph_data-progress", "get data from db",30, "DBからデータ取得中"); 
 
     // --- 件数を先に取得 ---
     let count_sql = format!(
@@ -35,11 +37,12 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
         sql
     );
     let total_count: i64 = db.query_row(&count_sql, [], |row| row.get(0))?;
-    report_progress(&window, "count records", 25, &format!("総件数: {} 件", total_count));
+    report_progress(&window, "graph_data-progress", "count records",35, &format!("総件数{}件",total_count)); 
 
     //ここにHighChartsで表示用のデータを全て入れる
     let mut data_map:HashMap<String,Vec<PlotData>>=HashMap::new();
 
+    //グラフ種類ごとにデータを格納
     match graph_condition.plot_unit.as_str() {
         "None" => match graph_condition.graph_type.as_str() {
             "ScatterPlot" => plot_scatterplot_without_unit(window, total_count, &mut data_map, &mut stmt)?,
@@ -54,12 +57,12 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
 
     //アラームのプロットを重ねる場合の処理を入れる
     if !graph_condition.alarm.codes.is_empty(){
-        report_progress(&window, "start get alarm plot data", 70, &format!("アラームデータの取得開始"));
+        report_progress(&window, "graph_data-progress", "start get alarm plot data",70, "アラームデータの取得開始"); 
 
         //sql分を生成
         let sql=create_alarm_sql(&graph_condition);
         let mut stmt=db.prepare(&sql)?;
-        report_progress(&window, "get data from db ", 75, "DBからデータ取得中"); //フロントエンドに報告
+        report_progress(&window,"graph_data-progress","get data from db ", 75, "DBからデータ取得中");
 
         // --- 件数を先に取得 ---
         let count_sql = format!(
@@ -67,7 +70,7 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
             sql
         );
         let total_count: i64 = db.query_row(&count_sql, [], |row| row.get(0))?;
-        report_progress(&window, "count records", 78, &format!("総件数: {} 件", total_count));
+        report_progress(&window, "graph_data-progress","count records", 78, &format!("総件数: {} 件", total_count));
 
         //アラーム分のデータをdata_mapに追加する
         match graph_condition.plot_unit.as_str() {
@@ -82,7 +85,7 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
 
     }
 
-    report_progress(&window, "completed", 90, "グラフの描画を実施"); //フロントエンドに報告
+    report_progress(&window, "graph_data-progress", "write graph",90, "グラフの描画を実施");
 
     //SQL文を定義
     Ok(data_map)
