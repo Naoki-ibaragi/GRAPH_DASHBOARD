@@ -2,7 +2,6 @@ use tauri::{command,Window};
 use std::thread;
 use serde_json;
 
-
 // 独自クレートの定義
 mod commands;
 mod db;
@@ -11,7 +10,7 @@ mod models;
 mod utils;
 
 // 独自モジュールの定義
-use crate::models::graph_model::GraphCondition;
+use crate::models::graph_model::{GraphCondition,SubData,DensityPlotGridData};
 use crate::commands::graph::get_graphdata_from_db;
 use crate::commands::regist::regist_txtdata_to_db;
 use crate::commands::lotdata::get_lotdata;
@@ -96,7 +95,7 @@ async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(
         let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
         //let db_path = "D:\\testspace\\chiptest.db";
 
-        let graph_data=match get_graphdata_from_db(&window,db_path,graphCondition){
+        let (graph_data,sub_data)=match get_graphdata_from_db(&window,db_path,graphCondition){
             Ok(d)=>d,
             Err(e)=>{
                 report_complete(&window, "graph_data-complete", false, None, Some(format!("Failed to get graph data:{}",e))); //エラーをフロントエンドに返す
@@ -104,9 +103,24 @@ async fn get_graphdata(window:Window,graphCondition: GraphCondition) -> Result<(
             }
         };
 
+        let mut grid_len_x:f64;
+        let mut grid_len_y:f64;
+        match sub_data{
+            SubData::DensityPlot(data)=>{
+                grid_len_x=data.grid_x;
+                grid_len_y=data.grid_y;
+            },
+            _=>{
+                grid_len_x=1.0 as f64;
+                grid_len_y=1.0 as f64;
+            }
+        }
+
         //serde_json::value形式に変換
         let response = serde_json::json!({
-            "graph_data":graph_data
+            "graph_data":graph_data,
+            "grid_len_x":grid_len_x,
+            "grid_len_y":grid_len_y,
         });
 
         // 完了通知

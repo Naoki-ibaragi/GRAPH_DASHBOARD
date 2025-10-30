@@ -77,6 +77,8 @@ export default function ChartCard1() {
       graph_x_item:xdimItem,
       graph_y_item:ydimItem,
       bin_number:binNumber, //ヒストグラムでのみ使用
+      bins_x:binsX, //密度プロットで使用
+      bins_y:binsY, //密度プロットで使用
       alarm:{unit:alarmUnit,codes:alarmNumbers},
       start_date:startDate.format("YYYY-MM-DD 00:00:00"),
       end_date:endDate.format("YYYY-MM-DD 00:00:00"),
@@ -100,26 +102,67 @@ export default function ChartCard1() {
     // 完了イベントのリスナーを設定
     const unlistenComplete = await listen('graph_data-complete', (event) => {
       const payload = event.payload;
+
       if (payload.success) {
         const newData=payload.data.graph_data;
         console.log('処理成功:', newData);
         let series = [];
-        Object.keys(newData).forEach((key) => {
-            const series_unit = key.includes("alarm") ? 
-            {
-              name: key,
-              data: newData[key].map((p) => [p.x, p.y]),
-              zIndex:100,
-              color:"#FF0000"
-            }
-            :
-            {
-              name: key,
-              data: newData[key].map((p) => [p.x, p.y]),
-            };
+        let grid_len_x=payload.data.grid_len_x; //ヒートマップを書く際の1分割当たりのX方向長さ
+        let grid_len_y=payload.data.grid_len_y; //ヒートマップを書く際の1分割当たりのY方向長さ
 
-          series.push(series_unit);
-        });
+        if (graphType==="ScatterPlot" || graphType==="LinePlot"){
+          Object.keys(newData).forEach((key) => {
+              const series_unit = key.includes("alarm") ? 
+              {
+                name: key,
+                data: newData[key].map((p) => [p.x, p.y]),
+                zIndex:100,
+                color:"#FF0000"
+              }
+              :
+              {
+                name: key,
+                data: newData[key].map((p) => [p.x, p.y]),
+              };
+
+            series.push(series_unit);
+          });
+        }else if(graphType==="Histogram"){
+          Object.keys(newData).forEach((key) => {
+              const series_unit = key.includes("alarm") ? 
+              {
+                name: key,
+                data: newData[key].map((p) => p.x),
+                type:"histogram",
+                zIndex:100,
+                color:"#FF0000"
+              }
+              :
+              {
+                name: key,
+                type:"histogram",
+                data: newData[key].map((p) => p.x),
+              };
+            series.push(series_unit);
+          });
+        }else if(graphType==="DensityPlot"){
+          Object.keys(newData).forEach((key) => {
+              const series_unit = key.includes("alarm") ? 
+              {
+                name: key,
+                data: newData[key].map((p) => [p.x,p.y,p.z]),
+                zIndex:100,
+                color:"#FF0000"
+              }
+              :
+              {
+                name: key,
+                data: newData[key].map((p) => [p.x,p.y,p.z]),
+              };
+            series.push(series_unit);
+          });
+        }
+
         console.log(series);
 
         let option_graph_type="";
@@ -132,6 +175,9 @@ export default function ChartCard1() {
             break;
           case "Histogram": 
             option_graph_type='histogram';
+            break;
+          case "DensityPlot": 
+            option_graph_type='heatmap';
             break;
         };
 

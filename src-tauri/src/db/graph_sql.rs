@@ -5,7 +5,7 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
     let mut sql = String::from("SELECT ");
 
     // X, Yデータ取得
-    if graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot" {
+    if graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot" || graph_condition.graph_type=="DensityPlot"{
         //プロット単位をまとめるかどうかで決める
         if graph_condition.plot_unit=="None" {
             sql += &format!(
@@ -25,6 +25,25 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
                 graph_condition.end_date
             );
         }
+    }else if graph_condition.graph_type=="Histogram"{
+        //プロット単位をまとめるかどうかで決める
+        if graph_condition.plot_unit=="None" {
+            sql += &format!(
+                "{} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.graph_x_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }else{
+            sql += &format!(
+                "{}, {} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.plot_unit,
+                graph_condition.graph_x_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }
+
     }
 
     // フィルター情報追加
@@ -52,8 +71,8 @@ pub fn create_sql(graph_condition: &GraphCondition) -> String {
 pub fn create_alarm_sql(graph_condition: &GraphCondition) -> String {
     let mut sql = String::from("SELECT ");
 
-    // X, Yデータ取得
-    if (graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot") {
+    // プロットデータ取得用のSQLを定義
+    if graph_condition.graph_type == "LinePlot" || graph_condition.graph_type=="ScatterPlot" || graph_condition.graph_type=="DensityPlot" {
         //プロット単位をまとめるかどうかで決める
         if graph_condition.plot_unit=="None" {
             sql += &format!(
@@ -73,6 +92,25 @@ pub fn create_alarm_sql(graph_condition: &GraphCondition) -> String {
                 graph_condition.end_date
             );
         }
+    }else if graph_condition.graph_type=="Histogram"{
+        //プロット単位をまとめるかどうかで決める
+        if graph_condition.plot_unit=="None" {
+            sql += &format!(
+                "{} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.graph_x_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }else{
+            sql += &format!(
+                "{}, {} FROM chipdata WHERE LD_TRAY_TIME > '{}' AND LD_TRAY_TIME < '{}'",
+                graph_condition.plot_unit,
+                graph_condition.graph_x_item,
+                graph_condition.start_date,
+                graph_condition.end_date
+            );
+        }
+
     }
 
     //アラームフィルター追加

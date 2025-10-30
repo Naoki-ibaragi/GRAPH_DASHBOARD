@@ -69,13 +69,15 @@ pub fn plot_scatterplot_with_unit_only_alarm_data(window:&Window,total_count:i64
             let rows=data_map.get_mut(&record.unit).unwrap();
             rows.push(match record.data{
                 PlotData::Number(num_data)=>PlotData::Number(NumberData::new(num_data.x,num_data.y)),
-                PlotData::Calendar(calender_data)=>PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y))
+                PlotData::Calendar(calender_data)=>PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y)),
+                _=>return Err(Box::from(format!("不明なPlotData型が検出されました")))
             });
         }else{
             data_map.entry(key_name).or_insert(
         match record.data{
                     PlotData::Number(num_data)=>vec![PlotData::Number(NumberData::new(num_data.x,num_data.y))],
                     PlotData::Calendar(calender_data)=>vec![PlotData::Calendar(CalenderData::new(calender_data.x,calender_data.y))],
+                    _=>return Err(Box::from(format!("不明なPlotData型が検出されました")))
                 }
             );
         }

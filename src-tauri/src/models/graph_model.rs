@@ -8,9 +8,9 @@ pub struct GraphCondition{ //グラフ描画に必要な情報を全て入れる
     pub graph_y_item:String,        //y軸の項目
     pub start_date:String,          //データ取得開始日
     pub end_date:String,            //データ取得終了日
-    pub bin_number:String,          //ヒストグラムのX軸の分割数
-    pub bins_x:String,              //密度プロットのX軸の分割数
-    pub binx_y:String,              //密度プロットのY軸軸分割数
+    pub bin_number:u32,          //ヒストグラムのX軸の分割数
+    pub bins_x:u32,              //密度プロットのX軸の分割数
+    pub bins_y:u32,              //密度プロットのY軸軸分割数
     pub plot_unit:String,           //plotの分割設定
     pub alarm:AlarmInfo,            //alarm関係の情報
     pub filters:Vec<Filter>,        //filter一覧
@@ -58,12 +58,41 @@ impl CalenderData{
     }
 }
 
+//ヒストグラムで使用する1Dデータ
+#[derive(Debug,Serialize)]
+pub struct NumberData_1D{
+    pub x:i32,
+}
+
+impl NumberData_1D{
+    pub fn new(x:i32)->Self{
+        NumberData_1D{x:x}
+    }
+}
+
+//で使プロットｔする3Dデータ
+#[derive(Debug,Serialize)]
+pub struct HeatmapData{
+    pub x:u32,
+    pub y:u32,
+    pub z:u32,
+}
+
+impl HeatmapData{
+    pub fn new(x:u32,y:u32,z:u32)->Self{
+        HeatmapData{x:x,y:y,z:z}
+    }
+}
+
+
 //各プロット型をまとめた列挙型
 #[derive(Debug,Serialize)]
 #[serde(untagged)] // JSON出力時に型名を省略
 pub enum PlotData {
     Number(NumberData),
     Calendar(CalenderData),
+    Number1D(NumberData_1D),
+    Heatmap(HeatmapData)
 }
 
 //plot分割する場合のunit付データ
@@ -76,5 +105,23 @@ pub struct TmpData{
 impl TmpData{
     pub fn new(unit:String,data:PlotData)->Self{
         TmpData{unit:unit,data}
+    }
+}
+
+//グラフデータ以外にフロントエンドに返すデータをまとめる
+pub enum SubData{
+    DensityPlot(DensityPlotGridData),
+    None
+}
+
+//密度プロットを書くときにフロントに返す
+pub struct DensityPlotGridData{
+    pub grid_x:f64,
+    pub grid_y:f64,
+}
+
+impl DensityPlotGridData{
+    pub fn new(x:f64,y:f64)->Self{
+        DensityPlotGridData{grid_x:x,grid_y:y}
     }
 }
