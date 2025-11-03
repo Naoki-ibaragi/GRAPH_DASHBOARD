@@ -7,9 +7,9 @@ import { scatter_plot_x_axis_items,scatter_plot_y_axis_items } from "../Variable
 import { histogram_axis_items } from "../Variables/HistogramData";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import Highcharts, { seriesType } from 'highcharts';
-import HighchartsReact from "highcharts-react-official";
-import 'highcharts/modules/boost';
+
+//各グラフ種類毎のコンポーネントをimport
+import GraphManager from "../graphComponents/GraphManager";
 
 export default function ChartCard1() {
   const [graphType, setGraphType] = useState("ScatterPlot"); //グラフの種類
@@ -32,7 +32,7 @@ export default function ChartCard1() {
   const [isGraph,setIsGraph]=useState(false); //グラフが描画されているか
   const [isProcess,setIsProcess]=useState(false); //バックエンドで処理中かどうか
   const [processState,setProcessState]=useState(""); //バックエンドの処理状況
-  const [options,setOptions]=useState({});
+  const [resultData,setResultData]=useState(null); //バックエンドの処理結果
 
   //validation
   const [graphTypeError,setGraphTypeError]=useState(false);
@@ -41,10 +41,6 @@ export default function ChartCard1() {
   const [alarmUnitError,setAlarmUnitError]=useState(false);
   const [filterItemError,setFilterItemError]=useState([false]);
 
-  //構造体の値からキーを逆算する関数
-  const getKeyByValue = (obj, value) => {
-    return Object.keys(obj).find((key) => obj[key] === value);
-  };
 
   //グラフ種種によって軸の項目を変える
   useEffect(()=>{
@@ -88,8 +84,7 @@ export default function ChartCard1() {
     };
     
     setGraphCondition(newGraphCondition); //状態を更新
-    console.log(newGraphCondition);
-    setIsProcess(true);
+    setIsProcess(true); //処理開始
     setProcessState("バックエンドへの通信を開始");
 
     //進捗のイベントリスナーを設定
@@ -104,128 +99,11 @@ export default function ChartCard1() {
       const payload = event.payload;
 
       if (payload.success) {
-        const newData=payload.data.graph_data;
-        console.log('処理成功:', newData);
-        let series = [];
-        let grid_len_x=payload.data.grid_len_x; //ヒートマップを書く際の1分割当たりのX方向長さ
-        let grid_len_y=payload.data.grid_len_y; //ヒートマップを書く際の1分割当たりのY方向長さ
-
-        if (graphType==="ScatterPlot" || graphType==="LinePlot"){
-          Object.keys(newData).forEach((key) => {
-              const series_unit = key.includes("alarm") ? 
-              {
-                name: key,
-                data: newData[key].map((p) => [p.x, p.y]),
-                zIndex:100,
-                color:"#FF0000"
-              }
-              :
-              {
-                name: key,
-                data: newData[key].map((p) => [p.x, p.y]),
-              };
-
-            series.push(series_unit);
-          });
-        }else if(graphType==="Histogram"){
-          Object.keys(newData).forEach((key) => {
-              const series_unit = key.includes("alarm") ? 
-              {
-                name: key,
-                data: newData[key].map((p) => p.x),
-                type:"histogram",
-                zIndex:100,
-                color:"#FF0000"
-              }
-              :
-              {
-                name: key,
-                type:"histogram",
-                data: newData[key].map((p) => p.x),
-              };
-            series.push(series_unit);
-          });
-        }else if(graphType==="DensityPlot"){
-          Object.keys(newData).forEach((key) => {
-              const series_unit = key.includes("alarm") ? 
-              {
-                name: key,
-                data: newData[key].map((p) => [p.x,p.y,p.z]),
-                zIndex:100,
-                color:"#FF0000"
-              }
-              :
-              {
-                name: key,
-                data: newData[key].map((p) => [p.x,p.y,p.z]),
-              };
-            series.push(series_unit);
-          });
-        }
-
-        console.log(series);
-
-        let option_graph_type="";
-        switch(graphType){
-          case "ScatterPlot": 
-            option_graph_type='scatter';
-            break;
-          case "LinePlot": 
-            option_graph_type='line';
-            break;
-          case "Histogram": 
-            option_graph_type='histogram';
-            break;
-          case "DensityPlot": 
-            option_graph_type='heatmap';
-            break;
-        };
-
-        setOptions({
-          chart: {
-              type: option_graph_type,
-              animation: false, // アニメーション無効化で高速化
-              reflow: true
-          },
-          title:{
-            text:`${getKeyByValue(xDimItems,xdimItem)} / ${getKeyByValue(yDimItems,ydimItem)}`
-          },
-          xAxis:{
-            title:{
-              text:`${getKeyByValue(xDimItems,xdimItem)}`
-            }
-          },
-          yAxis:{
-            title:{
-              text:`${getKeyByValue(yDimItems,ydimItem)}`
-            }
-          },
-          boost:{
-            useGPUTranslations:true,
-            seriesThreshold:5000
-          },
-          tooltip:{
-            enaled:false
-          },
-           plotOptions: {
-            series: {
-              // ボーストモジュールの設定
-              turboThreshold: 1, // データ処理の簡略化を無効化
-              // WebGL描画時のパフォーマンス最適化
-              states: {
-                hover: {
-                  enabled: false // ホバーエフェクトを無効化（パフォーマンス向上）
-                }
-              },
-              dataLabels: {
-                enabled: false // データラベルを非表示（パフォーマンス向上）
-              }
-            }
-          },
-          series: series
-        });
-        setIsProcess(false); // ← ここで処理中フラグを解除
-        setIsGraph(true);
+        /*このタイミングでGraphsの内容をpayload.data.graph_dataを使用して更新*/
+        setResultData(payload.data);
+        
+        setIsProcess(false); 
+        setIsGraph(true); // ← ここでグラフを表示させる
       } else {
         console.error('処理失敗:', payload.error);
         setIsProcess(false); // ← ここで処理中フラグを解除
@@ -309,13 +187,9 @@ export default function ChartCard1() {
       </Card>
       :null
       }
-      {isGraph && options && (
-        <Card sx={{ mt: 3 }}>
-          <CardContent>
-            <HighchartsReact highcharts={Highcharts} options={options} />
-          </CardContent>
-        </Card>
-      )}
+      {
+        isGraph ? <GraphManager graphCondition={graphCondition} resultData={resultData}/> : null
+      }
     </Box>
   );
 }
