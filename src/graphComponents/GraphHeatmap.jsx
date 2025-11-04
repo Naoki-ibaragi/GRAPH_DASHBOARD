@@ -1,53 +1,59 @@
-import {Chart,Series,Title,XAxis,YAxis,Legend} from '@highcharts/react';
-import { Heatmap } from '@highcharts/react/series';
-import "highcharts/esm/modules/heatmap.src.js";
+import {Chart,Series,Title,XAxis,YAxis,Legend,setHighcharts} from '@highcharts/react';
+import Heatmap from '@highcharts/react/series/Heatmap';
+import Highcharts from 'highcharts/highcharts';
+import 'highcharts/modules/boost';
+import "highcharts/modules/heatmap.src.js";
+import { scatter_plot_x_axis_items,scatter_plot_y_axis_items} from "../Variables/ScatterPlotData";
+setHighcharts(Highcharts);
+
+//構造体の値からキーを逆算する関数
+const getKeyByValue = (obj, value) => {
+return Object.keys(obj).find((key) => obj[key] === value);
+};
 
 export default function GraphHeatmap(props) {
+    const result_data=props.resultData;
+    const graph_condition=props.graphCondition;
 
-  //構造体の値からキーを逆算する関数
-  const getKeyByValue = (obj, value) => {
-    return Object.keys(obj).find((key) => obj[key] === value);
-  };
+    const raw_data=result_data.graph_data; //{"data1":[{x:m,y:n,z:l},{x:p,y:q,z:r}...],"data2":[{x:m,y:n,z:l},{x:p,y:q,z:r}...],...}形式
+    const x_axis_item=graph_condition.graph_x_item;
+    const y_axis_item=graph_condition.graph_y_item;
+    console.log(raw_data);
 
-  return (
-        <Heatmap
+    return (
+        <Chart
             options={{
                 colorAxis: {
                     min: 1,
                     minColor: '#FFFFFF',
                     maxColor: '#0000FF',
-                    type: 'logarithmic'
+                },
+                boost:{
+                    useGPUTranslations: true,
+                    seriesThreshold: 1
                 },
             }}
+            containerProps={{style:{height:"620px"}}}
         >
-        <Title>data</Title>
-        <XAxis>x value</XAxis>
-        <YAxis>y value</YAxis>
-        <Legend
-            align='right'
-            layout='vertical'
-            margin={0}
-            verticalAlign='top'
-            y={28}
-            symbolHeight={280}
-        />
-        <Series 
-            type="heatmap"
-            name="data1234"
-            data={
-                [[0, 0, 10], [0, 1, 19], [0, 2, 8], [0, 3, 24], [0, 4, 67],
-                [1, 0, 92], [1, 1, 58], [1, 2, 78], [1, 3, 117], [1, 4, 48],
-                [2, 0, 35], [2, 1, 15], [2, 2, 123], [2, 3, 64], [2, 4, 52],
-                [3, 0, 72], [3, 1, 132], [3, 2, 114], [3, 3, 19], [3, 4, 16],
-                [4, 0, 38], [4, 1, 5], [4, 2, 8], [4, 3, 117], [4, 4, 1105],
-                [5, 0, 88], [5, 1, 32], [5, 2, 12], [5, 3, 6], [5, 4, 120],
-                [6, 0, 13], [6, 1, 44], [6, 2, 88], [6, 3, 98], [6, 4, 96],
-                [7, 0, 31], [7, 1, 1], [7, 2, 82], [7, 3, 32], [7, 4, 30],
-                [8, 0, 85], [8, 1, 97], [8, 2, 123], [8, 3, 64], [8, 4, 84],
-                [9, 0, 47], [9, 1, 114], [9, 2, 31], [9, 3, 48], [9, 4, 91]]
-            }
-        />
-        </Heatmap>
+            <Title>DensityPlot</Title>
+            <XAxis>{getKeyByValue(scatter_plot_x_axis_items,x_axis_item)}</XAxis>
+            <YAxis>{getKeyByValue(scatter_plot_y_axis_items,y_axis_item)}</YAxis>
+            <Legend
+                align='right'
+                layout='vertical'
+                itemMarginTop={10}
+                verticalAlign='top'
+                y={10}
+                symbolHeight={520}
+            />
+            {Object.keys(raw_data).map((key)=>(
+                <Series
+                    type="heatmap"
+                    name={key}
+                    data={raw_data[key].map((p)=>[p.x,p.y,p.z])}
+                />
+            ))}
+        </Chart>
   );
 }
 

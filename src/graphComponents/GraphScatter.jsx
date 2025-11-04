@@ -3,7 +3,13 @@ import {Chart,Series,Title,XAxis,YAxis,Legend,setHighcharts} from '@highcharts/r
 import { Scatter } from '@highcharts/react/series';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
+import { scatter_plot_x_axis_items,scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
 setHighcharts(Highcharts);
+
+//構造体の値からキーを逆算する関数
+const getKeyByValue = (obj, value) => {
+return Object.keys(obj).find((key) => obj[key] === value);
+};
 
 function GraphScatter(props) {
     const result_data=props.resultData;
@@ -20,8 +26,20 @@ function GraphScatter(props) {
                 useGPUTranslations: true,
                 seriesThreshold: 1
             }}
+            containerProps={{style:{height:"600px"}}}
         >
+            <Title>ScatterPlot</Title>
+            <XAxis>{getKeyByValue(scatter_plot_x_axis_items,x_axis_item)}</XAxis>
+            <YAxis>{getKeyByValue(scatter_plot_y_axis_items,y_axis_item)}</YAxis>
             {Object.keys(raw_data).map((key)=>(
+                key.includes("alarm") ?
+                <Series
+                    type="scatter"
+                    name={key}
+                    color="#FF0000"
+                    zIndex="100"
+                    data={raw_data[key].map((p)=>[p.x,p.y])}
+                />:
                 <Series
                     type="scatter"
                     name={key}

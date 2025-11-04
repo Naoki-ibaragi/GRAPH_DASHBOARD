@@ -72,9 +72,9 @@ export default function ChartCard1() {
       graph_type:graphType,
       graph_x_item:xdimItem,
       graph_y_item:ydimItem,
-      bin_number:binNumber, //ヒストグラムでのみ使用
-      bins_x:binsX, //密度プロットで使用
-      bins_y:binsY, //密度プロットで使用
+      bin_number:parseInt(binNumber), //ヒストグラムでのみ使用
+      bins_x:parseInt(binsX), //密度プロットで使用
+      bins_y:parseInt(binsY), //密度プロットで使用
       alarm:{unit:alarmUnit,codes:alarmNumbers},
       start_date:startDate.format("YYYY-MM-DD 00:00:00"),
       end_date:endDate.format("YYYY-MM-DD 00:00:00"),

@@ -5,7 +5,7 @@ import GraphScatter from "../graphComponents/GraphScatter";
 import GraphLine from "../graphComponents/GraphLine";
 import GraphHistogram from "../graphComponents/GraphHistogram";
 
-function GraphManager(props) {
+const GraphManager=React.memo((props)=>{
     const graph_condition=props.graphCondition;
     const resultData=props.resultData;
     const graph_type=graph_condition.graph_type;
@@ -16,18 +16,17 @@ function GraphManager(props) {
     if (graph_type==="ScatterPlot" && resultData){
         graphComponent=<GraphScatter resultData={resultData} graphCondition={graph_condition}></GraphScatter>
     }else if(graph_type==="LinePlot" && resultData){
-        graphComponent=<GraphLine resutlData={resultData} graphCondition={graph_condition}></GraphLine>
+        graphComponent=<GraphLine resultData={resultData} graphCondition={graph_condition}></GraphLine>
     }else if(graph_type==="Histogram" && resultData){
-        graphComponent=<GraphHistogram resutlData={resultData} graphCondition={graph_condition}></GraphHistogram>
+        graphComponent=<GraphHistogram resultData={resultData} graphCondition={graph_condition}></GraphHistogram>
     }else if(graph_type==="DensityPlot" && resultData){
-        graphComponent=<GraphHeatmap resutlData={resultData} graphCondition={graph_condition}></GraphHeatmap>
+        graphComponent=<GraphHeatmap resultData={resultData} graphCondition={graph_condition}></GraphHeatmap>
     }else{
         graphComponent=<></>
     }
 
     console.log("graphComponent",graphComponent);
     return graphComponent;
+});
 
-}
-
-export default GraphManager
+export default GraphManager;

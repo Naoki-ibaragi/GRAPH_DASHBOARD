@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use crate::models::graph_model::*;
 use crate::utils::events::{report_progress};
 
+/* scatter */
 //プロット分割しない散布図のアラーム部分だけのデータを取得
 pub fn plot_scatterplot_without_unit_only_alarm_data(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
     data_map.entry("alarm_data".to_string()).or_insert(vec![]);
@@ -96,5 +97,45 @@ pub fn plot_scatterplot_with_unit_only_alarm_data(window:&Window,total_count:i64
 
     Ok(())
 
+}
+
+
+/* histogram */
+//プロット分割しないヒストグラムのアラーム部分だけのデータを取得
+pub fn plot_histogram_without_unit_only_alarm_data(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement)->Result<(),Box<dyn Error>>{
+
+    //dataキーに値を入れる
+    data_map.entry("alarm_data".to_string()).or_insert(vec![]);
+
+    let query_rows: Vec<Vec<i32>> = stmt.query_map([], |row| {
+        let x_value: String = row.get(0)?;
+        Ok(x_value)
+    })?
+    .filter_map(|r| {
+        let x_val = r.ok()?;
+        let x = x_val.parse::<i32>().ok()?;
+        Some(vec![x])
+    })
+    .collect();
+
+    // 最初に全ての行をカウント（オプション：パフォーマンスが心配な場合は別途COUNT(*)で取得）
+    // 以下のコードでは処理しながら報告していく方式を使用
+    let rows= data_map.get_mut("alarm_data").unwrap();
+    for (index,record) in query_rows.into_iter().enumerate(){
+        rows.push(PlotData::Number1D(NumberData_1D::new(record[0])));
+
+        // 1000行ごとに進捗を報告
+        if (index+1) % 1000 == 0 {
+            report_progress(
+                &window,
+                "graph_data-progress",
+                "processing",
+                40,
+                &format!("{}/{} 処理完了", index+1,total_count)
+            );
+        }
+    }
+
+    Ok(())
 }
 

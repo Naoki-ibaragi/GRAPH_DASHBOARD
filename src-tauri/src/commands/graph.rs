@@ -83,6 +83,7 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
         match graph_condition.plot_unit.as_str() {
             "None" => match graph_condition.graph_type.as_str() { //ユニット毎にデータをまとめない
                 "ScatterPlot" => plot_scatterplot_without_unit_only_alarm_data(window, total_count, &mut data_map, &mut stmt)?,
+                "Histogram" => plot_histogram_without_unit_only_alarm_data(window, total_count, &mut data_map, &mut stmt)?,
                 _ => {},
             },
             _ => match graph_condition.graph_type.as_str() { //ユニット毎にデータをまとめる

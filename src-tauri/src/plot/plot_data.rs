@@ -200,7 +200,7 @@ pub fn plot_lineplot_with_unit(window:&Window,total_count:i64,data_map:&mut Hash
 
 }
 
-
+/* Heatmap(Histogram) */
 //プロット分割しないヒストグラムータを取得
 pub fn plot_histogram_without_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement,graph_condition:&GraphCondition)->Result<(),Box<dyn Error>>{
     //dataキーに値を入れる
@@ -238,6 +238,7 @@ pub fn plot_histogram_without_unit(window:&Window,total_count:i64,data_map:&mut 
     Ok(())
 }
 
+/* Heatmap(DensityPlot) */
 //プロット分割しない密密プロットのデータを取得
 pub fn plot_densityplot_without_unit(window:&Window,total_count:i64,data_map:&mut HashMap<String,Vec<PlotData>>,stmt:&mut Statement,graph_condition:&GraphCondition)->Result<(f64,f64),Box<dyn Error>>{
     data_map.entry("data".to_string()).or_insert(vec![]);
