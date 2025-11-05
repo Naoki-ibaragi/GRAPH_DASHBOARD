@@ -28,21 +28,21 @@ function GraphLine(props) {
             containerProps={{style:{height:"600px"}}}
         >
             <Title>LinePlot</Title>
-            <XAxis>{getKeyByValue(line_plot_x_axis_items,x_axis_item)}</XAxis>
+            <XAxis type='datetime'>{getKeyByValue(line_plot_x_axis_items,x_axis_item)}</XAxis>
             <YAxis>{getKeyByValue(line_plot_y_axis_items,y_axis_item)}</YAxis>
             {Object.keys(raw_data).map((key)=>(
                 key.includes("alarm") ?
                 <Series
-                    type="line"
+                    type="scatter"
                     name={key}
                     color="#FF0000"
                     zIndex="100"
-                    data={raw_data[key].map((p)=>[p.x,p.y])}
+                    data={raw_data[key].map((p)=>[new Date(p.x).getTime(),p.y])}
                 />:
                 <Series
-                    type="line"
+                    type="scatter"
                     name={key}
-                    data={raw_data[key].map((p)=>[p.x,p.y])}
+                    data={raw_data[key].map((p)=>[new Date(p.x).getTime(),p.y])}
                 />
             ))}
         </Chart>

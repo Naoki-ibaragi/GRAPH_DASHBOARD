@@ -58,12 +58,13 @@ async fn download_alarm(window:Window, machine_name: String) -> Result<(), Strin
 
     thread::spawn(move || {
         let json_path = "D:\\testspace\\alarm.json";
-        let db_path = "D:\\testspace\\chiptest.db";
+        //let db_path = "D:\\testspace\\chiptest.db";
+        let db_path = "C:\\workspace\\ULD_analysis\\chiptest.db";
 
         //フロントエンドに状況報告
         report_progress(&window, "alarm-progress", "db_loading", 0, "処理開始");
 
-        let (return_hashmap,alarm_data) = match get_alarmdata(db_path, &machine_name, db_path) {
+        let (return_hashmap,alarm_data) = match get_alarmdata(db_path, &machine_name, json_path) {
             Ok(data) => {
                 report_progress(&window, "alarm-progress", "complete getting data", 90, "データ取得完了");
                 data

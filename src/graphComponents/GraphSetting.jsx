@@ -205,7 +205,7 @@ export default function GraphSetting(props) {
                 </Box>
                 {/* アラーム番号設定 */}
                 {/* 散布図と2Dヒートマップが設定されているときだけ表示するようにする */}
-                {graphType === "ScatterPlot" || graphType==="Histogram" ? (
+                {graphType === "ScatterPlot" || graphType==="LinePlot" || graphType==="Histogram" ? (
                     <Box mb={1}>
                     <Stack direction="row" alignItems="center" flexWrap="wrap">
                         <Typography sx={{ mr: 1 }} variant="subtitle2" gutterBottom>
