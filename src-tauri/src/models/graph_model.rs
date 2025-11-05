@@ -108,6 +108,19 @@ impl TmpData{
     }
 }
 
+//plot分割する場合のunit付データ（1次元版）
+#[derive(Debug,Serialize)]
+pub struct TmpData_1D{
+    pub unit:String,
+    pub data:PlotData,
+}
+
+impl TmpData_1D{
+    pub fn new(unit:String,data:PlotData)->Self{
+        TmpData_1D{unit:unit,data}
+    }
+}
+
 //グラフデータ以外にフロントエンドに返すデータをまとめる
 pub enum SubData{
     DensityPlot(DensityPlotGridData),

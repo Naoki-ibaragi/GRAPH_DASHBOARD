@@ -1,9 +1,8 @@
 /* グラフ描画用のデータを取得するクレート */
-use rusqlite::{Connection, Result,Statement};
+use rusqlite::{Connection, Result};
 use std::error::Error;
 use tauri::{Window};
 use std::collections::HashMap;
-use chrono::NaiveDateTime;
 
 //独自クレートのimport
 use crate::models::graph_model::*;
@@ -51,14 +50,23 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
             "Histogram" => plot_histogram_without_unit(window, total_count, &mut data_map, &mut stmt, &graph_condition)?,
             "DensityPlot" => {
                 let (grid_len_x,grid_len_y) = plot_densityplot_without_unit(window, total_count, &mut data_map, &mut stmt, &graph_condition)?;
-                grid_data.grid_x=grid_len_x; 
-                grid_data.grid_y=grid_len_y; 
+                grid_data.grid_x=grid_len_x;
+                grid_data.grid_y=grid_len_y;
             },
             _ => {},
         },
         _ => match graph_condition.graph_type.as_str() {
             "ScatterPlot" => plot_scatterplot_with_unit(window, total_count, &mut data_map, &mut stmt)?,
-            _ => {}, 
+            "LinePlot" => plot_lineplot_with_unit(window, total_count, &mut data_map, &mut stmt)?,
+            "Histogram" => plot_histogram_with_unit(window, total_count, &mut data_map, &mut stmt, &graph_condition)?,
+            "DensityPlot" => {
+                let _grid_info = plot_densityplot_with_unit(window, total_count, &mut data_map, &mut stmt, &graph_condition)?;
+                // DensityPlotのwith_unitの場合、grid情報はユニットごとに異なるため、grid_dataには代表値を設定
+                // フロントエンド側でユニットごとに適切に処理する必要がある
+                grid_data.grid_x=1.0;
+                grid_data.grid_y=1.0;
+            },
+            _ => {},
         },
     };
 
@@ -88,7 +96,10 @@ pub fn get_graphdata_from_db(window:&Window,db_path:&str,graph_condition:GraphCo
                 _ => {},
             },
             _ => match graph_condition.graph_type.as_str() { //ユニット毎にデータをまとめる
-                _ => {}, 
+                "ScatterPlot" => plot_scatterplot_with_unit_only_alarm_data(window, total_count, &mut data_map, &mut stmt)?,
+                "LinePlot" => plot_lineplot_with_unit_only_alarm_data(window, total_count, &mut data_map, &mut stmt,&graph_condition)?,
+                "Histogram" => plot_histogram_with_unit_only_alarm_data(window, total_count, &mut data_map, &mut stmt)?,
+                _ => {},
             },
         };
     }

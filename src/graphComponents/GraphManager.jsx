@@ -1,32 +1,31 @@
-/*適切なグラフコンポーネントを返す */
-import React from 'react'
-import GraphHeatmap from "../graphComponents/GraphHeatmap";
-import GraphScatter from "../graphComponents/GraphScatter";
-import GraphLine from "../graphComponents/GraphLine";
-import GraphHistogram from "../graphComponents/GraphHistogram";
+import React from 'react';
+import GraphHeatmap from '../graphComponents/GraphHeatmap';
+import GraphScatter from '../graphComponents/GraphScatter';
+import GraphLine from '../graphComponents/GraphLine';
+import GraphHistogram from '../graphComponents/GraphHistogram';
+import { GRAPH_TYPES } from '../constants/graphConfig';
 
-const GraphManager=React.memo((props)=>{
-    const graph_condition=props.graphCondition;
-    const resultData=props.resultData;
-    const graph_type=graph_condition.graph_type;
-    let graphComponent;
+const GraphManager = React.memo((props) => {
+    const graph_condition = props.graphCondition;
+    const resultData = props.resultData;
+    const graph_type = graph_condition.graph_type;
 
-    console.log("graph_type",graph_type);
-
-    if (graph_type==="ScatterPlot" && resultData){
-        graphComponent=<GraphScatter resultData={resultData} graphCondition={graph_condition}></GraphScatter>
-    }else if(graph_type==="LinePlot" && resultData){
-        graphComponent=<GraphLine resultData={resultData} graphCondition={graph_condition}></GraphLine>
-    }else if(graph_type==="Histogram" && resultData){
-        graphComponent=<GraphHistogram resultData={resultData} graphCondition={graph_condition}></GraphHistogram>
-    }else if(graph_type==="DensityPlot" && resultData){
-        graphComponent=<GraphHeatmap resultData={resultData} graphCondition={graph_condition}></GraphHeatmap>
-    }else{
-        graphComponent=<></>
+    if (!resultData) {
+        return null;
     }
 
-    console.log("graphComponent",graphComponent);
-    return graphComponent;
+    switch (graph_type) {
+        case GRAPH_TYPES.SCATTER:
+            return <GraphScatter resultData={resultData} graphCondition={graph_condition} />;
+        case GRAPH_TYPES.LINE:
+            return <GraphLine resultData={resultData} graphCondition={graph_condition} />;
+        case GRAPH_TYPES.HISTOGRAM:
+            return <GraphHistogram resultData={resultData} graphCondition={graph_condition} />;
+        case GRAPH_TYPES.DENSITY:
+            return <GraphHeatmap resultData={resultData} graphCondition={graph_condition} />;
+        default:
+            return null;
+    }
 });
 
 export default GraphManager;

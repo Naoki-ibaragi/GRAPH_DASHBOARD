@@ -1,17 +1,16 @@
-import { useState,useEffect } from "react";
+import { useState, useMemo } from "react";
 import Sidebar from "./components/Sidebar";
 import ChartCard1 from "./components/ChartCard1";
 import LotDataDownloads from "./components/LotDataDownloads";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import Header from "./components/Header";
 import RegistData from "./components/RegistData";
-import { Box } from "@mui/material";
-import { createTheme, ThemeProvider, Button } from "@mui/material";
+import { Box, createTheme, ThemeProvider } from "@mui/material";
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#00796b",   // メインカラー
+      main: "#00796b",
       contrastText: "#fff",
     },
     secondary: {
@@ -20,60 +19,59 @@ const theme = createTheme({
   },
 });
 
+// ページ設定の定義
+const PAGE_CONFIG = {
+  LotDataDownloads: {
+    title: "Lot Data Downloads",
+    component: LotDataDownloads,
+  },
+  AlarmDataDownloads: {
+    title: "Alarm Data Download",
+    component: AlarmDataDownloads,
+  },
+  dashboard1: {
+    title: "Dashboard1",
+    component: ChartCard1,
+  },
+  register: {
+    title: "Regist Data",
+    component: RegistData,
+  },
+};
+
 function App() {
   const [selectedPage, setSelectedPage] = useState("dashboard1");
   const [openSideBar, setOpenSideBar] = useState(false);
-  const [title,setTitle]=useState("dashboard1");
 
-  //const leftSpace=openSideBar ? 150 : 0;
-  const leftSpace=0;
-
-  useEffect(() => {
-    if (selectedPage === "LotDataDownloads") {
-      setTitle("Lot Data Downloads");
-    }else if(selectedPage==="AlarmDataDownloads"){
-      setTitle("Alarm Data Download");
-    } else if (selectedPage === "dashboard1") {
-      setTitle("Dashboard1");
-    } else if (selectedPage === "register") {
-      setTitle("Regist Data");
-    } else {
-      setTitle("Settings");
-    }
+  // 選択されたページの設定を取得
+  const currentPage = useMemo(() => {
+    return PAGE_CONFIG[selectedPage] || { title: "Settings", component: null };
   }, [selectedPage]);
 
+  const PageComponent = currentPage.component;
+
   return (
-    <div>
-      <ThemeProvider theme={theme}>
-        <Header openSideBar={openSideBar} setOpenSideBar={setOpenSideBar} title={title}></Header>
-        <Box 
-        sx={{
-          display:"flex",
-          paddingY:7
-        }}
-        >
-          {openSideBar ? <Sidebar onSelect={setSelectedPage} openSideBar={openSideBar} setOpenSideBar={setOpenSideBar}/>:<></>}
-          <main style={{ marginLeft: leftSpace, padding: "10px", flex: 1 }}>
-            {/* Downloads */}
-            <div hidden={selectedPage !== "LotDataDownloads"}>
-              <LotDataDownloads />
-            </div>
-            {/* Alarmデータのダウンロードページ */}
-            <div hidden={selectedPage !== "AlarmDataDownloads"}>
-              <AlarmDataDownloads />
-            </div>
-            {/* Dashboard */}
-            <div hidden={selectedPage !== "dashboard1"}>
-              <ChartCard1 />
-            </div>
-            {/* Settings */}
-            <div hidden={selectedPage !== "register"}>
-              <RegistData />
-            </div>
-          </main>
+    <ThemeProvider theme={theme}>
+      <Box>
+        <Header
+          openSideBar={openSideBar}
+          setOpenSideBar={setOpenSideBar}
+          title={currentPage.title}
+        />
+        <Box sx={{ display: "flex", paddingY: 7 }}>
+          {openSideBar && (
+            <Sidebar
+              onSelect={setSelectedPage}
+              openSideBar={openSideBar}
+              setOpenSideBar={setOpenSideBar}
+            />
+          )}
+          <Box component="main" sx={{ padding: "10px", flex: 1 }}>
+            {PageComponent && <PageComponent />}
+          </Box>
         </Box>
-      </ThemeProvider>
-    </div>
+      </Box>
+    </ThemeProvider>
   );
 }
 

@@ -90,7 +90,6 @@ export default function ChartCard1() {
     //進捗のイベントリスナーを設定
     const unlistenProgress= await listen('graph_data-progress',(event)=>{
       const payload=event.payload;
-      console.log(`進捗:${payload.progress}% - ${payload.message}`);
       setProcessState(`${payload.message}`)
     });
 
