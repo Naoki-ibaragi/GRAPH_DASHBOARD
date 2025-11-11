@@ -1,17 +1,22 @@
 import { useState,useEffect } from "react";
 import dayjs from "dayjs";
-import {Box,Button,Card,CardContent,Typography,LinearProgress} from "@mui/material";
+import {Box,Button,Card,CardContent,Typography,CircularProgress} from "@mui/material";
 import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_x_axis_items,line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items,scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { useGraphData } from "../contexts/GraphDataContext";
 
 //各グラフ種類毎のコンポーネントをimport
 import GraphManager from "../graphComponents/GraphManager";
 
 export default function ChartCard1() {
+  // グローバルステートから取得
+  const { resultData, setResultData, isGraph, setIsGraph, graphCondition, setGraphCondition } = useGraphData();
+
+  // ローカルステート
   const [graphType, setGraphType] = useState("ScatterPlot"); //グラフの種類
   const [xdimItem, setXdimItem] = useState(""); //x軸の項目
   const [ydimItem, setYdimItem] = useState(""); //y軸の項目
@@ -27,12 +32,9 @@ export default function ChartCard1() {
   const [binNumber,setBinNumber]=useState(50); //ヒストグラムで使用するビン数
   const [binsX,setBinsX]=useState(50); //密度プロットで使用するX軸の分割数
   const [binsY,setBinsY]=useState(50); //密度プロットで使用するX軸の分割数
-  const [graphCondition,setGraphCondition]=useState({}); //グラフの条件一覧
   const [filters,setFilters]=useState([{enable:false,item:"",value:"",comparison:"="}]); //フィルターの項目
-  const [isGraph,setIsGraph]=useState(false); //グラフが描画されているか
   const [isProcess,setIsProcess]=useState(false); //バックエンドで処理中かどうか
   const [processState,setProcessState]=useState(""); //バックエンドの処理状況
-  const [resultData,setResultData]=useState(null); //バックエンドの処理結果
 
   //validation
   const [graphTypeError,setGraphTypeError]=useState(false);
@@ -175,13 +177,27 @@ export default function ChartCard1() {
           getGraphDataFromBackend={getGraphDataFromBackend}
         />
       ):null}
-      {isProcess ? 
+      {isProcess ?
       <Card>
-          <CardContent>
-            <LinearProgress />
-            <Typography variant="caption" gutterBottom>
-              {`処理状況 - ${processState}`}
+        <CardContent>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 300,
+              gap: 2,
+            }}
+          >
+            <CircularProgress size={60} />
+            <Typography variant="h6" gutterBottom>
+              グラフデータを取得中...
             </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {processState}
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
       :null

@@ -50,17 +50,35 @@ pub fn get_alarmdata(db_path: &str, machine_name: &str, json_path:&str) -> Resul
 
     for chip in chip_iter {
         let chip = chip?;
-        let lot_name = chip.lot_name.clone();
+        let lot_name = match chip.lot_name.clone(){
+            Some(s)=>s.to_string(),
+            None=>String::from("")
+        };
+
+        let machine_name = match chip.machine_name.clone(){
+            Some(s)=>s.to_string(),
+            None=>String::from("")
+        };
+
+        let type_name = match chip.type_name.clone(){
+            Some(s)=>s.to_string(),
+            None=>String::from("")
+        };
+
+        let ld_tray_time = match chip.ld_tray_time.clone(){
+            Some(s)=>s.to_string(),
+            None=>String::from("")
+        };
 
         // HashMapにキーが無ければ新規作成
         let lot_entry = return_hashmap
             .entry(lot_name.clone())
             .or_insert_with(|| {
                 LotUnitData::new(
-                    &chip.machine_name,
-                    &chip.type_name,
-                    &chip.ld_tray_time.clone(),
-                    &chip.ld_tray_time.clone(),
+                    &machine_name,
+                    &type_name,
+                    &ld_tray_time,
+                    &ld_tray_time,
                     ld_alarmcode_vec.clone(),
                     dc1_alarmcode_vec.clone(),
                     ac1_alarmcode_vec.clone(),
@@ -72,64 +90,100 @@ pub fn get_alarmdata(db_path: &str, machine_name: &str, json_path:&str) -> Resul
             });
 
         // lot_start_time / lot_end_time を更新
-        lot_entry.check_date(&chip.ld_tray_time);
+        lot_entry.check_date(&ld_tray_time);
 
         // 例: 各アラームの非空文字列をカウントに追加（必要に応じて拡張）
-        if !chip.ld_alarm.is_empty() {
-            *lot_entry
-                .alarm_list
-                .ld_alarm
-                .entry(chip.ld_alarm.clone())
-                .or_insert(0) += 1;
+        match chip.ld_alarm{
+            Some(s)=>{
+                if !s.is_empty(){
+                    *lot_entry
+                    .alarm_list
+                    .ld_alarm
+                    .entry(s.clone())
+                    .or_insert(0) += 1;
+                }
+            },
+            None=>{}
         }
 
-        if !chip.dc1_alarm.is_empty() {
-            *lot_entry
-                .alarm_list
-                .dc1_alarm
-                .entry(chip.dc1_alarm.clone())
-                .or_insert(0) += 1;
+        match chip.dc1_alarm{
+            Some(s)=>{
+                if !s.is_empty(){
+                    *lot_entry
+                    .alarm_list
+                    .dc1_alarm
+                    .entry(s.clone())
+                    .or_insert(0) += 1;
+                }
+            },
+            None=>{}
         }
 
-        if !chip.ac1_alarm.is_empty() {
-            *lot_entry
-                .alarm_list
-                .ac1_alarm
-                .entry(chip.ac1_alarm.clone())
-                .or_insert(0) += 1;
+        match chip.ac1_alarm{
+            Some(s)=>{
+                if !s.is_empty(){
+                    *lot_entry
+                    .alarm_list
+                    .ac1_alarm
+                    .entry(s.clone())
+                    .or_insert(0) += 1;
+                }
+            },
+            None=>{}
         }
 
-        if !chip.ac2_alarm.is_empty() {
-            *lot_entry
-                .alarm_list
-                .ac2_alarm
-                .entry(chip.ac2_alarm.clone())
-                .or_insert(0) += 1;
+        match chip.ac2_alarm{
+            Some(s)=>{
+                if !s.is_empty(){
+                    *lot_entry
+                    .alarm_list
+                    .ac2_alarm
+                    .entry(s.clone())
+                    .or_insert(0) += 1;
+                }
+            },
+            None=>{}
         }
 
-        if !chip.dc2_alarm.is_empty() {
-            *lot_entry
-                .alarm_list
-                .dc2_alarm
-                .entry(chip.dc2_alarm.clone())
-                .or_insert(0) += 1;
+        match chip.dc2_alarm{
+            Some(s)=>{
+                if !s.is_empty(){
+                    *lot_entry
+                    .alarm_list
+                    .dc2_alarm
+                    .entry(s.clone())
+                    .or_insert(0) += 1;
+                }
+            },
+            None=>{}
         }
 
-        if !chip.ip_alarm.is_empty() {
-            *lot_entry
-                .alarm_list
-                .ip_alarm
-                .entry(chip.ip_alarm.clone())
-                .or_insert(0) += 1;
+        match chip.ip_alarm{
+            Some(s)=>{
+                if !s.is_empty(){
+                    *lot_entry
+                    .alarm_list
+                    .ip_alarm
+                    .entry(s.clone())
+                    .or_insert(0) += 1;
+                }
+            },
+            None=>{}
         }
 
-        if !chip.uld_alarm.is_empty() {
-            *lot_entry
-                .alarm_list
-                .uld_alarm
-                .entry(chip.uld_alarm.clone())
-                .or_insert(0) += 1;
+        match chip.uld_alarm{
+            Some(s)=>{
+                if !s.is_empty(){
+                    *lot_entry
+                    .alarm_list
+                    .uld_alarm
+                    .entry(s.clone())
+                    .or_insert(0) += 1;
+                }
+            },
+            None=>{}
         }
+
     }
 
     Ok((return_hashmap,alarm_detail))

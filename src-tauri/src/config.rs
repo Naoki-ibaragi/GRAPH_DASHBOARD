@@ -13,7 +13,7 @@ impl Config {
             .unwrap_or_else(|_| "C:\\workspace\\ULD_analysis\\chiptest.db".to_string());
 
         let alarm_json_path = env::var("ALARM_JSON_PATH")
-            .unwrap_or_else(|_| "D:\\testspace\\alarm.json".to_string());
+            .unwrap_or_else(|_| "./assets/alarm.json".to_string());
 
         Config {
             db_path,

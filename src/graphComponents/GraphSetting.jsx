@@ -16,7 +16,7 @@ import {
   FormControlLabel,
   FormHelperText,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -24,7 +24,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { filter_items } from "../Variables/FilterData";
 
-export default function GraphSetting(props) {
+function GraphSetting(props) {
     const graphType=props.graphType; //グラフの種類
     const setGraphType=props.setGraphType;
     const xdimItem=props.xdimItem; //x軸の項目
@@ -61,16 +61,16 @@ export default function GraphSetting(props) {
     const filterItemError=props.filterItemError; //フィルター項目のバリデーション
     const getGraphDataFromBackend=props.getGraphDataFromBackend; //グラフ描画ボタン押し下げ時の実行関数
 
-    //グラフの種類一覧
-    const graph_items = {
+    //グラフの種類一覧（メモ化）
+    const graph_items = useMemo(() => ({
         "散布図": "ScatterPlot",
         "折れ線グラフ": "LinePlot",
         "ヒストグラム": "Histogram",
         "密度プロット": "DensityPlot"
-    };
+    }), []);
 
-    //アラームをグラフに重ねる際に表示するユニット一覧
-    const unit_items={
+    //アラームをグラフに重ねる際に表示するユニット一覧（メモ化）
+    const unit_items = useMemo(() => ({
         "LD":"LD",
         "DC1":"DC1",
         "AC1":"AC1",
@@ -78,49 +78,50 @@ export default function GraphSetting(props) {
         "DC2":"DC2",
         "IP":"IP",
         "ULD":"ULD",
-    };
+    }), []);
 
-    //フィルターの比較詞
-    const operator_items = {
+    //フィルターの比較詞（メモ化）
+    const operator_items = useMemo(() => ({
         "に等しい": "=",
         "に等しくない": "<>",
         "より大きい": ">",
         "より小さい": "<",
-    };
+    }), []);
 
     //アラーム設定のテキストボックス書き換え時のハンドラ
-    const handleAlarmNumberChange=(val)=>{
+    const handleAlarmNumberChange = useCallback((val) => {
         setAlarmNumbers(val.split(","));
-    }
+    }, [setAlarmNumbers]);
 
     //フィルターのエントリー記入時にハンドラー
-    const handleFilterChange = (index, field, value) => {
-        const newFilters = [...filters];
-        newFilters[index] = { ...newFilters[index], [field]: value };
-        setFilters(newFilters);
-    };
-
-    //フィルターを追加する
-    const addFilter=()=>{
-        const newFilters = [...filters];
-        newFilters.push(
-        {
-            enable:true,
-            item: "",
-            value: "",
-            comparison: "=",
+    const handleFilterChange = useCallback((index, field, value) => {
+        setFilters(prevFilters => {
+            const newFilters = [...prevFilters];
+            newFilters[index] = { ...newFilters[index], [field]: value };
+            return newFilters;
         });
-        setFilters(newFilters);
-    };
+    }, [setFilters]);
 
     //フィルターを追加する
-    const deleteFilter=(index)=>{
-        const newFilters = [
-        ...filters.slice(0, index),
-        ...filters.slice(index + 1)
-        ];
-        setFilters(newFilters);
-    };
+    const addFilter = useCallback(() => {
+        setFilters(prevFilters => [
+            ...prevFilters,
+            {
+                enable: true,
+                item: "",
+                value: "",
+                comparison: "=",
+            }
+        ]);
+    }, [setFilters]);
+
+    //フィルターを削除する
+    const deleteFilter = useCallback((index) => {
+        setFilters(prevFilters => [
+            ...prevFilters.slice(0, index),
+            ...prevFilters.slice(index + 1)
+        ]);
+    }, [setFilters]);
 
     return (
         <Card sx={{my:0,p:0}}>
@@ -381,9 +382,9 @@ export default function GraphSetting(props) {
                         onChange={(e) =>setPlotUnit(e.target.value)}
                     >
                         <FormControlLabel value="None" control={<Radio />} label="分割なし" />
-                        <FormControlLabel value="Lot" control={<Radio />} label="ロット単位" />
-                        <FormControlLabel value="Machine" control={<Radio />} label="設備単位" />
-                        <FormControlLabel value="Type" control={<Radio />} label="機種名単位" />
+                        <FormControlLabel value="LOT_NAME" control={<Radio />} label="ロット単位" />
+                        <FormControlLabel value="MACHINE_NAME" control={<Radio />} label="設備単位" />
+                        <FormControlLabel value="TYPE_NAME" control={<Radio />} label="機種名単位" />
                     </RadioGroup>
                 </Grid>
             </Box>
@@ -440,4 +441,7 @@ export default function GraphSetting(props) {
         </Card>
     )
 }
+
+// メモ化されたエクスポート
+export default memo(GraphSetting);
 

@@ -3,17 +3,17 @@ use serde::Serialize;
 
 #[derive(Debug)]
 pub struct ChipRecord {
-    pub machine_name: String,
-    pub type_name: String,
-    pub lot_name: String,
-    pub ld_tray_time: String,
-    pub ld_alarm: String,
-    pub dc1_alarm: String,
-    pub ac1_alarm: String,
-    pub ac2_alarm: String,
-    pub dc2_alarm: String,
-    pub ip_alarm: String,
-    pub uld_alarm: String,
+    pub machine_name: Option<String>,
+    pub type_name: Option<String>,
+    pub lot_name: Option<String>,
+    pub ld_tray_time: Option<String>,
+    pub ld_alarm: Option<String>,
+    pub dc1_alarm: Option<String>,
+    pub ac1_alarm: Option<String>,
+    pub ac2_alarm: Option<String>,
+    pub dc2_alarm: Option<String>,
+    pub ip_alarm: Option<String>,
+    pub uld_alarm: Option<String>,
 }
 
 #[derive(Debug,Serialize)]

@@ -15,30 +15,32 @@ import AlarmTable from "../TableComponents/AlarmTable";
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
 import { BaseDirectory } from '@tauri-apps/plugin-fs';
+import { useAlarmData } from "../contexts/AlarmDataContext";
 
 export default function AlarmDataDownloads() {
+  // グローバルステートから取得
+  const { alarmCodes, setAlarmCodes, machineUnitData, setMachineUnitData } = useAlarmData();
+
+  // ローカルステート
   const [machineName, setMachieName] = useState(""); //バックエンドに送信する装置名
   const [validationError,setValidationError]=useState(false); //設備名入力時のエラーの有無
   const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
   const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
   const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
-  const [alarmCodes,setAlarmCodes]=useState(null); //バックエンドから受け取ったアラームコード一覧
-  const [lotUnitData,setLotUnitData]=useState(null); //バックエンドから受け取った設備単位のアラームデータ一覧
-  const [isTable,setIsTable]=useState(false); //データを受け取ってテーブルを表示するかどうか
+  const [isTable,setIsTable]=useState(true); //データを受け取ってテーブルを表示するかどうか
 
   //バックエンドからのアラームデータのダウンロードが完了するとテーブルを表示する
   useEffect(()=>{
-    if(lotUnitData==null || alarmCodes==null){
-      setIsTable(false);
-      return; 
+    if(machineUnitData==null || alarmCodes==null){
+      setIsTable(true);
+      return;
     }
-    setIsTable(true);
-  },[lotUnitData,alarmCodes]);
+  },[machineUnitData,alarmCodes]);
 
   // アラームダウンロードを実行する関数
   const downloadAlarm=async ()=> {
     setAlarmCodes(null);
-    setLotUnitData(null);
+    setMachineUnitData(null);
 
     //設備名のバリデーションを入れる
     if(!/^CLT_\d+$/.test(machineName)){
@@ -68,7 +70,7 @@ export default function AlarmDataDownloads() {
       if (payload.success) {
         console.log('処理成功:', payload.data);
         setAlarmCodes(payload.data.alarm_codes);
-        setLotUnitData(payload.data.lot_unit_alarm_data);
+        setMachineUnitData(payload.data.lot_unit_alarm_data);
         setDownloads(false);
       } else {
         console.error('処理失敗:', payload.error);
@@ -95,7 +97,7 @@ export default function AlarmDataDownloads() {
     // プラグイン不要のCSVエクスポート
   async function exportCSV() {
     const unit_list = ["ld", "dc1", "ac1", "ac2", "dc2", "ip", "uld"];
-    let header_list = ["装置名", "ロット名", "機種名", "ロット開始時刻", "ロット終了時刻"];
+    let header_list = ["machine_name", "lot_name", "type_name", "lotstart_time", "lotend_time"];
 
     // ヘッダー作成
     unit_list.forEach((unit) => {
@@ -108,22 +110,22 @@ export default function AlarmDataDownloads() {
     });
 
     // CSV本文作成
-    const rows = Object.keys(lotUnitData).map((key) => {
-      const d = lotUnitData[key];
+    const rows = Object.keys(machineUnitData).map((key) => {
+      const d = machineUnitData[key];
       const base = [
-        d.machine_name || "",
-        key || "",
-        d.type_name || "",
-        d.lot_start_time || "",
-        d.lot_end_time || "",
+        d.machine_name || "", //装置名
+        key || "", //ロット名
+        d.type_name || "", //機種名
+        d.lot_start_time || "", //ロット開始時刻
+        d.lot_end_time || "", //ロット終了時刻
       ];
-      
+
       // 各ユニットのアラームデータを追加
       unit_list.forEach((unit) => {
-        const unitAlarmData = d[`${unit}_alarm`];
+        const unitAlarmData = d.alarm_list?.[`${unit}_alarm`];
         // undefinedチェックを追加
-        if (unitAlarmData && Array.isArray(unitAlarmData)) {
-          unitAlarmData.forEach((alarm_num) => base.push(alarm_num));
+        if (unitAlarmData) {
+          Object.values(unitAlarmData).forEach((alarm_num) => base.push(alarm_num));
         } else {
           // データがない場合は、ヘッダー分の空文字を追加
           const alarm_code_list = alarmCodes[`${unit}_alarm`];
@@ -210,7 +212,7 @@ export default function AlarmDataDownloads() {
         ):null}
       </Box>
       {isTable ? <Button onClick={exportCSV}>テーブルをCSVに出力</Button>:null}
-      {isTable ? <AlarmTable alarmCodes={alarmCodes} lotUnitData={lotUnitData}></AlarmTable>:null}
+      {isTable ? <AlarmTable alarmCodes={alarmCodes} machineUnitData={machineUnitData}></AlarmTable>:null}
     </>
   );
 }

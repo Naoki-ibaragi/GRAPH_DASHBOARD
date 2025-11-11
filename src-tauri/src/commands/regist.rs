@@ -35,6 +35,19 @@ pub fn regist_txtdata_to_db(window:&Window,txt_path:&str,db_path:&str,type_name:
     let file=File::open(txt_path)?;
     let mut v:Vec<String>=txt_to_string_vec(file)?;
 
+    // 装置名を作成
+    let num_part = if let Some(file_name) = txt_path.split('\\').last() {
+        file_name
+            .strip_suffix(".txt")
+            .and_then(|s| s.split('_').last())
+            .unwrap_or("")
+    } else {
+        ""
+    };
+
+    let machine_name = format!("CLT_{}", num_part);
+    println!("{}", machine_name);
+
     //フロントエンドに状況報告
     report_progress(
         &window,
@@ -63,7 +76,7 @@ pub fn regist_txtdata_to_db(window:&Window,txt_path:&str,db_path:&str,type_name:
             "TIME"=>now_time=v[i+1].clone(), //現在時刻の更新
             "U1"=> //ld
             match v[i+1].as_str(){
-                "PH"=>add_lddata_to_db(&conn,"LD",type_name,now_time.as_str(),UnitData::LD(LDInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9]))),
+                "PH"=>add_lddata_to_db(&conn,machine_name.as_str(),type_name,now_time.as_str(),UnitData::LD(LDInfo::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5],&v[i+6],&v[i+7],&v[i+8],&v[i+9]))),
                 "A1"=>add_arm1data_to_db(&conn,"LD",type_name,now_time.as_str(),UnitData::Arm1(Arm1Info::new(&v[i+2],&v[i+3],&v[i+4],&v[i+5]))),
                 "AL"=>{
                     let alarm_code=v[i+2].clone();

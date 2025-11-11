@@ -375,7 +375,7 @@ pub fn add_tsdata_to_db(conn:&Connection,unit:&str,type_name:&str,time:&str,unit
 }
 
 //LDデータをDBに登録する
-pub fn add_lddata_to_db(conn:&Connection,unit:&str,type_name:&str,time:&str,unit_struct:UnitData){
+pub fn add_lddata_to_db(conn:&Connection,machine_name:&str,type_name:&str,time:&str,unit_struct:UnitData){
     // データ取り出し
     let mut pf = String::new();
     let mut lot_name = String::new();
@@ -405,8 +405,8 @@ pub fn add_lddata_to_db(conn:&Connection,unit:&str,type_name:&str,time:&str,unit
 
     // SQL文字列をformat!で構築
     let sql = format!(
-        "INSERT INTO chipdata (lot_name, serial, type_name, ld_tray_time, ld_tray_pf, ld_tray_pos,ld_tray_pocket_x,ld_tray_pocket_y,ld_tray_align_x,ld_tray_align_y)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+        "INSERT INTO chipdata (lot_name, serial, type_name, ld_tray_time, ld_tray_pf, ld_tray_pos,ld_tray_pocket_x,ld_tray_pocket_y,ld_tray_align_x,ld_tray_align_y,machine_name)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
         ON CONFLICT(lot_name, serial)
         DO UPDATE SET 
         {c1} = excluded.{c1}, 
@@ -416,7 +416,8 @@ pub fn add_lddata_to_db(conn:&Connection,unit:&str,type_name:&str,time:&str,unit
         {c5} = excluded.{c5},
         {c6} = excluded.{c6}, 
         {c7} = excluded.{c7}, 
-        {c8} = excluded.{c8};", 
+        {c8} = excluded.{c8}, 
+        {c9} = excluded.{c9};", 
          c1 = "type_name", 
          c2 = "ld_tray_time", 
          c3 = "ld_tray_pf",
@@ -425,9 +426,10 @@ pub fn add_lddata_to_db(conn:&Connection,unit:&str,type_name:&str,time:&str,unit
          c6 = "ld_tray_pocket_y",
          c7 = "ld_tray_align_x",
          c8 = "ld_tray_align_y",
+         c9 = "machine_name",
     );
 
-    match conn.execute(&sql, params![lot_name, serial, type_name, time, pf, tray_arm,pocket_x,pocket_y,pocket_align_x,pocket_align_y]) {
+    match conn.execute(&sql, params![lot_name, serial, type_name, time, pf, tray_arm,pocket_x,pocket_y,pocket_align_x,pocket_align_y,machine_name]) {
         Err(e) => println!("SQL Error: {}", e),
         Ok(_) => {},
     }

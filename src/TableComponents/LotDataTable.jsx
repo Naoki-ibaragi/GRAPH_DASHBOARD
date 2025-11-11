@@ -1,6 +1,3 @@
-
-
-
 import { useRef, useState, useEffect } from "react";
 
 function LotDataTable({ columnHeader, lotUnitData }) {

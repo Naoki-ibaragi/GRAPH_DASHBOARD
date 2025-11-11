@@ -6,6 +6,8 @@ import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import Header from "./components/Header";
 import RegistData from "./components/RegistData";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
+import { AlarmDataProvider } from "./contexts/AlarmDataContext";
+import { GraphDataProvider } from "./contexts/GraphDataContext";
 
 const theme = createTheme({
   palette: {
@@ -52,25 +54,29 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box>
-        <Header
-          openSideBar={openSideBar}
-          setOpenSideBar={setOpenSideBar}
-          title={currentPage.title}
-        />
-        <Box sx={{ display: "flex", paddingY: 7 }}>
-          {openSideBar && (
-            <Sidebar
-              onSelect={setSelectedPage}
+      <AlarmDataProvider>
+        <GraphDataProvider>
+          <Box>
+            <Header
               openSideBar={openSideBar}
               setOpenSideBar={setOpenSideBar}
+              title={currentPage.title}
             />
-          )}
-          <Box component="main" sx={{ padding: "10px", flex: 1 }}>
-            {PageComponent && <PageComponent />}
+            <Box sx={{ display: "flex", paddingY: 7 }}>
+              {openSideBar && (
+                <Sidebar
+                  onSelect={setSelectedPage}
+                  openSideBar={openSideBar}
+                  setOpenSideBar={setOpenSideBar}
+                />
+              )}
+              <Box component="main" sx={{ padding: "10px", flex: 1 }}>
+                {PageComponent && <PageComponent />}
+              </Box>
+            </Box>
           </Box>
-        </Box>
-      </Box>
+        </GraphDataProvider>
+      </AlarmDataProvider>
     </ThemeProvider>
   );
 }
