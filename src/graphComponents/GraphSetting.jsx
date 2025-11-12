@@ -23,6 +23,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { filter_items } from "../Variables/FilterData";
+import {PLOT_UNIT_LABELS} from "../constants/graphConfig";
 
 function GraphSetting(props) {
     const graphType=props.graphType; //グラフの種類
@@ -53,12 +54,7 @@ function GraphSetting(props) {
     const setEndDate=props.setEndDate;
     const xDimItems=props.xDimItems; //x軸の項目(グラフ種類で変更)
     const yDimItems=props.yDimItems; //y軸の項目(グラフ種類で変更)
-    const setGraphCondition=props.setGraphCondition; //グラフの項目を入れる->ChartCard側で描画
     const graphTypeError=props.graphTypeError; //グラフタイプのバリデーション
-    const xDimItemError=props.xDimItemError; //x軸の項目のバリデーション
-    const yDimItemError=props.xDimItemError; //y軸の項目のバリデーション
-    const alarmUnitError=props.alarmUnitError; //アラーム項目のバリデーション
-    const filterItemError=props.filterItemError; //フィルター項目のバリデーション
     const getGraphDataFromBackend=props.getGraphDataFromBackend; //グラフ描画ボタン押し下げ時の実行関数
 
     //グラフの種類一覧（メモ化）
@@ -381,10 +377,11 @@ function GraphSetting(props) {
                         name="row-radio-buttons-group"
                         onChange={(e) =>setPlotUnit(e.target.value)}
                     >
-                        <FormControlLabel value="None" control={<Radio />} label="分割なし" />
-                        <FormControlLabel value="LOT_NAME" control={<Radio />} label="ロット単位" />
-                        <FormControlLabel value="MACHINE_NAME" control={<Radio />} label="設備単位" />
-                        <FormControlLabel value="TYPE_NAME" control={<Radio />} label="機種名単位" />
+                        {
+                            Object.keys(PLOT_UNIT_LABELS).map((key)=>(
+                                <FormControlLabel key={key} value={PLOT_UNIT_LABELS[key]} control={<Radio />} label={key} />
+                            ))
+                        }
                     </RadioGroup>
                 </Grid>
             </Box>

@@ -7,7 +7,7 @@ import {
   Card,
   CardContent,
   Stack,
-  LinearProgress,
+  CircularProgress
 } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -27,15 +27,7 @@ export default function AlarmDataDownloads() {
   const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
   const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
   const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
-  const [isTable,setIsTable]=useState(true); //データを受け取ってテーブルを表示するかどうか
-
-  //バックエンドからのアラームデータのダウンロードが完了するとテーブルを表示する
-  useEffect(()=>{
-    if(machineUnitData==null || alarmCodes==null){
-      setIsTable(true);
-      return;
-    }
-  },[machineUnitData,alarmCodes]);
+  const [isTable,setIsTable]=useState(false); //データを受け取ってテーブルを表示するかどうか
 
   // アラームダウンロードを実行する関数
   const downloadAlarm=async ()=> {
@@ -69,6 +61,7 @@ export default function AlarmDataDownloads() {
       
       if (payload.success) {
         console.log('処理成功:', payload.data);
+        setIsTable(true);
         setAlarmCodes(payload.data.alarm_codes);
         setMachineUnitData(payload.data.lot_unit_alarm_data);
         setDownloads(false);
@@ -197,20 +190,33 @@ export default function AlarmDataDownloads() {
             </Stack>
           </CardContent>
         </Card>
-
-        {/* ダウンロード中リスト */}
-        {downloads||isError ? (
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                {`処理状況 ${downloadsState}`}
-              </Typography>
-              <Stack spacing={2}>
-              </Stack>
-          </CardContent>
-        </Card>
-        ):null}
       </Box>
+      {/* ダウンロード中リスト */}
+      {downloads||isError ?
+      <Card>
+        <CardContent>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 300,
+              gap: 2,
+            }}
+          >
+            <CircularProgress size={60} />
+            <Typography variant="h6" gutterBottom>
+              グラフデータを取得中...
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {downloadsState}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+      :null
+      }
       {isTable ? <Button onClick={exportCSV}>テーブルをCSVに出力</Button>:null}
       {isTable ? <AlarmTable alarmCodes={alarmCodes} machineUnitData={machineUnitData}></AlarmTable>:null}
     </>

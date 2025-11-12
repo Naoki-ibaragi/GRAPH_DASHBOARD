@@ -43,6 +43,14 @@ export const PLOT_UNITS = {
   LOT: 'Lot',
   MACHINE: 'Machine',
   TYPE: 'Type',
+  STAGE_DC1:'Stage_dc1',
+  STAGE_AC1:'Stage_ac1',
+  STAGE_AC2:'Stage_ac2',
+  STAGE_DC2:'Stage_dc2',
+  PROBE_DC1:'Probe_dc1',
+  PROBE_AC1:'Probe_ac1',
+  PROBE_AC2:'Probe_ac2',
+  PROBE_DC2:'Probe_dc2',
 };
 
 export const PLOT_UNIT_LABELS = {
@@ -50,6 +58,14 @@ export const PLOT_UNIT_LABELS = {
   'ロット単位': PLOT_UNITS.LOT,
   '設備単位': PLOT_UNITS.MACHINE,
   '機種名単位': PLOT_UNITS.TYPE,
+  'DC1_Stage単位': PLOT_UNITS.STAGE_DC1,
+  'AC1_Stage単位': PLOT_UNITS.STAGE_AC1,
+  'AC2_Stage単位': PLOT_UNITS.STAGE_AC2,
+  'DC2_Stage単位': PLOT_UNITS.STAGE_DC2,
+  'DC1_Probe単位': PLOT_UNITS.PROBE_DC1,
+  'AC1_Probe単位': PLOT_UNITS.PROBE_AC1,
+  'AC2_Probe単位': PLOT_UNITS.PROBE_AC2,
+  'DC2_Probe単位': PLOT_UNITS.PROBE_DC2,
 };
 
 // フィルター結合方法

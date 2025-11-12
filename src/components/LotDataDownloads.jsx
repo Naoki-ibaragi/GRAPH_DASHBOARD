@@ -7,7 +7,7 @@ import {
   Card,
   CardContent,
   Stack,
-  LinearProgress,
+  CircularProgress
 } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -160,18 +160,33 @@ export default function LotDataDownloads() {
             </Stack>
           </CardContent>
         </Card>
-
+        </Box>
         {/* ダウンロード中リスト */}
-        {downloads||isError ? (
-          <Card>
-            <CardContent>
+        {downloads||isError ?
+        <Card>
+          <CardContent>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 300,
+                gap: 2,
+              }}
+            >
+              <CircularProgress size={60} />
               <Typography variant="h6" gutterBottom>
-                {`処理状況 - ${downloadsState}`}
+                グラフデータを取得中...
               </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {downloadsState}
+              </Typography>
+            </Box>
           </CardContent>
         </Card>
-        ):null}
-      </Box>
+        :null
+        }
       {isTable ? <Button onClick={exportCSV}>テーブルをCSVに出力</Button>:null}
       {isTable ? <LotDataTable columnHeader={columnHeader} lotUnitData={lotUnitData}></LotDataTable>:null}
     </>
