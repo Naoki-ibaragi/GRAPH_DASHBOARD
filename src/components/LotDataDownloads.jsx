@@ -95,8 +95,32 @@ export default function LotDataDownloads() {
   }
 
   //テーブルをcsvで出力
-  const exportCSV=async ()=>{
+  const exportCSV = async () => {
+    // ヘッダー行
+    const header = columnHeader.join(",");
+    
+    // データ行（各行を個別にカンマ区切りにしてから改行で結合）
+    const rows = lotUnitData.map(row => row.join(","));
+    
+    // ヘッダーとデータを結合
+    const csvContent = [header, ...rows].join("\n");
 
+    // ファイル保存ダイアログを開く
+    const filePath = await save({
+      filters: [{ name: 'CSV Files', extensions: ['csv'] }],
+      defaultPath: `${lotNumber}_data.csv`,
+    });
+
+    if (filePath) {
+      try {
+        // plugin-fs を使ってファイルに書き込む
+        await writeTextFile(filePath, csvContent);
+        alert("CSVを保存しました！");
+      } catch (error) {
+        console.error("CSV保存エラー:", error);
+        alert(`保存に失敗しました: ${error}`);
+      }
+    }
   }
 
   return (
