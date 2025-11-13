@@ -64,7 +64,7 @@ pub fn plot_scatterplot_with_unit(window:&Window,total_count:i64,data_map:&mut H
     for (index,record) in query_rows.into_iter().enumerate(){
 
         //unitがHashMapになければ追加
-        if data_map.contains_key(&record.unit){
+        if &record.unit!="" && data_map.contains_key(&record.unit){
             let rows=data_map.get_mut(&record.unit).unwrap();
             rows.push(match record.data{
                 PlotData::Number(num_data)=>PlotData::Number(NumberData::new(num_data.x,num_data.y)),

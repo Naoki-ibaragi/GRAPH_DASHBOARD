@@ -40,19 +40,19 @@ export const COMPARISON_OPERATORS = {
 // プロット分割単位
 export const PLOT_UNITS = {
   NONE: 'None',
-  LOT: 'Lot',
+  LOT: 'lot_name',
   MACHINE: 'Machine',
-  TYPE: 'Type',
+  TYPE: 'type_name',
   WAFER: 'Wafer',
-  LD_ARM: 'LD_ARM',
-  STAGE_DC1:'Stage_dc1',
-  STAGE_AC1:'Stage_ac1',
-  STAGE_AC2:'Stage_ac2',
-  STAGE_DC2:'Stage_dc2',
-  PROBE_DC1:'Probe_dc1',
-  PROBE_AC1:'Probe_ac1',
-  PROBE_AC2:'Probe_ac2',
-  PROBE_DC2:'Probe_dc2',
+  LD_ARM: 'ld_tray_pos',
+  STAGE_DC1:'dc1_test_stage_serial',
+  STAGE_AC1:'ac1_test_stage_serial',
+  STAGE_AC2:'ac2_test_stage_serial',
+  STAGE_DC2:'dc2_test_stage_serial',
+  PROBE_DC1:'dc1_test_probe_serial',
+  PROBE_AC1:'ac1_test_probe_serial',
+  PROBE_AC2:'ac2_test_probe_serial',
+  PROBE_DC2:'dc2_test_probe_serial',
 };
 
 export const PLOT_UNIT_LABELS = {
