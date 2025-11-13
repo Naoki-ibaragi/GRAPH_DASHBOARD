@@ -369,21 +369,18 @@ function GraphSetting(props) {
             {/*プロット分割設定*/}
             <Box component={"fieldset"} mt={2} mb={2}>
                 <legend>プロット分割設定</legend>
-                <Grid item xs={12} sm={3}>
-                    <RadioGroup 
-                        row
-                        value={plotUnit}
-                        aria-labelledby="demo-row-radio-buttons-group-label"
-                        name="row-radio-buttons-group"
-                        onChange={(e) =>setPlotUnit(e.target.value)}
-                    >
-                        {
-                            Object.keys(PLOT_UNIT_LABELS).map((key)=>(
-                                <FormControlLabel key={key} value={PLOT_UNIT_LABELS[key]} control={<Radio />} label={key} />
-                            ))
-                        }
-                    </RadioGroup>
-                </Grid>
+                <Select
+                    size="small"
+                    sx={{mr:3,height:32,width:300}}
+                    value={plotUnit}
+                    onChange={(e) =>setPlotUnit(e.target.value)}
+                >
+                    {Object.keys(PLOT_UNIT_LABELS).map((key) => (
+                    <MenuItem key={key} value={PLOT_UNIT_LABELS[key]}>
+                        {key}
+                    </MenuItem>
+                    ))}
+                </Select>
             </Box>
             {/*集計開始日の設定*/}
             <Box component={"fieldset"} mt={2} mb={2}>
