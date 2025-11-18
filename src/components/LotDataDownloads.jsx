@@ -9,11 +9,8 @@ import {
   Stack,
   CircularProgress
 } from "@mui/material";
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
-import { BaseDirectory } from '@tauri-apps/plugin-fs';
 import LotDataTable from "../TableComponents/LotDataTable";
 
 export default function LotDataDownloads() {
@@ -35,7 +32,7 @@ export default function LotDataDownloads() {
     setIsTable(true);
   },[lotUnitData,columnHeader]);
 
-  // ロットデータのダウンロード処理(invoke)
+  // ロットデータのダウンロード処理(REST API)
   const downloadLotData=async ()=> {
 
     //ロット名のバリデーションを入れる
@@ -54,43 +51,33 @@ export default function LotDataDownloads() {
     setDownloads(true);
     setDownloadsState("データ取得開始");
 
-    // 進捗イベントのリスナーを設定
-    const unlistenProgress = await listen('lot_log-progress', (event) => {
-      const payload = event.payload;
-      console.log(`進捗: ${payload.progress}% - ${payload.message}`);
-      
-      // プログレスバーの更新
-      setDownloadsState(`${payload.message}`);
-    });
-    
-    // 完了イベントのリスナーを設定
-    const unlistenComplete = await listen('lot_log-complete', (event) => {
-      const payload = event.payload;
-      
-      if (payload.success) {
-        console.log('処理成功:', payload.data);
-        setColumnHeader(payload.data.lot_header);
-        setLotUnitData(payload.data.lot_data);
-        setDownloads(false);
-      } else {
-        console.error('処理失敗:', payload.error);
-        setIsError(true);
-        setDownloads(false);
-        setDownloadsState('処理失敗:', payload.error);
-      }
-      
-      // リスナーをクリーンアップ
-      unlistenProgress();
-      unlistenComplete();
-    });
-    
     try {
-      // バックエンドのコマンドを呼び出し（即座に戻る）
-      await invoke('download_lot', { lotName:lotNumber });
+      // REST APIにリクエストを送信
+      const response = await fetch('http://127.0.0.1:8080/download_lot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ lot_name: lotNumber }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('処理成功:', data);
+      setColumnHeader(data.lot_header);
+      setLotUnitData(data.lot_data);
+      setDownloads(false);
+      setIsError(false);
+
     } catch (error) {
-      console.error('コマンド呼び出しエラー:', error);
-      unlistenProgress();
-      unlistenComplete();
+      console.error('データ取得エラー:', error);
+      setIsError(true);
+      setDownloads(false);
+      setDownloadsState(`処理失敗: ${error.message}`);
     }
   }
 
