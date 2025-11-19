@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  TextField,
   Typography,
   Card,
   CardContent,
   Stack,
+  Select,
+  MenuItem,
   CircularProgress
 } from "@mui/material";
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import AlarmTable from "../TableComponents/AlarmTable";
 import { save } from '@tauri-apps/plugin-dialog';
@@ -22,17 +22,48 @@ export default function AlarmDataDownloads() {
   const { alarmCodes, setAlarmCodes, machineUnitData, setMachineUnitData } = useAlarmData();
 
   // ローカルステート
-  const [machineName, setMachieName] = useState(""); //バックエンドに送信する装置名
-  const [validationError,setValidationError]=useState(false); //設備名入力時のエラーの有無
-  const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
-  const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
-  const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
-  const [isTable,setIsTable]=useState(false); //データを受け取ってテーブルを表示するかどうか
+  const [machineName, setMachineName] = useState("");            //バックエンドに送信する装置名
+  const [validationError,setValidationError]=useState(false);   //設備名入力時のエラーの有無
+  const [downloads, setDownloads] = useState(false);            //ダウンロード中かどうか
+  const [isError, setIsError] = useState(false);                //ダウンロードタスク中にエラーがでたかどうか
+  const [errorMessage, setErrorMessage] = useState("");         //ダウンロード失敗時のメッセージを表示
+  const [downloadsState, setDownloadsState] = useState("");     //ダウンロード状況表示
+  const [isTable,setIsTable]=useState(false);                   //データを受け取ってテーブルを表示するかどうか
+  const [machineList,setMachineList]=useState([]);              //設備名一覧
+
+  //一番最初にバックエンドから設備名一覧を取得する
+  useEffect(() => {
+    const fetchMachineList = async () => {
+      //tauri invokeからバックエンドapiへのfetchに仕様変更
+      try {
+        const response = await fetch('http://127.0.0.1:8080/get_machine_list', {
+          method: 'POST',
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          console.log('処理成功:', data);
+          setMachineList(data.machine_list);
+          setMachineName(data.machine_list[0]);
+        } else {
+          console.log('処理失敗:', data);
+          setIsError(`設備名一覧の取得に失敗しました:${data.message}`);
+        }
+      } catch (error) {
+        console.error('コマンド呼び出しエラー:', error);
+        setIsError("設備名一覧の取得に失敗しました");
+      }
+    };
+
+    fetchMachineList();
+  }, []);
 
   // アラームダウンロードを実行する関数
   const downloadAlarm=async ()=> {
     setAlarmCodes(null);
     setMachineUnitData(null);
+    setIsError(false);
+    setErrorMessage("");
 
     //設備名のバリデーションを入れる
     if(!/^CLT_\d+$/.test(machineName)){
@@ -46,48 +77,37 @@ export default function AlarmDataDownloads() {
     setDownloads(true);
     setDownloadsState("ダウンロード開始");
 
-    // 進捗イベントのリスナーを設定
-    const unlistenProgress = await listen('alarm-progress', (event) => {
-      const payload = event.payload;
-      console.log(`進捗: ${payload.progress}% - ${payload.message}`);
-      
-      // プログレスバーの更新
-      setDownloadsState(`${payload.message}`);
-    });
-    
-    // 完了イベントのリスナーを設定
-    const unlistenComplete = await listen('alarm-complete', (event) => {
-      const payload = event.payload;
-      
-      if (payload.success) {
-        console.log('処理成功:', payload.data);
-        setIsTable(true);
-        setAlarmCodes(payload.data.alarm_codes);
-        setMachineUnitData(payload.data.lot_unit_alarm_data);
-        setDownloads(false);
-      } else {
-        console.error('処理失敗:', payload.error);
-        setIsError(true);
-        setDownloads(false);
-        setDownloadsState('処理失敗:', payload.error);
-      }
-      
-      // リスナーをクリーンアップ
-      unlistenProgress();
-      unlistenComplete();
-    });
-    
+    //tauri invokeからバックエンドapiへのfetchに仕様変更
     try {
-      // バックエンドのコマンドを呼び出し（即座に戻る）
-      await invoke('download_alarm', { machineName });
+      const response=await fetch('http://127.0.0.1:8080/download_alarm',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+        },
+        body: JSON.stringify({machine_name:machineName}),
+      });
+
+      const data= await response.json();
+      if(data.success){
+        console.log('処理成功:',data);
+        setAlarmCodes(data.alarm_header);
+        setMachineUnitData(data.alarm_data)
+        setDownloads(false);
+        setIsTable(true)
+      }else{
+        console.log('処理失敗:',data);
+        setDownloads(false);
+        setIsError(true);
+        setErrorMessage(data.message);
+      }
     } catch (error) {
+      setIsError(true);
+      setErrorMessage(error);
       console.error('コマンド呼び出しエラー:', error);
-      unlistenProgress();
-      unlistenComplete();
     }
   }
 
-    // プラグイン不要のCSVエクスポート
+  // プラグイン不要のCSVエクスポート
   async function exportCSV() {
     const unit_list = ["ld", "dc1", "ac1", "ac2", "dc2", "ip", "uld"];
     let header_list = ["machine_name", "lot_name", "type_name", "lotstart_time", "lotend_time"];
@@ -169,17 +189,18 @@ export default function AlarmDataDownloads() {
               <Typography variant="h7" sx={{ pr:1}}>
                 装置名
               </Typography>
-              <TextField
-                error={validationError}
-                helperText={validationError ? "装置名はCLT_*で記入してください" : null}
-                size="small"
-                label="装置名"
-                value={machineName}
-                onChange={(e) =>
-                    setMachieName(e.target.value)
-                }
-                sx={{pr:2}}
-              />
+                <Select
+                    size="small"
+                    sx={{mr:3,height:32,width:300}}
+                    value={machineName}
+                    onChange={(e) => setMachineName(e.target.value)}
+                >
+                    {machineList.map((item) => (
+                    <MenuItem key={item} value={item}>
+                        {item}
+                    </MenuItem>
+                    ))}
+                </Select>
               <Button
                 variant="contained"
                 disabled={downloads}
@@ -192,7 +213,7 @@ export default function AlarmDataDownloads() {
         </Card>
       </Box>
       {/* ダウンロード中リスト */}
-      {downloads||isError ?
+      {downloads ?
       <Card>
         <CardContent>
           <Box
@@ -211,6 +232,28 @@ export default function AlarmDataDownloads() {
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {downloadsState}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+      :null
+      }
+      {/* エラー発生時表示 */}
+      {isError ?
+      <Card>
+        <CardContent>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 300,
+              gap: 2,
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              {`エラーが発生しました:${errorMessage}`}
             </Typography>
           </Box>
         </CardContent>
