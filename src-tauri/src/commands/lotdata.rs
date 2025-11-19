@@ -1,4 +1,3 @@
-
 use rusqlite::{Connection,Result};
 use tauri::{Window};
 use crate::utils::events::{report_progress};

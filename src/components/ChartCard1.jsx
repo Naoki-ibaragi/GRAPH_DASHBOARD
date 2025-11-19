@@ -5,7 +5,6 @@ import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_x_axis_items,line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items,scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useGraphData } from "../contexts/GraphDataContext";
 
@@ -89,40 +88,34 @@ export default function ChartCard1() {
     setIsProcess(true); //処理開始
     setProcessState("バックエンドへの通信を開始");
 
-    //進捗のイベントリスナーを設定
-    const unlistenProgress= await listen('graph_data-progress',(event)=>{
-      const payload=event.payload;
-      setProcessState(`${payload.message}`)
-    });
-
-    // 完了イベントのリスナーを設定
-    const unlistenComplete = await listen('graph_data-complete', (event) => {
-      const payload = event.payload;
-
-      if (payload.success) {
-        /*このタイミングでGraphsの内容をpayload.data.graph_dataを使用して更新*/
-        setResultData(payload.data);
-        
-        setIsProcess(false); 
-        setIsGraph(true); // ← ここでグラフを表示させる
-      } else {
-        console.error('処理失敗:', payload.error);
-        setIsProcess(false); // ← ここで処理中フラグを解除
-      }
-      
-      // リスナーをクリーンアップ
-      unlistenProgress();
-      unlistenComplete();
-    });
-
     try {
       // バックエンドのコマンドを呼び出し（ローカル変数を送信）
       await invoke('get_graphdata', { graphCondition: newGraphCondition});
+      const response=await fetch('http://127.0.0.1:8080/get_graphdata',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+        },
+        body: JSON.stringify({machine_name:machineName}),
+      });
+
+      const data= await response.json();
+      if(data.success){
+        console.log('処理成功:',data);
+        setAlarmCodes(data.alarm_header);
+        setMachineUnitData(data.alarm_data)
+        setDownloads(false);
+        setIsTable(true)
+      }else{
+        console.log('処理失敗:',data);
+        setDownloads(false);
+        setIsError(true);
+        setErrorMessage(data.message);
+      }
+
     } catch (error) {
       console.error('コマンド呼び出しエラー:', error);
       setIsProcess(false); // ← エラー時も処理中フラグを解除
-      unlistenProgress();
-      unlistenComplete();
     }
   }
 
