@@ -5,21 +5,10 @@ import LotDataDownloads from "./components/LotDataDownloads";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import Header from "./components/Header";
 import RegistData from "./components/RegistData";
-import { Box, createTheme, ThemeProvider } from "@mui/material";
+import Manual from "./components/Manual";
 import { AlarmDataProvider } from "./contexts/AlarmDataContext";
 import { GraphDataProvider } from "./contexts/GraphDataContext";
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#00796b",
-      contrastText: "#fff",
-    },
-    secondary: {
-      main: "#d32f2f",
-    },
-  },
-});
+import { useBackendEvent } from "./hooks/useBackendEvent";
 
 // ページ設定の定義
 const PAGE_CONFIG = {
@@ -39,11 +28,21 @@ const PAGE_CONFIG = {
     title: "Regist Data",
     component: RegistData,
   },
+  manual:{
+    title: "Manual",
+    component: Manual,
+  }
 };
 
 function App() {
   const [selectedPage, setSelectedPage] = useState("dashboard1");
   const [openSideBar, setOpenSideBar] = useState(false);
+
+  const openManual=()=>{
+    setSelectedPage("manual")
+  };
+
+  const event=useBackendEvent("open-manual",openManual,[]);
 
   // 選択されたページの設定を取得
   const currentPage = useMemo(() => {
@@ -53,31 +52,29 @@ function App() {
   const PageComponent = currentPage.component;
 
   return (
-    <ThemeProvider theme={theme}>
-      <AlarmDataProvider>
-        <GraphDataProvider>
-          <Box>
-            <Header
-              openSideBar={openSideBar}
-              setOpenSideBar={setOpenSideBar}
-              title={currentPage.title}
-            />
-            <Box sx={{ display: "flex", paddingY: 7 }}>
-              {openSideBar && (
-                <Sidebar
-                  onSelect={setSelectedPage}
-                  openSideBar={openSideBar}
-                  setOpenSideBar={setOpenSideBar}
-                />
-              )}
-              <Box component="main" sx={{ padding: "10px", flex: 1 }}>
-                {PageComponent && <PageComponent />}
-              </Box>
-            </Box>
-          </Box>
-        </GraphDataProvider>
-      </AlarmDataProvider>
-    </ThemeProvider>
+    <AlarmDataProvider>
+      <GraphDataProvider>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+          <Header
+            openSideBar={openSideBar}
+            setOpenSideBar={setOpenSideBar}
+            title={currentPage.title}
+          />
+          <div className="flex pt-16">
+            {openSideBar && (
+              <Sidebar
+                onSelect={setSelectedPage}
+                openSideBar={openSideBar}
+                setOpenSideBar={setOpenSideBar}
+              />
+            )}
+            <main className="flex-1 p-4 md:p-6 lg:p-4">
+              {PageComponent && <PageComponent />}
+            </main>
+          </div>
+        </div>
+      </GraphDataProvider>
+    </AlarmDataProvider>
   );
 }
 

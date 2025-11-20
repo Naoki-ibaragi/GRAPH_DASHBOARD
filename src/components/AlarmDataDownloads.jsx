@@ -1,20 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  Card,
-  CardContent,
-  Stack,
-  Select,
-  MenuItem,
-  CircularProgress
-} from "@mui/material";
 import { listen } from "@tauri-apps/api/event";
 import AlarmTable from "../TableComponents/AlarmTable";
-import { save } from '@tauri-apps/plugin-dialog';
-import { writeTextFile } from '@tauri-apps/plugin-fs';
-import { BaseDirectory } from '@tauri-apps/plugin-fs';
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory } from "@tauri-apps/plugin-fs";
 import { useAlarmData } from "../contexts/AlarmDataContext";
 
 export default function AlarmDataDownloads() {
@@ -22,35 +11,35 @@ export default function AlarmDataDownloads() {
   const { alarmCodes, setAlarmCodes, machineUnitData, setMachineUnitData } = useAlarmData();
 
   // ローカルステート
-  const [machineName, setMachineName] = useState("");            //バックエンドに送信する装置名
-  const [validationError,setValidationError]=useState(false);   //設備名入力時のエラーの有無
-  const [downloads, setDownloads] = useState(false);            //ダウンロード中かどうか
-  const [isError, setIsError] = useState(false);                //ダウンロードタスク中にエラーがでたかどうか
-  const [errorMessage, setErrorMessage] = useState("");         //ダウンロード失敗時のメッセージを表示
-  const [downloadsState, setDownloadsState] = useState("");     //ダウンロード状況表示
-  const [isTable,setIsTable]=useState(false);                   //データを受け取ってテーブルを表示するかどうか
-  const [machineList,setMachineList]=useState([]);              //設備名一覧
+  const [machineName, setMachineName] = useState(""); //バックエンドに送信する装置名
+  const [validationError, setValidationError] = useState(false); //設備名入力時のエラーの有無
+  const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
+  const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
+  const [errorMessage, setErrorMessage] = useState(""); //ダウンロード失敗時のメッセージを表示
+  const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
+  const [isTable, setIsTable] = useState(false); //データを受け取ってテーブルを表示するかどうか
+  const [machineList, setMachineList] = useState([]); //設備名一覧
 
   //一番最初にバックエンドから設備名一覧を取得する
   useEffect(() => {
     const fetchMachineList = async () => {
       //tauri invokeからバックエンドapiへのfetchに仕様変更
       try {
-        const response = await fetch('http://127.0.0.1:8080/get_machine_list', {
-          method: 'POST',
+        const response = await fetch("http://127.0.0.1:8080/get_machine_list", {
+          method: "POST",
         });
 
         const data = await response.json();
         if (data.success) {
-          console.log('処理成功:', data);
+          console.log("処理成功:", data);
           setMachineList(data.machine_list);
           setMachineName(data.machine_list[0]);
         } else {
-          console.log('処理失敗:', data);
+          console.log("処理失敗:", data);
           setIsError(`設備名一覧の取得に失敗しました:${data.message}`);
         }
       } catch (error) {
-        console.error('コマンド呼び出しエラー:', error);
+        console.error("コマンド呼び出しエラー:", error);
         setIsError("設備名一覧の取得に失敗しました");
       }
     };
@@ -59,17 +48,17 @@ export default function AlarmDataDownloads() {
   }, []);
 
   // アラームダウンロードを実行する関数
-  const downloadAlarm=async ()=> {
+  const downloadAlarm = async () => {
     setAlarmCodes(null);
     setMachineUnitData(null);
     setIsError(false);
     setErrorMessage("");
 
     //設備名のバリデーションを入れる
-    if(!/^CLT_\d+$/.test(machineName)){
+    if (!/^CLT_\d+$/.test(machineName)) {
       setValidationError(true);
       return;
-    }else{
+    } else {
       setValidationError(false);
     }
 
@@ -79,23 +68,23 @@ export default function AlarmDataDownloads() {
 
     //tauri invokeからバックエンドapiへのfetchに仕様変更
     try {
-      const response=await fetch('http://127.0.0.1:8080/download_alarm',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
+      const response = await fetch("http://127.0.0.1:8080/download_alarm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({machine_name:machineName}),
+        body: JSON.stringify({ machine_name: machineName }),
       });
 
-      const data= await response.json();
-      if(data.success){
-        console.log('処理成功:',data);
+      const data = await response.json();
+      if (data.success) {
+        console.log("処理成功:", data);
         setAlarmCodes(data.alarm_header);
-        setMachineUnitData(data.alarm_data)
+        setMachineUnitData(data.alarm_data);
         setDownloads(false);
-        setIsTable(true)
-      }else{
-        console.log('処理失敗:',data);
+        setIsTable(true);
+      } else {
+        console.log("処理失敗:", data);
         setDownloads(false);
         setIsError(true);
         setErrorMessage(data.message);
@@ -103,9 +92,9 @@ export default function AlarmDataDownloads() {
     } catch (error) {
       setIsError(true);
       setErrorMessage(error);
-      console.error('コマンド呼び出しエラー:', error);
+      console.error("コマンド呼び出しエラー:", error);
     }
-  }
+  };
 
   // プラグイン不要のCSVエクスポート
   async function exportCSV() {
@@ -157,8 +146,8 @@ export default function AlarmDataDownloads() {
 
     // ファイル保存ダイアログを開く
     const filePath = await save({
-      filters: [{ name: 'CSV Files', extensions: ['csv'] }],
-      defaultPath: 'alarm_data.csv',
+      filters: [{ name: "CSV Files", extensions: ["csv"] }],
+      defaultPath: "alarm_data.csv",
     });
 
     if (filePath) {
@@ -175,93 +164,67 @@ export default function AlarmDataDownloads() {
 
   return (
     <>
-      <Box sx={{ mt: 4, display: "grid", gap: 3, maxWidth: 600 }}>
+      <div className="mt-8 max-w-2xl">
         {/* アラームデータ */}
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              アラームデータのダウンロード
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              対象装置のアラームデータをダウンロードします。
-            </Typography>
-            <Stack direction="row" alignItems="center" flexWrap="wrap">
-              <Typography variant="h7" sx={{ pr:1}}>
-                装置名
-              </Typography>
-                <Select
-                    size="small"
-                    sx={{mr:3,height:32,width:300}}
-                    value={machineName}
-                    onChange={(e) => setMachineName(e.target.value)}
-                >
-                    {machineList.map((item) => (
-                    <MenuItem key={item} value={item}>
-                        {item}
-                    </MenuItem>
-                    ))}
-                </Select>
-              <Button
-                variant="contained"
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">アラームデータのダウンロード</h2>
+            <p className="text-sm text-gray-600 mb-6">対象装置のアラームデータをダウンロードします。</p>
+            <div className="flex items-center gap-4 flex-wrap">
+              <label className="text-base font-medium text-gray-700">装置名</label>
+              <select
+                className="h-10 w-80 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                value={machineName}
+                onChange={(e) => setMachineName(e.target.value)}
+              >
+                {machineList.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+              <button
                 disabled={downloads}
                 onClick={() => downloadAlarm()}
+                className="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-medium rounded-lg hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
               >
                 ダウンロード開始
-              </Button>
-            </Stack>
-          </CardContent>
-        </Card>
-      </Box>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ダウンロード中リスト */}
-      {downloads ?
-      <Card>
-        <CardContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 300,
-              gap: 2,
-            }}
-          >
-            <CircularProgress size={60} />
-            <Typography variant="h6" gutterBottom>
-              グラフデータを取得中...
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {downloadsState}
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
-      :null
-      }
+      {downloads ? (
+        <div className="bg-white rounded-xl shadow-lg p-8 mt-6">
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-4">
+            <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+            <h3 className="text-xl font-semibold text-gray-800">グラフデータを取得中...</h3>
+            <p className="text-sm text-gray-600">{downloadsState}</p>
+          </div>
+        </div>
+      ) : null}
+
       {/* エラー発生時表示 */}
-      {isError ?
-      <Card>
-        <CardContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 300,
-              gap: 2,
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              {`エラーが発生しました:${errorMessage}`}
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
-      :null
-      }
-      {isTable ? <Button onClick={exportCSV}>テーブルをCSVに出力</Button>:null}
-      {isTable ? <AlarmTable alarmCodes={alarmCodes} machineUnitData={machineUnitData}></AlarmTable>:null}
+      {isError ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl shadow-lg p-8 mt-6">
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-2">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-red-800">{`エラーが発生しました:${errorMessage}`}</h3>
+          </div>
+        </div>
+      ) : null}
+
+      {isTable ? (
+        <button
+          onClick={exportCSV}
+          className="mt-6 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+        >
+          テーブルをCSVに出力
+        </button>
+      ) : null}
+      {isTable ? <AlarmTable alarmCodes={alarmCodes} machineUnitData={machineUnitData}></AlarmTable> : null}
     </>
   );
 }

@@ -1,4 +1,6 @@
-use tauri::{command,Window};
+use tauri::{command,Window,Emitter};
+use tauri::menu::MenuBuilder;
+use tauri_plugin_dialog::{DialogExt,MessageDialogKind};
 use std::thread;
 use serde_json;
 
@@ -162,8 +164,37 @@ fn regist_data(window:Window,file_path:String,type_name:String)->Result<(),Strin
     Ok(())
 }
 
+#[tauri::command]
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            let menu = MenuBuilder::new(app)
+                .text("version", "Version")
+                .text("manual", "Manual")
+                .build()?;
+
+            app.set_menu(menu)?;
+
+            app.on_menu_event(move |app_handle: &tauri::AppHandle, event| {
+                match event.id().0.as_str() {
+                    "version" => {
+                        app_handle.dialog()
+                        .message(format!("バージョン:0.0.1\n作成者:Takahashi Naoki"))
+                        .kind(MessageDialogKind::Info)
+                        .title("バージョン情報")
+                        .blocking_show();
+                    },
+                    "manual"=>{ //manual pageをopenするようにトリガをかける
+                       app_handle.emit("open-manual","open-manual") .unwrap();
+                    },
+                    _ => {
+                        println!("unexpected menu event");
+                    }
+                }
+            });
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![download_lot, download_alarm,get_graphdata,regist_data])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())

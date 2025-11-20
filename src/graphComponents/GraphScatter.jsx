@@ -36,7 +36,14 @@ function GraphScatter(props) {
     const result_data = props.resultData;
     const graph_condition = props.graphCondition;
 
-    const raw_data = result_data.graph_data;
+    // バックエンドから受け取ったデータ構造に対応
+    const graph_data = result_data.graph_data;
+    console.log("graph_data:", graph_data);
+
+    // データが { data: [...] } 形式の場合、{ "default": [...] } に変換
+    const raw_data = graph_data?.data ? { "default": graph_data.data } : graph_data;
+    console.log("raw_data:", raw_data);
+
     const x_axis_item = graph_condition.graph_x_item;
     const y_axis_item = graph_condition.graph_y_item;
 
