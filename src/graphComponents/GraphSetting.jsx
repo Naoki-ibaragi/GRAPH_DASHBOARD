@@ -1,7 +1,9 @@
 import { useEffect, useState, useMemo, useCallback, memo } from "react";
-import DatePicker from "react-datepicker";
+import dayjs from "dayjs";
 import { filter_items } from "../Variables/FilterData";
 import { PLOT_UNIT_LABELS } from "../constants/graphConfig";
+import { OriginalTooltip } from "../utils/tooltip";
+import { OriginalDatepicker } from "../utils/datepicker";
 
 function GraphSetting(props) {
   const graphType = props.graphType; //グラフの種類
@@ -35,6 +37,12 @@ function GraphSetting(props) {
   const graphTypeError = props.graphTypeError; //グラフタイプのバリデーション
   const getGraphDataFromBackend = props.getGraphDataFromBackend; //グラフ描画ボタン押し下げ時の実行関数
 
+  // 日付バリデーション用のステート
+  const [startDateError, setStartDateError] = useState(false);
+  const [endDateError, setEndDateError] = useState(false);
+  const [startDateErrorMessage, setStartDateErrorMessage] = useState("");
+  const [endDateErrorMessage, setEndDateErrorMessage] = useState("");
+
   //グラフの種類一覧（メモ化）
   const graph_items = useMemo(
     () => ({
@@ -67,6 +75,7 @@ function GraphSetting(props) {
       に等しくない: "<>",
       より大きい: ">",
       より小さい: "<",
+      を含む: "LIKE",
     }),
     []
   );
@@ -112,8 +121,79 @@ function GraphSetting(props) {
     [setFilters]
   );
 
+  //日付バリデーション
+  const validateDates = useCallback(() => {
+    let hasError = false;
+    const now = new Date();
+
+    // 開始日のバリデーション
+    if (startDate) {
+      if (startDate > dayjs(now)) {
+        setStartDateError(true);
+        setStartDateErrorMessage("開始日は現在時刻より前に設定してください");
+        hasError = true;
+      } else {
+        setStartDateError(false);
+        setStartDateErrorMessage("");
+      }
+    }
+
+    // 終了日のバリデーション
+    if (endDate) {
+      const endDateObj = endDate.toDate();
+      if (endDateObj > now) {
+        setEndDateError(true);
+        setEndDateErrorMessage("終了日は現在時刻より前に設定してください");
+        hasError = true;
+      } else {
+        setEndDateError(false);
+        setEndDateErrorMessage("");
+      }
+    }
+
+    // 開始日と終了日の関係チェック
+    if (startDate && endDate) {
+      const startDateObj = startDate.toDate();
+      const endDateObj = endDate.toDate();
+      if (startDateObj >= endDateObj) {
+        setStartDateError(true);
+        setStartDateErrorMessage("開始日は終了日より前に設定してください");
+        hasError = true;
+      }
+    }
+
+    return !hasError;
+  }, [startDate, endDate]);
+
+  //開始日変更時のハンドラ
+  const handleStartDateChange = useCallback(
+    (date) => {
+      setStartDate(date ? dayjs(date) : null);
+      setStartDateError(false);
+      setStartDateErrorMessage("");
+    },
+    [setStartDate]
+  );
+
+  //終了日変更時のハンドラ
+  const handleEndDateChange = useCallback(
+    (date) => {
+      setEndDate(date ? dayjs(date) : null);
+      setEndDateError(false);
+      setEndDateErrorMessage("");
+    },
+    [setEndDate]
+  );
+
+  //グラフ作成ボタン押下時の処理
+  const handleGraphCreate = useCallback(() => {
+    if (validateDates()) {
+      getGraphDataFromBackend();
+    }
+  }, [validateDates, getGraphDataFromBackend]);
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <div className="bg-white rounded-xl shadow-lg px-6 py-2 mb-6">
       {/* グラフ基本設定 */}
       <fieldset className="border border-gray-300 rounded-lg p-4 mb-4">
         <legend className="text-base font-semibold text-gray-700 px-2">グラフ基本設定</legend>
@@ -190,8 +270,10 @@ function GraphSetting(props) {
 
         {/* アラーム設定 */}
         {(graphType === "ScatterPlot" || graphType === "LinePlot" || graphType === "Histogram") && (
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">アラーム設定</label>
+          <div className="flex flex-wrap items-center gap-4 mb-2">
+            <OriginalTooltip text="アラーム番号を設定した場合、アラームが発生したチップの情報を視覚化してプロットします">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">アラーム設定</label>
+            </OriginalTooltip>
             <select
               className="h-8 w-52 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
               value={alarmUnit}
@@ -237,11 +319,14 @@ function GraphSetting(props) {
 
       {/* フィルター設定 */}
       <fieldset className="border border-gray-300 rounded-lg p-4 mb-4">
-        <legend className="text-base font-semibold text-gray-700 px-2">フィルター設定</legend>
+        <OriginalTooltip text="フィルターの内容に沿って表示内容を制限します">
+          <legend className="text-base font-semibold text-gray-700 px-2">フィルター設定</legend>
+        </OriginalTooltip>
 
         {/* AND/OR選択 */}
         <div className="mb-4">
           <div className="flex gap-6">
+            <OriginalTooltip text="全てのフィルター条件を満たすデータをプロットします">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
@@ -252,6 +337,8 @@ function GraphSetting(props) {
               />
               <span className="text-sm font-medium text-gray-700">ANDで結ぶ</span>
             </label>
+            </OriginalTooltip>
+            <OriginalTooltip text="一つでもフィルター条件を満たすデータをプロットします">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
@@ -262,15 +349,17 @@ function GraphSetting(props) {
               />
               <span className="text-sm font-medium text-gray-700">ORで結ぶ</span>
             </label>
+            </OriginalTooltip>
           </div>
         </div>
 
         {/* フィルター一覧 */}
         {filters.map((filter, index) => (
-          <div key={index} className="grid grid-cols-12 gap-3 items-center mb-3">
+          <div key={index} className="grid grid-cols-12 gap-3 items-center mb-2">
             <div className="col-span-2">
               <p className="text-sm text-gray-700">{`フィルター${index + 1}`}</p>
             </div>
+            <OriginalTooltip text="フィルターの有効無効切り替え">
             <div className="col-span-1">
               <input
                 type="checkbox"
@@ -279,6 +368,7 @@ function GraphSetting(props) {
                 className="w-5 h-5 text-primary-600 focus:ring-primary-500 rounded cursor-pointer"
               />
             </div>
+            </OriginalTooltip>
             <div className="col-span-3">
               <select
                 className="w-full h-8 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
@@ -316,6 +406,7 @@ function GraphSetting(props) {
             </div>
             <div className="col-span-2 flex gap-2">
               {index > 0 && (
+                <OriginalTooltip text="フィルターを削除">
                 <button
                   onClick={() => deleteFilter(index)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -330,8 +421,10 @@ function GraphSetting(props) {
                     />
                   </svg>
                 </button>
+                </OriginalTooltip>
               )}
               {index === filters.length - 1 && (
+                <OriginalTooltip text="フィルターを追加">
                 <button
                   onClick={addFilter}
                   className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
@@ -341,6 +434,7 @@ function GraphSetting(props) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </button>
+                </OriginalTooltip>
               )}
             </div>
           </div>
@@ -348,43 +442,59 @@ function GraphSetting(props) {
       </fieldset>
 
       {/* プロット分割設定 */}
-      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4">
-        <legend className="text-base font-semibold text-gray-700 px-2">プロット分割設定</legend>
-        <select
-          className="h-8 w-80 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-          value={plotUnit}
-          onChange={(e) => setPlotUnit(e.target.value)}
-        >
-          {Object.keys(PLOT_UNIT_LABELS).map((key) => (
-            <option key={key} value={PLOT_UNIT_LABELS[key]}>
-              {key}
+      {/* 密度プロットが選択されている時は分割無しに固定する */}
+      <fieldset className="border border-gray-300 rounded-lg p-4 mb-3">
+        <OriginalTooltip text="グラフのプロットを選択された項目のユニークなシリアル毎に分割します">
+          <legend className="text-base font-semibold text-gray-700 px-2">プロット分割設定</legend>
+        </OriginalTooltip>
+        {graphType !== "DensityPlot" ?
+          <select
+            className="h-8 w-80 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+            value={plotUnit}
+            onChange={(e) => setPlotUnit(e.target.value)}
+          >
+            {Object.keys(PLOT_UNIT_LABELS).map((key) => (
+              <option key={key} value={PLOT_UNIT_LABELS[key]}>
+                {key}
+              </option>
+            ))}
+          </select>
+          :
+          <select
+            className="h-8 w-80 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+            value={"None"}
+          >
+            <option key="分割無し" value="None">
+              分割無し
             </option>
-          ))}
-        </select>
+          </select>
+        }
       </fieldset>
 
       {/* 集計日時設定 */}
-      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4">
-        <legend className="text-base font-semibold text-gray-700 px-2">集計日時設定</legend>
-        <div className="flex flex-wrap items-center gap-6 mt-2">
+      <fieldset className="border border-gray-300 rounded-lg px-4 py-1 mb-4">
+        <OriginalTooltip text="範囲内の日時に流れたチップのデータを取得します。範囲が大きいとデータ取得に時間がかかります">
+          <legend className="text-base font-semibold text-gray-700 px-2">集計日時設定</legend>
+        </OriginalTooltip>
+        <div className="flex flex-wrap items-center gap-6 mt-2 mb-2">
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-gray-700 whitespace-nowrap">開始日</label>
-            <DatePicker
+            <OriginalDatepicker
               selected={startDate ? startDate.toDate() : null}
-              onChange={(date) => setStartDate(date ? require("dayjs")(date) : null)}
-              dateFormat="yyyy/MM/dd"
-              className="h-10 w-48"
-              placeholderText="日付を選択"
+              onChange={(e) => handleStartDateChange(e.target.value)}
+              error={startDateError}
+              value={startDate}
+              errorMessage={startDateErrorMessage}
             />
           </div>
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-gray-700 whitespace-nowrap">終了日</label>
-            <DatePicker
+            <OriginalDatepicker
               selected={endDate ? endDate.toDate() : null}
-              onChange={(date) => setEndDate(date ? require("dayjs")(date) : null)}
-              dateFormat="yyyy/MM/dd"
-              className="h-10 w-48"
-              placeholderText="日付を選択"
+              onChange={(e) => handleEndDateChange(e.target.value)}
+              value={endDate}
+              error={endDateError}
+              errorMessage={endDateErrorMessage}
             />
           </div>
         </div>
@@ -392,7 +502,7 @@ function GraphSetting(props) {
 
       {/* グラフ作成ボタン */}
       <button
-        onClick={() => getGraphDataFromBackend()}
+        onClick={handleGraphCreate}
         className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
       >
         グラフ作成開始

@@ -35,6 +35,7 @@ export const COMPARISON_OPERATORS = {
   'に等しくない': '<>',
   'より大きい': '>',
   'より小さい': '<',
+  'を含む': 'LIKE',
 };
 
 // プロット分割単位
@@ -43,7 +44,9 @@ export const PLOT_UNITS = {
   LOT: 'lot_name',
   MACHINE: 'Machine',
   TYPE: 'type_name',
-  WAFER: 'Wafer',
+  WANO: 'WANO',
+  WAX: 'WAX',
+  WAY: 'WAY',
   LD_ARM: 'ld_tray_pos',
   STAGE_DC1:'dc1_test_stage_serial',
   STAGE_AC1:'ac1_test_stage_serial',
