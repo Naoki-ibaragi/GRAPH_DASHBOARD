@@ -1,9 +1,7 @@
-import { Title, XAxis, setHighcharts } from '@highcharts/react';
-import Histogram from '@highcharts/react/series/histogram';
+import { Title, XAxis, setHighcharts, Chart } from '@highcharts/react';
 import { Series } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
-import 'highcharts/modules/histogram-bellcurve.src.js';
 import { histogram_axis_items } from '../Variables/HistogramData';
 import { getKeyByValue } from '../utils/helpers';
 
@@ -13,33 +11,92 @@ export default function GraphHistogram(props) {
     const result_data = props.resultData;
     const graph_condition = props.graphCondition;
 
-    const raw_data = result_data.graph_data;
+    const graph_data = result_data.graph_data;
+    const grid_data = result_data.grid_data;
     const x_axis_item = graph_condition.graph_x_item;
-    const bin_num = graph_condition.bin_number;
+
+    const processHistogramData = (data) => {
+        if (!data || !Array.isArray(data)) return [];
+
+        return data.map((item) => {
+            const histData = item.BinnedHistogram;
+            return {
+                x: histData.bin_index,
+                y: histData.count
+            };
+        });
+    };
+
+    const getBinCategories = () => {
+        if (!grid_data?.histogram_bin_info?.bin_edges) return [];
+
+        const binEdges = grid_data.histogram_bin_info.bin_edges;
+        const categories = [];
+
+        for (let i = 0; i < binEdges.length - 1; i++) {
+            const start = binEdges[i].toFixed(0);
+            const end = binEdges[i + 1].toFixed(0);
+            categories.push(`${start} - ${end}`);
+        }
+
+        return categories;
+    };
+
+    const isMultipleSeries = () => {
+        if (!graph_data) return false;
+
+        if (Array.isArray(graph_data.data)) {
+            return false;
+        }
+
+        return typeof graph_data === 'object';
+    };
+
+    const categories = getBinCategories();
+    const multipleSeries = isMultipleSeries();
 
     return (
-        <Histogram>
+        <Chart>
             <Title>Histogram</Title>
-            <XAxis>{getKeyByValue(histogram_axis_items,x_axis_item)}</XAxis>
+            <XAxis
+                categories={categories}
+                labels={{
+                    rotation: -45,
+                    style: {
+                        fontSize: '10px'
+                    }
+                }}
+            >
+                {getKeyByValue(histogram_axis_items, x_axis_item)}
+            </XAxis>
 
-            {Object.keys(raw_data).map((key)=>(
-                key.includes("alarm")?
+            {multipleSeries ? (
+                Object.keys(graph_data).map((key) => {
+                    const chartData = processHistogramData(graph_data[key]);
+                    const isAlarm = key.includes("alarm");
+
+                    return (
+                        <Series
+                            key={key}
+                            type="column"
+                            name={key}
+                            data={chartData}
+                            color={isAlarm ? "#FF0000" : undefined}
+                            zIndex={isAlarm ? 100 : undefined}
+                            pointPlacement={0}
+                        />
+                    );
+                })
+            ) : (
                 <Series
-                    type="histogram" 
-                    name={key}
-                    binsNumber={bin_num}
-                    color="#FF0000"
-                    zIndex="100"
-                    data={raw_data[key].map((p)=>p.x)}
-                />:
-                <Series
-                    type="histogram" 
-                    name={key}
-                    binsNumber={bin_num}
-                    data={raw_data[key].map((p)=>p.x)}
+                    type="column"
+                    name="Histogram"
+                    data={processHistogramData(graph_data.data)}
+                    color="#7cb5ec"
+                    pointPlacement={0}
                 />
-            ))}
-        </Histogram>
-  );
+            )}
+        </Chart>
+    );
 }
 

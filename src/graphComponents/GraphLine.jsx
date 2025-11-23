@@ -57,6 +57,14 @@ function GraphLine(props) {
         }
     };
 
+    // アラームポイントのマーカー色を取得（インデックスベース）
+    let alarmMarkerIndex = 0;
+    const getAlarmMarkerColor = () => {
+        const color = ALARM_COLOR_PALETTE[alarmMarkerIndex % ALARM_COLOR_PALETTE.length];
+        alarmMarkerIndex++;
+        return color;
+    };
+
     return (
         <Chart
             boost={{
@@ -66,31 +74,43 @@ function GraphLine(props) {
             containerProps={{style:{height:"600px"}}}
         >
             <Title>LinePlot</Title>
-            <XAxis type='datetime'>{getKeyByValue(line_plot_x_axis_items,x_axis_item)}</XAxis>
+            <XAxis
+                {...(x_axis_item.includes("DATE") && {
+                    type: "datetime",
+                    labels: {
+                        format: '{value:%Y-%m-%d %H:%M:%S}'
+                    }
+                })}
+            >
+                {getKeyByValue(line_plot_x_axis_items,x_axis_item)}
+            </XAxis>
             <YAxis>{getKeyByValue(line_plot_y_axis_items,y_axis_item)}</YAxis>
-            {x_axis_item.includes("TIME")?
-                Object.keys(raw_data).map((key)=>(
+                {Object.keys(raw_data).map((key)=>(
                     <Series
                         key={key}
                         type="line"
                         name={key}
                         color={getColorForKey(key)}
                         zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>[new Date(p.x).getTime(),p.y])}
+                        data={raw_data[key].map((p)=>{
+                            const yValue = p["Line"]["y_data"];
+                            const isAlarm = p["Line"]["is_alarm"];
+
+                            // アラームの場合、マーカーに個別の色を設定
+                            if (isAlarm) {
+                                return {
+                                    y: yValue,
+                                    marker: {
+                                        fillColor: getAlarmMarkerColor(),
+                                        enabled: true
+                                    }
+                                };
+                            }
+
+                            return yValue;
+                        })}
                     />
-                ))
-                :
-                Object.keys(raw_data).map((key)=>(
-                    <Series
-                        key={key}
-                        type="line"
-                        name={key}
-                        color={getColorForKey(key)}
-                        zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>[p.x,p.y])}
-                    />
-                ))
-            }
+                ))}
         </Chart>
     )
 }

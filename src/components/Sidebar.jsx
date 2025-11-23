@@ -8,6 +8,7 @@ export default function Sidebar({ onSelect, openSideBar, setOpenSideBar }) {
     { id: "LotDataDownloads", label: "Lot Data Downloads", icon: "📊" },
     { id: "AlarmDataDownloads", label: "Alarm Downloads", icon: "🔔" },
     { id: "dashboard1", label: "Graph1", icon: "📈" },
+    { id: "dashboard2", label: "Graph2", icon: "📈" },
     { id: "register", label: "Regist Data", icon: "📝" },
   ];
 

@@ -37,12 +37,8 @@ function GraphScatter(props) {
     const graph_condition = props.graphCondition;
 
     // バックエンドから受け取ったデータ構造に対応
-    const graph_data = result_data.graph_data;
-    console.log("graph_data:", graph_data);
-
-    // データが { data: [...] } 形式の場合、{ "default": [...] } に変換
-    const raw_data = graph_data?.data ? { "default": graph_data.data } : graph_data;
-    console.log("raw_data:", raw_data);
+    const raw_data = result_data.graph_data;
+    console.log("graph_data:", raw_data);
 
     const x_axis_item = graph_condition.graph_x_item;
     const y_axis_item = graph_condition.graph_y_item;
@@ -72,9 +68,18 @@ function GraphScatter(props) {
             containerProps={{style:{height:"600px"}}}
         >
             <Title>ScatterPlot</Title>
-            <XAxis>{getKeyByValue(scatter_plot_x_axis_items,x_axis_item)}</XAxis>
+            <XAxis
+                {...(x_axis_item.includes("DATE") && {
+                    type: "datetime",
+                    labels: {
+                        format: '{value:%Y-%m-%d %H:%M:%S}'
+                    }
+                })}
+            >
+                {getKeyByValue(scatter_plot_x_axis_items,x_axis_item)}
+            </XAxis>
             <YAxis>{getKeyByValue(scatter_plot_y_axis_items,y_axis_item)}</YAxis>
-            {x_axis_item.includes("TIME") ?
+            {x_axis_item.includes("DATE") ?
                 Object.keys(raw_data).map((key)=>(
                     <Series
                         key={key}
@@ -82,7 +87,7 @@ function GraphScatter(props) {
                         name={key}
                         color={getColorForKey(key)}
                         zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>[new Date(p.x).getTime(),p.y])}
+                        data={raw_data[key].map((p)=>[new Date(p["Scatter"]["x_data"]["StringData"]).getTime(),p["Scatter"]["y_data"]])}
                     />
                 ))
                 :
@@ -93,7 +98,7 @@ function GraphScatter(props) {
                         name={key}
                         color={getColorForKey(key)}
                         zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>[p.x,p.y])}
+                        data={raw_data[key].map((p)=>[p["Scatter"]["x_data"]["NumberData"],p["Scatter"]["y_data"]])}
                     />
                 ))
             }

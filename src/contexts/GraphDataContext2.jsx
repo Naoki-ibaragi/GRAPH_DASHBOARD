@@ -2,9 +2,9 @@ import { createContext, useContext, useState } from "react";
 import dayjs from "dayjs";
 import { filter_items } from "../Variables/FilterData";
 
-const GraphDataContext = createContext();
+const GraphDataContext2 = createContext();
 
-export function GraphDataProvider({ children }) {
+export function GraphDataProvider2({ children }) {
   const [graphType, setGraphType] = useState("ScatterPlot");
   const [xdimItem, setXdimItem] = useState("CONTINUOUS");
   const [ydimItem, setYdimItem] = useState("SERIAL");
@@ -26,8 +26,6 @@ export function GraphDataProvider({ children }) {
   const [isGraph, setIsGraph] = useState(false);
   const [graphCondition, setGraphCondition] = useState({});
 
-  const [alarmNumbersString,setAlarmNumbersString]=useState("");
-
   const clearGraphData = () => {
     setResultData(null);
     setIsGraph(false);
@@ -35,7 +33,7 @@ export function GraphDataProvider({ children }) {
   };
 
   return (
-    <GraphDataContext.Provider
+    <GraphDataContext2.Provider
       value={{
         graphType,
         setGraphType,
@@ -72,19 +70,17 @@ export function GraphDataProvider({ children }) {
         graphCondition,
         setGraphCondition,
         clearGraphData,
-        alarmNumbersString,
-        setAlarmNumbersString
       }}
     >
       {children}
-    </GraphDataContext.Provider>
+    </GraphDataContext2.Provider>
   );
 }
 
-export function useGraphData() {
-  const context = useContext(GraphDataContext);
+export function useGraphData2() {
+  const context = useContext(GraphDataContext2);
   if (!context) {
-    throw new Error("useGraphData must be used within GraphDataProvider");
+    throw new Error("useGraphData2 must be used within GraphDataProvider2");
   }
   return context;
 }

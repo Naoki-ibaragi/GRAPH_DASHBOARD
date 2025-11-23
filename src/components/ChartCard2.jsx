@@ -3,12 +3,12 @@ import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_x_axis_items, line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
-import { useGraphData } from "../contexts/GraphDataContext";
+import { useGraphData2 } from "../contexts/GraphDataContext2";
 
 //各グラフ種類毎のコンポーネントをimport
 import GraphManager from "../graphComponents/GraphManager";
 
-export default function ChartCard1() {
+export default function ChartCard2() {
   // グローバルステートから取得
   const {
     graphType,
@@ -45,9 +45,7 @@ export default function ChartCard1() {
     setIsGraph,
     graphCondition,
     setGraphCondition,
-    alarmNumbersString,
-    setAlarmNumbersString,
-  } = useGraphData();
+  } = useGraphData2();
 
   // ローカルステート（UI表示用のみ）
   const [xDimItems, setXDimItems] = useState(scatter_plot_x_axis_items); //X軸の項目
@@ -233,8 +231,6 @@ export default function ChartCard1() {
           filterItemError={filterItemError}
           setFilterItemError={setFilterItemError}
           getGraphDataFromBackend={getGraphDataFromBackend}
-          alarmNumbersString={alarmNumbersString}
-          setAlarmNumbersString={setAlarmNumbersString}
         />
       ) : null}
       {isProcess ? (

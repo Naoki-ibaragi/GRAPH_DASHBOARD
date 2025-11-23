@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
+import { lot_table_headers } from "../Variables/LotTableHeader";
 import LotDataTable from "../TableComponents/LotDataTable";
 
 export default function LotDataDownloads() {
@@ -9,30 +10,28 @@ export default function LotDataDownloads() {
   const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
   const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
   const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
-  const [columnHeader, setColumnHeader] = useState(null); //バックエンドから受け取った各カラムのヘッダー名
   const [lotUnitData, setLotUnitData] = useState(null); //バックエンドから受け取った設備単位のアラームデータ一覧
   const [isTable, setIsTable] = useState(false); //データを受け取ってテーブルを表示するかどうか
 
   //invoke処理が完了するとテーブルを表示する
   useEffect(() => {
-    if (lotUnitData == null || columnHeader == null) {
+    if (lotUnitData == null) {
       setIsTable(false);
       return;
     }
     setIsTable(true);
-  }, [lotUnitData, columnHeader]);
+  }, [lotUnitData]);
 
   // ロットデータのダウンロード処理(REST API)
   const downloadLotData = async () => {
     //ロット名のバリデーションを入れる
-    if (lotNumber.length != 10) {
+    if (lotNumber.length === 0) {
       setValidationError(true);
       return;
     } else {
       setValidationError(false);
     }
 
-    setColumnHeader(null); //データの初期化
     setLotUnitData(null); //データの初期化
     setIsTable(false); //テーブルの削除
 
@@ -57,7 +56,6 @@ export default function LotDataDownloads() {
       const data = await response.json();
 
       console.log("処理成功:", data);
-      setColumnHeader(data.lot_header);
       setLotUnitData(data.lot_data);
       setDownloads(false);
       setIsError(false);
@@ -72,13 +70,26 @@ export default function LotDataDownloads() {
   //テーブルをcsvで出力
   const exportCSV = async () => {
     // ヘッダー行
-    const header = columnHeader.join(",");
+    const header_arr=Object.keys(lot_table_headers);
 
     // データ行（各行を個別にカンマ区切りにしてから改行で結合）
-    const rows = lotUnitData.map((row) => row.join(","));
+    let datas=[];
+    Object.keys(lotUnitData).map((chip_key)=>{
+        const unit_vec=[];
+        const chip_unit_data=lotUnitData[chip_key];
 
+        Object.keys(chip_unit_data).map((data_key,idx)=>{
+            const data_type=lot_table_headers[header_arr[idx]]; //num or str
+            if (data_type in chip_unit_data[data_key]){
+                unit_vec.push(chip_unit_data[data_key][data_type]);
+            }else{
+                unit_vec.push("");
+            }
+        });
+        datas.push(unit_vec);
+    });
     // ヘッダーとデータを結合
-    const csvContent = [header, ...rows].join("\n");
+    const csvContent = [header_arr, ...datas].join("\n");
 
     // ファイル保存ダイアログを開く
     const filePath = await save({
@@ -118,7 +129,7 @@ export default function LotDataDownloads() {
                   value={lotNumber}
                   onChange={(e) => setLotNumber(e.target.value)}
                 />
-                {validationError && <p className="text-red-600 text-sm mt-1.5">ロット名は10文字で記入してください</p>}
+                {validationError && <p className="text-red-600 text-sm mt-1.5">ロット名を入力してください</p>}
               </div>
               <button
                 onClick={() => downloadLotData()}
@@ -146,12 +157,12 @@ export default function LotDataDownloads() {
       {isTable ? (
         <button
           onClick={exportCSV}
-          className="mt-6 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+          className="mt-6 mb-2 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
         >
           テーブルをCSVに出力
         </button>
       ) : null}
-      {isTable ? <LotDataTable columnHeader={columnHeader} lotUnitData={lotUnitData}></LotDataTable> : null}
+      {isTable ? <LotDataTable lotUnitData={lotUnitData}></LotDataTable> : null}
     </>
   );
 }

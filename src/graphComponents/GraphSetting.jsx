@@ -36,18 +36,22 @@ function GraphSetting(props) {
   const yDimItems = props.yDimItems; //y軸の項目(グラフ種類で変更)
   const graphTypeError = props.graphTypeError; //グラフタイプのバリデーション
   const getGraphDataFromBackend = props.getGraphDataFromBackend; //グラフ描画ボタン押し下げ時の実行関数
+  const alarmNumbersString=props.alarmNumbersString;
+  const setAlarmNumbersString=props.setAlarmNumbersString;
 
   // 日付バリデーション用のステート
   const [startDateError, setStartDateError] = useState(false);
   const [endDateError, setEndDateError] = useState(false);
+  const [alarmNumbersError, setAlarmNumbersError] = useState(false);
   const [startDateErrorMessage, setStartDateErrorMessage] = useState("");
   const [endDateErrorMessage, setEndDateErrorMessage] = useState("");
+  const [alarmNumbersErrorMessage, setAlarmNumbersErrorMessage] = useState("");
 
   //グラフの種類一覧（メモ化）
   const graph_items = useMemo(
     () => ({
       散布図: "ScatterPlot",
-      折れ線グラフ: "LinePlot",
+      時系列プロット: "LinePlot",
       ヒストグラム: "Histogram",
       密度プロット: "DensityPlot",
     }),
@@ -78,14 +82,6 @@ function GraphSetting(props) {
       を含む: "LIKE",
     }),
     []
-  );
-
-  //アラーム設定のテキストボックス書き換え時のハンドラ
-  const handleAlarmNumberChange = useCallback(
-    (val) => {
-      setAlarmNumbers(val.split(","));
-    },
-    [setAlarmNumbers]
   );
 
   //フィルターのエントリー記入時にハンドラー
@@ -122,9 +118,40 @@ function GraphSetting(props) {
   );
 
   //日付バリデーション
-  const validateDates = useCallback(() => {
+  const validateDatas = useCallback(() => {
     let hasError = false;
     const now = new Date();
+    let parsedAlarmNumbers = null;
+
+    //アラームコードのバリデーション
+    //アラームコードが空ではない場合、[,]でsplitしたデータが全てintに変換可能か確認
+    if(alarmNumbersString){
+      const tmp_arr=alarmNumbersString.split(",");
+      const invalidNumbers = tmp_arr.filter((num) => {
+        const trimmed = num.trim();
+        // 空文字列または数値に変換できない場合は無効
+        return trimmed === "" || isNaN(trimmed) || isNaN(parseInt(trimmed, 10));
+      });
+
+      if(invalidNumbers.length > 0){
+        setAlarmNumbersError(true);
+        setAlarmNumbersErrorMessage("アラーム番号は整数をカンマ区切りで入力してください");
+        hasError = true;
+      } else {
+        setAlarmNumbersError(false);
+        setAlarmNumbersErrorMessage("");
+        const result_arr=[];
+        tmp_arr.forEach((num)=>{
+          const trimmed = num.trim();
+          result_arr.push(parseInt(trimmed,10));
+        });
+        parsedAlarmNumbers = result_arr;
+      }
+    } else {
+      setAlarmNumbersError(false);
+      setAlarmNumbersErrorMessage("");
+      parsedAlarmNumbers = [];
+    }
 
     // 開始日のバリデーション
     if (startDate) {
@@ -162,8 +189,8 @@ function GraphSetting(props) {
       }
     }
 
-    return !hasError;
-  }, [startDate, endDate]);
+    return { isValid: !hasError, parsedAlarmNumbers };
+  }, [startDate, endDate, alarmNumbersString]);
 
   //開始日変更時のハンドラ
   const handleStartDateChange = useCallback(
@@ -187,10 +214,16 @@ function GraphSetting(props) {
 
   //グラフ作成ボタン押下時の処理
   const handleGraphCreate = useCallback(() => {
-    if (validateDates()) {
-      getGraphDataFromBackend();
+    const { isValid, parsedAlarmNumbers } = validateDatas();
+    if (isValid) {
+      // アラーム番号を状態にも設定
+      if (parsedAlarmNumbers !== null) {
+        setAlarmNumbers(parsedAlarmNumbers);
+      }
+      // パースした値を直接渡してデータ取得（状態更新を待たない）
+      getGraphDataFromBackend(parsedAlarmNumbers);
     }
-  }, [validateDates, getGraphDataFromBackend]);
+  }, [validateDatas, getGraphDataFromBackend, setAlarmNumbers]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg px-6 py-2 mb-6">
@@ -221,6 +254,7 @@ function GraphSetting(props) {
           </div>
 
           {/* X軸の項目 */}
+          {graphType !== "LinePlot" && (
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700 whitespace-nowrap">X軸の項目</label>
             <select
@@ -235,6 +269,7 @@ function GraphSetting(props) {
               ))}
             </select>
           </div>
+          )}
 
           {/* Y軸の項目 */}
           {graphType !== "Histogram" && (
@@ -286,13 +321,24 @@ function GraphSetting(props) {
               ))}
             </select>
             <label className="text-sm font-medium text-gray-700 whitespace-nowrap">アラーム番号</label>
-            <input
-              type="text"
-              placeholder="アラーム番号"
-              className="h-8 w-64 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-              value={alarmNumbers.join(",")}
-              onChange={(e) => handleAlarmNumberChange(e.target.value)}
-            />
+            <div className="flex flex-col">
+              <input
+                type="text"
+                placeholder="例: 1,2,3"
+                className={`h-8 w-64 px-3 border ${
+                  alarmNumbersError ? "border-red-500" : "border-gray-300"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm`}
+                value={alarmNumbersString}
+                onChange={(e) => {
+                  setAlarmNumbersString(e.target.value);
+                  setAlarmNumbersError(false);
+                  setAlarmNumbersErrorMessage("");
+                }}
+              />
+              {alarmNumbersError && (
+                <p className="text-red-600 text-xs mt-1">{alarmNumbersErrorMessage}</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -482,8 +528,8 @@ function GraphSetting(props) {
             <OriginalDatepicker
               selected={startDate ? startDate.toDate() : null}
               onChange={(e) => handleStartDateChange(e.target.value)}
-              error={startDateError}
               value={startDate}
+              error={startDateError}
               errorMessage={startDateErrorMessage}
             />
           </div>

@@ -1,5 +1,5 @@
 export const filter_items={
-    "1.装置名":"MAHCINE_NAME",
+    "1.装置名":"MACHINE_NAME",
     "2.機種名":"TYPE_NAME",
     "3.ロット名":"LOT_NAME",
     "4.シリアル":"SERIAL",

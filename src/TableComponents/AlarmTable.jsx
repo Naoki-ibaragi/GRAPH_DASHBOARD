@@ -104,7 +104,7 @@ function AlarmTable({ alarmCodes, machineUnitData }) {
   }, [alarmCodes, machineUnitData]);
 
   const columnWidth = 150;
-  const columnWidth_alarm = 50;
+  const columnWidth_alarm = 100;
 
   // レンダリング中はローディング表示
   if (isRendering) {
