@@ -3,12 +3,12 @@ import { listen } from "@tauri-apps/api/event";
 import AlarmTable from "../TableComponents/AlarmTable";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { BaseDirectory } from "@tauri-apps/plugin-fs";
+import { alarmCodes } from "../Variables/AlarmNumber";
 import { useAlarmData } from "../contexts/AlarmDataContext";
 
 export default function AlarmDataDownloads() {
   // グローバルステートから取得
-  const { alarmCodes, setAlarmCodes, machineUnitData, setMachineUnitData } = useAlarmData();
+  const { machineUnitData, setMachineUnitData } = useAlarmData();
 
   // ローカルステート
   const [machineName, setMachineName] = useState(""); //バックエンドに送信する装置名
@@ -49,7 +49,6 @@ export default function AlarmDataDownloads() {
 
   // アラームダウンロードを実行する関数
   const downloadAlarm = async () => {
-    setAlarmCodes(null);
     setMachineUnitData(null);
     setIsError(false);
     setErrorMessage("");
@@ -79,7 +78,6 @@ export default function AlarmDataDownloads() {
       const data = await response.json();
       if (data.success) {
         console.log("処理成功:", data);
-        setAlarmCodes(data.alarm_header);
         setMachineUnitData(data.alarm_data);
         setDownloads(false);
         setIsTable(true);
@@ -124,7 +122,7 @@ export default function AlarmDataDownloads() {
 
       // 各ユニットのアラームデータを追加
       unit_list.forEach((unit) => {
-        const unitAlarmData = d.alarm_list?.[`${unit}_alarm`];
+        const unitAlarmData = d.alarm_counts?.[`${unit}_alarm`];
         // undefinedチェックを追加
         if (unitAlarmData) {
           Object.values(unitAlarmData).forEach((alarm_num) => base.push(alarm_num));

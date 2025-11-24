@@ -1,6 +1,6 @@
 import React from 'react'
 import { db_items } from '../Variables/ForManualData'
-import { alarm_number_list } from '../Variables/AlarmNumber'
+import { alarmCodes } from '../Variables/AlarmNumber'
 
 function Manual() {
   return (
@@ -99,11 +99,11 @@ function Manual() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {Object.keys(alarm_number_list).map((unit)=>(
-                  Object.keys(alarm_number_list[unit]).map((item, index)=>(
+                {Object.keys(alarmCodes).map((unit)=>(
+                  Object.keys(alarmCodes[unit]).map((item, index)=>(
                     <tr key={`${unit}_${item}`} className={index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100'}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{`${unit}_${item}`}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{alarm_number_list[unit][item]}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{alarmCodes[unit][item]}</td>
                     </tr>
                   ))
                 ))}

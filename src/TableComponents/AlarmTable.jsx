@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, memo } from "react";
+import { alarmCodes } from "../Variables/AlarmNumber";
 
 // メモ化されたセルコンポーネント - 0の値にはTooltipを表示しない
 const MemoizedCell = memo(({ value, index, explanation }) => {
@@ -45,8 +46,8 @@ const MemoizedRow = memo(({ row, columnWidth, columnWidth_alarm, explanation_lis
 
 MemoizedRow.displayName = "MemoizedRow";
 
-function AlarmTable({ alarmCodes, machineUnitData }) {
-  if (!alarmCodes || !machineUnitData) return null;
+function AlarmTable({ machineUnitData }) {
+  if (!machineUnitData) return null;
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isRendering, setIsRendering] = useState(true);
@@ -69,7 +70,7 @@ function AlarmTable({ alarmCodes, machineUnitData }) {
       setIsRendering(false);
     }, 100);
     return () => clearTimeout(timer);
-  }, [alarmCodes, machineUnitData]);
+  }, [machineUnitData]);
 
   // ヘッダーとデータをメモ化
   const { header_list, explanation_list, rows } = useMemo(() => {
@@ -93,7 +94,7 @@ function AlarmTable({ alarmCodes, machineUnitData }) {
       const lot = machineUnitData[key];
       const lot_data = [key, lot.type_name, lot.lot_start_time, lot.lot_end_time];
       unit_list.forEach((unit) => {
-        Object.values(lot.alarm_list[`${unit}_alarm`]).forEach((alarm_value) => {
+        Object.values(lot.alarm_counts[`${unit}_alarm`]).forEach((alarm_value) => {
           lot_data.push(alarm_value);
         });
       });
@@ -124,7 +125,7 @@ function AlarmTable({ alarmCodes, machineUnitData }) {
         maxWidth: `${windowWidth * 0.96}px`,
       }}
     >
-      <table className="w-full border-collapse" style={{ tableLayout: "fixed" }}>
+      <table className="border-collapse">
         <thead className="sticky top-0 z-20">
           <tr>
             {header_list.map((header, index) => (
@@ -144,8 +145,8 @@ function AlarmTable({ alarmCodes, machineUnitData }) {
               >
                 {index >= 4 ? (
                   <div className="group relative inline-block">
-                    <span className="cursor-help">{header}</span>
-                    <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-50 shadow-lg">
+                    {header}
+                    <div className="invisible group-hover:visible absolute left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-50 shadow-lg">
                       {explanation_list[index - 4]}
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
                     </div>

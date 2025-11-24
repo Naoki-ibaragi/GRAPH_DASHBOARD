@@ -15,8 +15,6 @@ export function AlarmDataProvider({ children }) {
   return (
     <AlarmDataContext.Provider
       value={{
-        alarmCodes,
-        setAlarmCodes,
         machineUnitData,
         setMachineUnitData,
         machineName,
