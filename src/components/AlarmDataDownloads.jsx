@@ -5,8 +5,12 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { alarmCodes } from "../Variables/AlarmNumber";
 import { useAlarmData } from "../contexts/AlarmDataContext";
+import { useConfig } from "../contexts/ConfigContext";
 
 export default function AlarmDataDownloads() {
+  // 設定を取得
+  const { config } = useConfig();
+
   // グローバルステートから取得
   const { machineUnitData, setMachineUnitData } = useAlarmData();
 
@@ -25,7 +29,7 @@ export default function AlarmDataDownloads() {
     const fetchMachineList = async () => {
       //tauri invokeからバックエンドapiへのfetchに仕様変更
       try {
-        const response = await fetch("http://127.0.0.1:8080/get_machine_list", {
+        const response = await fetch(config.machine_list_url, {
           method: "POST",
         });
 
@@ -40,7 +44,8 @@ export default function AlarmDataDownloads() {
         }
       } catch (error) {
         console.error("コマンド呼び出しエラー:", error);
-        setIsError("設備名一覧の取得に失敗しました");
+        setIsError(true);
+        setErrorMessage("設備名一覧の取得に失敗しました");
       }
     };
 
@@ -67,7 +72,7 @@ export default function AlarmDataDownloads() {
 
     //tauri invokeからバックエンドapiへのfetchに仕様変更
     try {
-      const response = await fetch("http://127.0.0.1:8080/download_alarm", {
+      const response = await fetch(config.alarm_data_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

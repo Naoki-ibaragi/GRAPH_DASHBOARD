@@ -3,12 +3,16 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { lot_table_headers } from "../Variables/LotTableHeader";
 import LotDataTable from "../TableComponents/LotDataTable";
+import { useConfig } from "../contexts/ConfigContext";
 
 export default function LotDataDownloads() {
+  // 設定を取得
+  const { config } = useConfig();
   const [lotNumber, setLotNumber] = useState(""); //バックエンドに送信するロット番号
   const [validationError, setValidationError] = useState(false); //設備名入力時のエラーの有無
   const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
   const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
+  const [errorMessage, setErrorMessage] = useState(""); //表示するエラーメッセージ
   const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
   const [lotUnitData, setLotUnitData] = useState(null); //バックエンドから受け取った設備単位のアラームデータ一覧
   const [isTable, setIsTable] = useState(false); //データを受け取ってテーブルを表示するかどうか
@@ -41,7 +45,7 @@ export default function LotDataDownloads() {
 
     try {
       // REST APIにリクエストを送信
-      const response = await fetch("http://127.0.0.1:8080/download_lot", {
+      const response = await fetch(config.lot_data_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,6 +68,7 @@ export default function LotDataDownloads() {
       setIsError(true);
       setDownloads(false);
       setDownloadsState(`処理失敗: ${error.message}`);
+      setErrorMessage(`処理失敗: ${error.message}`);
     }
   };
 
@@ -144,12 +149,22 @@ export default function LotDataDownloads() {
       </div>
 
       {/* ダウンロード中リスト */}
-      {downloads || isError ? (
+      {downloads ? (
         <div className="bg-white rounded-xl shadow-lg p-8 mt-6">
           <div className="flex flex-col items-center justify-center min-h-[300px] gap-4">
             <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
             <h3 className="text-xl font-semibold text-gray-800">グラフデータを取得中...</h3>
             <p className="text-sm text-gray-600">{downloadsState}</p>
+          </div>
+        </div>
+      ) : null}
+
+      {/* エラー発生時表示 */}
+      {isError ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl shadow-lg p-8 mt-6">
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-2">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-red-800">{`エラーが発生しました:${errorMessage}`}</h3>
           </div>
         </div>
       ) : null}

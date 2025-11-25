@@ -2,7 +2,7 @@ import React from 'react';
 import { Chart, Series, Title, XAxis, YAxis, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
-import { line_plot_x_axis_items, line_plot_y_axis_items } from '../Variables/LinePlotData';
+import { line_plot_y_axis_items } from '../Variables/LinePlotData';
 import { getKeyByValue } from '../utils/helpers';
 
 setHighcharts(Highcharts);
@@ -82,7 +82,6 @@ function GraphLine(props) {
                     }
                 })}
             >
-                {getKeyByValue(line_plot_x_axis_items,x_axis_item)}
             </XAxis>
             <YAxis>{getKeyByValue(line_plot_y_axis_items,y_axis_item)}</YAxis>
                 {Object.keys(raw_data).map((key)=>(

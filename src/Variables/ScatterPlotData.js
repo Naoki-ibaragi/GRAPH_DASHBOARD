@@ -1,5 +1,4 @@
 export const scatter_plot_x_axis_items={
-    "指定なし(連番)":"CONTINUOUS",
     "1. シリアル番号":"SERIAL",
     "2. ウエハ番号":"WANO",
     "3. ウエハX座標":"WAX",
@@ -93,7 +92,6 @@ export const scatter_plot_y_axis_items={
     "2. ウエハ番号":"WANO",
     "3. ウエハX座標":"WAX",
     "4. ウエハY座標":"WAY",
-    "5. LDピックアップ時刻":"LD_PICKUP_DATE",
     "6. LDトレイポケット座標X":"LD_TRAY_POCKET_X",
     "7. LDトレイポケット座標Y":"LD_TRAY_POCKET_Y",
     "8. LDトレイ補正量X":"LD_TRAY_ALIGN_X",
@@ -171,7 +169,6 @@ export const scatter_plot_y_axis_items={
     "80. ULDトレイポケット補正量X":"ULD_POCKET_ALIGN_X",
     "81. ULDトレイポケット補正量Y":"ULD_POCKET_ALIGN_Y",
     "82. ULDアームコレット使用回数":"ULD_ARM1_COLLET",
-    "83. ULDチップ排出時刻":"ULD_PUT_DATE",
     "84. ULDポケット内チップ補正量X":"ULD_CHIP_ALIGN_X",
     "85. ULDポケット内チップ補正量Y":"ULD_CHIP_ALIGN_Y",
     "86. ULDチップ認識リトライ回数":"ULD_CHIP_ALIGN_NUM",

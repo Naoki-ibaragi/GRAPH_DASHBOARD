@@ -47,6 +47,7 @@ export const PLOT_UNITS = {
   WANO: 'WANO',
   WAX: 'WAX',
   WAY: 'WAY',
+  LD_TRAYID: 'ld_trayid',
   LD_ARM: 'ld_tray_pos',
   STAGE_DC1:'dc1_test_stage_serial',
   STAGE_AC1:'ac1_test_stage_serial',
@@ -56,6 +57,7 @@ export const PLOT_UNITS = {
   PROBE_AC1:'ac1_test_probe_serial',
   PROBE_AC2:'ac2_test_probe_serial',
   PROBE_DC2:'dc2_test_probe_serial',
+  ULD_TRAYID: 'uld_trayid',
 };
 
 export const PLOT_UNIT_LABELS = {
@@ -63,7 +65,10 @@ export const PLOT_UNIT_LABELS = {
   'ロット単位': PLOT_UNITS.LOT,
   '設備単位': PLOT_UNITS.MACHINE,
   '機種名単位': PLOT_UNITS.TYPE,
-  'Wa番号単位': PLOT_UNITS.WAFER,
+  'Wa番号単位': PLOT_UNITS.WANO,
+  'WaX座標単位': PLOT_UNITS.WAX,
+  'WaY座標単位': PLOT_UNITS.WAY,
+  'LDトレイID単位': PLOT_UNITS.LD_TRAYID,
   'LDトレイ保持アーム単位': PLOT_UNITS.LD_ARM,
   'DC1測定ステージ単位': PLOT_UNITS.STAGE_DC1,
   'AC1測定ステージ単位': PLOT_UNITS.STAGE_AC1,
@@ -73,6 +78,7 @@ export const PLOT_UNIT_LABELS = {
   'AC1測定コンタクタ単位': PLOT_UNITS.PROBE_AC1,
   'AC2測定コンタクタ単位': PLOT_UNITS.PROBE_AC2,
   'DC2測定コンタクタ単位': PLOT_UNITS.PROBE_DC2,
+  'ULDトレイID単位': PLOT_UNITS.ULD_TRAYID,
 };
 
 // フィルター結合方法

@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import GraphSetting from "../graphComponents/GraphSetting";
-import { line_plot_x_axis_items, line_plot_y_axis_items } from "../Variables/LinePlotData";
+import { line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
 import { useGraphData } from "../contexts/GraphDataContext";
+import { useConfig } from "../contexts/ConfigContext";
 
 //各グラフ種類毎のコンポーネントをimport
 import GraphManager from "../graphComponents/GraphManager";
 
 export default function ChartCard1() {
+  // 設定を取得
+  const { config } = useConfig();
+
   // グローバルステートから取得
   const {
     graphType,
@@ -62,6 +66,10 @@ export default function ChartCard1() {
   const [alarmUnitError, setAlarmUnitError] = useState(false);
   const [filterItemError, setFilterItemError] = useState([false]);
 
+  //バックエンド処理でエラーが発生したかどうか
+  const [isError,setIsError]=useState(false);
+  const [errorMessage,setErrorMessage]=useState("");
+
   // 初回マウント時のフラグ
   const isInitialMount = useRef(true);
   const prevGraphType = useRef(graphType);
@@ -78,7 +86,6 @@ export default function ChartCard1() {
         setXDimItems(scatter_plot_x_axis_items);
         setYDimItems(scatter_plot_y_axis_items);
       } else if (graphType === "LinePlot") {
-        setXDimItems(line_plot_x_axis_items);
         setYDimItems(line_plot_y_axis_items);
       } else if (graphType === "Histogram") {
         setXDimItems(histogram_axis_items);
@@ -103,9 +110,7 @@ export default function ChartCard1() {
         setXdimItem(scatter_plot_x_axis_items[Object.keys(scatter_plot_x_axis_items)[0]]);
         setYdimItem(scatter_plot_y_axis_items[Object.keys(scatter_plot_y_axis_items)[0]]);
       } else if (graphType === "LinePlot") {
-        setXDimItems(line_plot_x_axis_items);
         setYDimItems(line_plot_y_axis_items);
-        setXdimItem(line_plot_x_axis_items[Object.keys(line_plot_x_axis_items)[0]]);
         setYdimItem(line_plot_y_axis_items[Object.keys(line_plot_y_axis_items)[0]]);
       } else if (graphType === "Histogram") {
         setXDimItems(histogram_axis_items);
@@ -147,13 +152,15 @@ export default function ChartCard1() {
 
     console.log(newGraphCondition);
 
+    setIsError(false); //errorを解除
+    setErrorMessage(""); //errormessageを初期化
     setGraphCondition(newGraphCondition); //状態を更新
     setIsProcess(true); //処理開始
     setProcessState("バックエンドへの通信を開始");
 
     try {
       // バックエンドのコマンドを呼び出し（ローカル変数を送信）
-      const response = await fetch("http://127.0.0.1:8080/get_graphdata", {
+      const response = await fetch(config.graph_data_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -182,6 +189,8 @@ export default function ChartCard1() {
     } catch (error) {
       console.error("コマンド呼び出しエラー:", error);
       setIsProcess(false); // ← エラー時も処理中フラグを解除
+      setIsError(true); //errorメッセージの表示
+      setErrorMessage(error);
     }
   };
 
@@ -243,6 +252,15 @@ export default function ChartCard1() {
             <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
             <h3 className="text-xl font-semibold text-gray-800">グラフデータを取得中...</h3>
             <p className="text-sm text-gray-600">{processState}</p>
+          </div>
+        </div>
+      ) : null}
+      {/* エラー発生時表示 */}
+      {isError ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl shadow-lg p-8 mt-6">
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-2">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-red-800">{`エラーが発生しました:${errorMessage}`}</h3>
           </div>
         </div>
       ) : null}

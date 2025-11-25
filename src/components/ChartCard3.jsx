@@ -3,13 +3,13 @@ import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
-import { useGraphData2 } from "../contexts/GraphDataContext2";
+import { useGraphData3 } from "../contexts/GraphDataContext3";
 import { useConfig } from "../contexts/ConfigContext";
 
 //各グラフ種類毎のコンポーネントをimport
 import GraphManager from "../graphComponents/GraphManager";
 
-export default function ChartCard2() {
+export default function ChartCard3() {
   // 設定を取得
   const { config } = useConfig();
 
@@ -49,7 +49,9 @@ export default function ChartCard2() {
     setIsGraph,
     graphCondition,
     setGraphCondition,
-  } = useGraphData2();
+    alarmNumbersString,
+    setAlarmNumbersString,
+  } = useGraphData3();
 
   // ローカルステート（UI表示用のみ）
   const [xDimItems, setXDimItems] = useState(scatter_plot_x_axis_items); //X軸の項目
@@ -63,6 +65,10 @@ export default function ChartCard2() {
   const [ydimItemError, setYdimItemError] = useState(false);
   const [alarmUnitError, setAlarmUnitError] = useState(false);
   const [filterItemError, setFilterItemError] = useState([false]);
+
+  //バックエンド処理でエラーが発生したかどうか
+  const [isError,setIsError]=useState(false);
+  const [errorMessage,setErrorMessage]=useState("");
 
   // 初回マウント時のフラグ
   const isInitialMount = useRef(true);
@@ -146,6 +152,8 @@ export default function ChartCard2() {
 
     console.log(newGraphCondition);
 
+    setIsError(false); //errorを解除
+    setErrorMessage(""); //errormessageを初期化
     setGraphCondition(newGraphCondition); //状態を更新
     setIsProcess(true); //処理開始
     setProcessState("バックエンドへの通信を開始");
@@ -181,6 +189,8 @@ export default function ChartCard2() {
     } catch (error) {
       console.error("コマンド呼び出しエラー:", error);
       setIsProcess(false); // ← エラー時も処理中フラグを解除
+      setIsError(true); //errorメッセージの表示
+      setErrorMessage(error);
     }
   };
 
@@ -232,6 +242,8 @@ export default function ChartCard2() {
           filterItemError={filterItemError}
           setFilterItemError={setFilterItemError}
           getGraphDataFromBackend={getGraphDataFromBackend}
+          alarmNumbersString={alarmNumbersString}
+          setAlarmNumbersString={setAlarmNumbersString}
         />
       ) : null}
       {isProcess ? (
@@ -240,6 +252,15 @@ export default function ChartCard2() {
             <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
             <h3 className="text-xl font-semibold text-gray-800">グラフデータを取得中...</h3>
             <p className="text-sm text-gray-600">{processState}</p>
+          </div>
+        </div>
+      ) : null}
+      {/* エラー発生時表示 */}
+      {isError ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl shadow-lg p-8 mt-6">
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-2">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-red-800">{`エラーが発生しました:${errorMessage}`}</h3>
           </div>
         </div>
       ) : null}

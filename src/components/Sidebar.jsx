@@ -7,9 +7,10 @@ export default function Sidebar({ onSelect, openSideBar, setOpenSideBar }) {
   const menuItems = [
     { id: "LotDataDownloads", label: "Lot Data Downloads", icon: "📊" },
     { id: "AlarmDataDownloads", label: "Alarm Downloads", icon: "🔔" },
-    { id: "dashboard1", label: "Graph1", icon: "📈" },
-    { id: "dashboard2", label: "Graph2", icon: "📈" },
-    { id: "register", label: "Regist Data", icon: "📝" },
+    { id: "Graph1", label: "Graph1", icon: "📈" },
+    { id: "Graph2", label: "Graph2", icon: "📈"},
+    { id: "Graph3", label: "Graph3", icon: "📈" },
+    { id: "Settings", label: "Settings", icon: "⚙️" },
   ];
 
   return (
