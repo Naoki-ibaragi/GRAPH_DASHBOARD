@@ -195,7 +195,15 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![download_lot, download_alarm,get_graphdata,regist_data])
+        .invoke_handler(tauri::generate_handler![
+            download_lot,
+            download_alarm,
+            get_graphdata,
+            regist_data,
+            commands::config::get_app_config,
+            commands::config::save_app_config,
+            commands::config::get_config_file_path
+        ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .run(tauri::generate_context!())
