@@ -26,7 +26,9 @@ function LotDataTable({ lotUnitData }) {
 
         Object.keys(chip_unit_data).map((data_key,idx)=>{
             const data_type=lot_table_headers[header_arr[idx]]; //num or str
-            if (data_type in chip_unit_data[data_key]){
+            if (chip_unit_data[data_key]==="None"){
+                unit_vec.push("");
+            }else if (data_type in chip_unit_data[data_key]){
                 unit_vec.push(chip_unit_data[data_key][data_type]);
             }else{
                 unit_vec.push("");

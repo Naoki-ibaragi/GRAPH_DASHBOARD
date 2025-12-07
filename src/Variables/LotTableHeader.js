@@ -1,5 +1,5 @@
 export const lot_table_headers={
-    "MAHCINE_NAME":"Str",
+    "MAHCINE_ID":"Num",
     "TYPE_NAME":"Str",
     "LOT_NAME":"Str",
     "SERIAL":"Num",

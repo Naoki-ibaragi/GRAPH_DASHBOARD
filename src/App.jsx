@@ -8,6 +8,7 @@ import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import Header from "./components/Header";
 import Settings from "./components/Settings";
 import Manual from "./components/Manual";
+import { LotDataProvider } from "./contexts/LotDataContext";
 import { AlarmDataProvider } from "./contexts/AlarmDataContext";
 import { GraphDataProvider } from "./contexts/GraphDataContext";
 import { GraphDataProvider2 } from "./contexts/GraphDataContext2";
@@ -66,33 +67,35 @@ function App() {
 
   return (
     <ConfigProvider>
-      <AlarmDataProvider>
-        <GraphDataProvider>
-          <GraphDataProvider2>
-            <GraphDataProvider3>
-              <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                <Header
-                  openSideBar={openSideBar}
-                  setOpenSideBar={setOpenSideBar}
-                  title={currentPage.title}
-                />
-                <div className="flex pt-16">
-                  {openSideBar && (
-                    <Sidebar
-                      onSelect={setSelectedPage}
-                      openSideBar={openSideBar}
-                      setOpenSideBar={setOpenSideBar}
-                    />
-                  )}
-                  <main className="flex-1 p-4 md:p-6 lg:p-4">
-                    {PageComponent && <PageComponent />}
-                  </main>
+      <LotDataProvider>
+        <AlarmDataProvider>
+          <GraphDataProvider>
+            <GraphDataProvider2>
+              <GraphDataProvider3>
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+                  <Header
+                    openSideBar={openSideBar}
+                    setOpenSideBar={setOpenSideBar}
+                    title={currentPage.title}
+                  />
+                  <div className="flex pt-16">
+                    {openSideBar && (
+                      <Sidebar
+                        onSelect={setSelectedPage}
+                        openSideBar={openSideBar}
+                        setOpenSideBar={setOpenSideBar}
+                      />
+                    )}
+                    <main className="flex-1 p-4 md:p-6 lg:p-4">
+                      {PageComponent && <PageComponent />}
+                    </main>
+                  </div>
                 </div>
-              </div>
-            </GraphDataProvider3>
-          </GraphDataProvider2>
-        </GraphDataProvider>
-      </AlarmDataProvider>
+              </GraphDataProvider3>
+            </GraphDataProvider2>
+          </GraphDataProvider>
+        </AlarmDataProvider>
+      </LotDataProvider>
     </ConfigProvider>
   );
 }

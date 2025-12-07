@@ -4,18 +4,29 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { lot_table_headers } from "../Variables/LotTableHeader";
 import LotDataTable from "../TableComponents/LotDataTable";
 import { useConfig } from "../contexts/ConfigContext";
+import { useLotData } from "../contexts/LotDataContext";
 
 export default function LotDataDownloads() {
   // 設定を取得
   const { config } = useConfig();
-  const [lotNumber, setLotNumber] = useState(""); //バックエンドに送信するロット番号
-  const [validationError, setValidationError] = useState(false); //設備名入力時のエラーの有無
-  const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
-  const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
-  const [errorMessage, setErrorMessage] = useState(""); //表示するエラーメッセージ
-  const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
-  const [lotUnitData, setLotUnitData] = useState(null); //バックエンドから受け取った設備単位のアラームデータ一覧
-  const [isTable, setIsTable] = useState(false); //データを受け取ってテーブルを表示するかどうか
+  const {
+    lotNumber,
+    setLotNumber,
+    validationError,
+    setValidationError,
+    downloads,
+    setDownloads,
+    isError,
+    setIsError,
+    errorMessage,
+    setErrorMessage,
+    downloadsState,
+    setDownloadsState,
+    lotUnitData,
+    setLotUnitData,
+    isTable,
+    setIsTable
+  }=useLotData();
 
   //invoke処理が完了するとテーブルを表示する
   useEffect(() => {
@@ -60,9 +71,15 @@ export default function LotDataDownloads() {
       const data = await response.json();
 
       console.log("処理成功:", data);
-      setLotUnitData(data.lot_data);
-      setDownloads(false);
-      setIsError(false);
+      if (data.success){
+        setLotUnitData(data.lot_data);
+        setDownloads(false);
+        setIsError(false);
+      }else{
+        setDownloads(false);
+        setIsError(true);
+        setErrorMessage(`${data.message}`);
+      }
     } catch (error) {
       console.error("データ取得エラー:", error);
       setIsError(true);
@@ -85,7 +102,9 @@ export default function LotDataDownloads() {
 
         Object.keys(chip_unit_data).map((data_key,idx)=>{
             const data_type=lot_table_headers[header_arr[idx]]; //num or str
-            if (data_type in chip_unit_data[data_key]){
+            if (chip_unit_data[data_key]==="None"){
+                unit_vec.push("");
+            }else if (data_type in chip_unit_data[data_key]){
                 unit_vec.push(chip_unit_data[data_key][data_type]);
             }else{
                 unit_vec.push("");

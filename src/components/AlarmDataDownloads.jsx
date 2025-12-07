@@ -6,6 +6,8 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { alarmCodes } from "../Variables/AlarmNumber";
 import { useAlarmData } from "../contexts/AlarmDataContext";
 import { useConfig } from "../contexts/ConfigContext";
+import dayjs from "dayjs";
+import { OriginalDatepicker } from "../utils/datepicker";
 
 export default function AlarmDataDownloads() {
   // 設定を取得
@@ -23,6 +25,12 @@ export default function AlarmDataDownloads() {
   const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
   const [isTable, setIsTable] = useState(false); //データを受け取ってテーブルを表示するかどうか
   const [machineList, setMachineList] = useState([]); //設備名一覧
+  const [startDate, setStartDate] = useState(dayjs().subtract(7, "day")); //データ収集開始日（デフォルト: 7日前）
+  const [endDate, setEndDate] = useState(dayjs()); //データ収集終了日（デフォルト: 今日）
+  const [startDateError, setStartDateError] = useState(false); //開始日のバリデーションエラー
+  const [endDateError, setEndDateError] = useState(false); //終了日のバリデーションエラー
+  const [startDateErrorMessage, setStartDateErrorMessage] = useState(""); //開始日のエラーメッセージ
+  const [endDateErrorMessage, setEndDateErrorMessage] = useState(""); //終了日のエラーメッセージ
 
   //一番最初にバックエンドから設備名一覧を取得する
   useEffect(() => {
@@ -52,19 +60,74 @@ export default function AlarmDataDownloads() {
     fetchMachineList();
   }, []);
 
+  // 日付バリデーション関数
+  const validateDates = () => {
+    let hasError = false;
+    const now = new Date();
+
+    // 開始日のバリデーション
+    if (startDate) {
+      if (startDate > dayjs(now)) {
+        setStartDateError(true);
+        setStartDateErrorMessage("開始日は現在時刻より前に設定してください");
+        hasError = true;
+      } else {
+        setStartDateError(false);
+        setStartDateErrorMessage("");
+      }
+    }
+
+    // 終了日のバリデーション
+    if (endDate) {
+      const endDateObj = endDate.toDate();
+      if (endDateObj > now) {
+        setEndDateError(true);
+        setEndDateErrorMessage("終了日は現在時刻より前に設定してください");
+        hasError = true;
+      } else {
+        setEndDateError(false);
+        setEndDateErrorMessage("");
+      }
+    }
+
+    // 開始日と終了日の関係チェック
+    if (startDate && endDate) {
+      const startDateObj = startDate.toDate();
+      const endDateObj = endDate.toDate();
+      if (startDateObj >= endDateObj) {
+        setStartDateError(true);
+        setStartDateErrorMessage("開始日は終了日より前に設定してください");
+        hasError = true;
+      }
+    }
+
+    return !hasError;
+  };
+
+  // 開始日変更時のハンドラ
+  const handleStartDateChange = (date) => {
+    setStartDate(date ? dayjs(date) : null);
+    setStartDateError(false);
+    setStartDateErrorMessage("");
+  };
+
+  // 終了日変更時のハンドラ
+  const handleEndDateChange = (date) => {
+    setEndDate(date ? dayjs(date) : null);
+    setEndDateError(false);
+    setEndDateErrorMessage("");
+  };
+
   // アラームダウンロードを実行する関数
   const downloadAlarm = async () => {
+    // 日付バリデーション
+    if (!validateDates()) {
+      return;
+    }
+
     setMachineUnitData(null);
     setIsError(false);
     setErrorMessage("");
-
-    //設備名のバリデーションを入れる
-    if (!/^CLT_\d+$/.test(machineName)) {
-      setValidationError(true);
-      return;
-    } else {
-      setValidationError(false);
-    }
 
     //ダウンロードタスクをセットする
     setDownloads(true);
@@ -77,8 +140,14 @@ export default function AlarmDataDownloads() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ machine_name: machineName }),
+        body: JSON.stringify({
+          machine_id: parseInt(machineName),
+          start_date: startDate.format("YYYY-MM-DD HH:mm:00"),
+          end_date: endDate.format("YYYY-MM-DD HH:mm:00"),
+        }),
       });
+
+      console.log(`Machine id,${machineName}`);
 
       const data = await response.json();
       if (data.success) {
@@ -94,6 +163,7 @@ export default function AlarmDataDownloads() {
       }
     } catch (error) {
       setIsError(true);
+      setDownloads(false);
       setErrorMessage(error);
       console.error("コマンド呼び出しエラー:", error);
     }
@@ -167,16 +237,18 @@ export default function AlarmDataDownloads() {
 
   return (
     <>
-      <div className="mt-8 max-w-2xl">
+      <div className="mt-8 max-w-4xl">
         {/* アラームデータ */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">アラームデータのダウンロード</h2>
             <p className="text-sm text-gray-600 mb-6">対象装置のアラームデータをダウンロードします。</p>
-            <div className="flex items-center gap-4 flex-wrap">
-              <label className="text-base font-medium text-gray-700">装置名</label>
+
+            {/* 装置選択 */}
+            <div className="flex items-center gap-2 flex-wrap mb-6">
+              <label className="text-base font-medium text-gray-700">装置 : CLT</label>
               <select
-                className="h-10 w-80 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                className="h-10 w-30 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                 value={machineName}
                 onChange={(e) => setMachineName(e.target.value)}
               >
@@ -186,6 +258,38 @@ export default function AlarmDataDownloads() {
                   </option>
                 ))}
               </select>
+              <label className="text-base font-medium text-gray-700">号機</label>
+            </div>
+
+            {/* 日付範囲選択 */}
+            <div className="border border-gray-300 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">データ収集期間</h3>
+              <div className="flex flex-wrap items-start gap-6">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-700">開始日</label>
+                  <OriginalDatepicker
+                    selected={startDate ? startDate.toDate() : null}
+                    onChange={(e) => handleStartDateChange(e.target.value)}
+                    value={startDate}
+                    error={startDateError}
+                    errorMessage={startDateErrorMessage}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-700">終了日</label>
+                  <OriginalDatepicker
+                    selected={endDate ? endDate.toDate() : null}
+                    onChange={(e) => handleEndDateChange(e.target.value)}
+                    value={endDate}
+                    error={endDateError}
+                    errorMessage={endDateErrorMessage}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ダウンロードボタン */}
+            <div>
               <button
                 disabled={downloads}
                 onClick={() => downloadAlarm()}
