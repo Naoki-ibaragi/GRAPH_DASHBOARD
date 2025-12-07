@@ -1,5 +1,5 @@
 export const db_items={
-    "MAHCINE_NAME":"装置名",
+    "MAHCINE_ID":"装置番号",
     "TYPE_NAME":"機種名",
     "LOT_NAME":"ロット番号",
     "SERIAL":"ロット内の各チップのシリアル番号",

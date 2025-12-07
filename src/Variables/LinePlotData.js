@@ -3,7 +3,7 @@ export const line_plot_y_axis_items={
     "1.ウエハ番号":"WANO",
     "1.ウエハX座標":"WAX",
     "1.ウエハY座標":"WAY",
-    "3.3LDトレイポケット座標X":"LD_TRAY_POCKET_X",
+    "3.LDトレイポケット座標X":"LD_TRAY_POCKET_X",
     "4.LDトレイポケット座標Y":"LD_TRAY_POCKET_Y",
     "5.LDトレイ補正量X":"LD_TRAY_ALIGN_X",
     "6.LDトレイ補正量Y":"LD_TRAY_ALIGN_Y",
