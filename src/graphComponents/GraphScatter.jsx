@@ -87,7 +87,7 @@ function GraphScatter(props) {
                         name={key}
                         color={getColorForKey(key)}
                         zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>[new Date(p["Scatter"]["x_data"]["StringData"]).getTime(),p["Scatter"]["y_data"]])}
+                        data={raw_data[key].map((p)=>[new Date(p["Scatter"]["x_data"]["DateData"]).getTime(),p["Scatter"]["y_data"]])}
                     />
                 ))
                 :

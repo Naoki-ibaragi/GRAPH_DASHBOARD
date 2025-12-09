@@ -6,7 +6,7 @@ const GraphDataContext = createContext();
 
 export function GraphDataProvider({ children }) {
   const [graphType, setGraphType] = useState("ScatterPlot");
-  const [xdimItem, setXdimItem] = useState("CONTINUOUS");
+  const [xdimItem, setXdimItem] = useState("SERIAL");
   const [ydimItem, setYdimItem] = useState("SERIAL");
   const [alarmUnit, setAlarmUnit] = useState("LD");
   const [alarmNumbers, setAlarmNumbers] = useState([]);

@@ -168,14 +168,6 @@ export default function ChartCard1() {
         body: JSON.stringify(newGraphCondition),
       });
 
-      // レスポンスステータスのチェック
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`HTTP Error ${response.status}:`, errorText);
-        setIsProcess(false);
-        return;
-      }
-
       const data = await response.json();
       if (data.success) {
         console.log("処理成功:", data);
@@ -185,6 +177,8 @@ export default function ChartCard1() {
       } else {
         console.log("処理失敗:", data);
         setIsProcess(false);
+        setIsError(true)
+        setErrorMessage(data.message);
       }
     } catch (error) {
       console.error("コマンド呼び出しエラー:", error);

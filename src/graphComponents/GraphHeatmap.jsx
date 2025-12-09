@@ -1,4 +1,4 @@
-import { Chart, Series, Title, XAxis, YAxis, Legend, setHighcharts } from '@highcharts/react';
+import { Chart, Series, Title, Legend, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
 import 'highcharts/modules/heatmap.src.js';
@@ -12,6 +12,10 @@ export default function GraphHeatmap(props) {
     const graph_condition = props.graphCondition;
 
     const raw_data = result_data.graph_data;
+    const grid_len_x=result_data.grid_data.grid_x;
+    const grid_len_y=result_data.grid_data.grid_y;
+    const x_min=result_data.grid_data.x_min;
+    const y_min=result_data.grid_data.y_min;
     const x_axis_item = graph_condition.graph_x_item;
     const y_axis_item = graph_condition.graph_y_item;
 
@@ -27,12 +31,30 @@ export default function GraphHeatmap(props) {
                     useGPUTranslations: true,
                     seriesThreshold: 1
                 },
+                xAxis: {
+                    title: {
+                        text: getKeyByValue(scatter_plot_x_axis_items,x_axis_item)
+                    },
+                    labels: {
+                        formatter: function() {
+                            return (x_min + this.value * grid_len_x).toFixed(2);
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: getKeyByValue(scatter_plot_y_axis_items,y_axis_item)
+                    },
+                    labels: {
+                        formatter: function() {
+                            return (y_min + this.value * grid_len_y).toFixed(2);
+                        }
+                    }
+                }
             }}
             containerProps={{style:{height:"620px"}}}
         >
             <Title>DensityPlot</Title>
-            <XAxis>{getKeyByValue(scatter_plot_x_axis_items,x_axis_item)}</XAxis>
-            <YAxis>{getKeyByValue(scatter_plot_y_axis_items,y_axis_item)}</YAxis>
             <Legend
                 align='right'
                 layout='vertical'
@@ -45,7 +67,7 @@ export default function GraphHeatmap(props) {
                 <Series
                     type="heatmap"
                     name={key}
-                    data={raw_data[key].map((p)=>[p.x,p.y,p.z])}
+                    data={raw_data[key].map((p)=>[p["Heatmap"].x_data,p["Heatmap"].y_data,p["Heatmap"].z_data])}
                 />
             ))}
         </Chart>
