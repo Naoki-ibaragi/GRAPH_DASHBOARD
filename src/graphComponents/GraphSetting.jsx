@@ -38,6 +38,7 @@ function GraphSetting(props) {
   const getGraphDataFromBackend = props.getGraphDataFromBackend; //グラフ描画ボタン押し下げ時の実行関数
   const alarmNumbersString=props.alarmNumbersString;
   const setAlarmNumbersString=props.setAlarmNumbersString;
+  const isGraph=props.isGraph; //グラフが表示されているかどうか
 
   // 日付バリデーション用のステート
   const [startDateError, setStartDateError] = useState(false);
@@ -547,12 +548,21 @@ function GraphSetting(props) {
       </fieldset>
 
       {/* グラフ作成ボタン */}
+      <div>
       <button
         onClick={handleGraphCreate}
         className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
       >
         グラフ作成開始
       </button>
+      {isGraph ? 
+        <button 
+          className="px-8 py-3 ml-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95">
+          グラフデータダウンロード
+        </button>
+        :null
+      }
+      </div>
     </div>
   );
 }

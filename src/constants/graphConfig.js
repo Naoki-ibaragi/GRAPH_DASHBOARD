@@ -38,7 +38,6 @@ export const COMPARISON_OPERATORS = {
   'を含む': 'LIKE',
 };
 
-// プロット分割単位
 export const PLOT_UNITS = {
   NONE: 'None',
   LOT: 'lot_name',
@@ -61,24 +60,24 @@ export const PLOT_UNITS = {
 };
 
 export const PLOT_UNIT_LABELS = {
-  '分割なし': PLOT_UNITS.NONE,
-  'ロット単位': PLOT_UNITS.LOT,
-  '設備単位': PLOT_UNITS.MACHINE,
-  '機種名単位': PLOT_UNITS.TYPE,
-  'Wa番号単位': PLOT_UNITS.WANO,
-  'WaX座標単位': PLOT_UNITS.WAX,
-  'WaY座標単位': PLOT_UNITS.WAY,
-  'LDトレイID単位': PLOT_UNITS.LD_TRAYID,
-  'LDトレイ保持アーム単位': PLOT_UNITS.LD_ARM,
-  'DC1測定ステージ単位': PLOT_UNITS.STAGE_DC1,
-  'AC1測定ステージ単位': PLOT_UNITS.STAGE_AC1,
-  'AC2測定ステージ単位': PLOT_UNITS.STAGE_AC2,
-  'DC2測定ステージ単位': PLOT_UNITS.STAGE_DC2,
-  'DC1測定コンタクタ単位': PLOT_UNITS.PROBE_DC1,
-  'AC1測定コンタクタ単位': PLOT_UNITS.PROBE_AC1,
-  'AC2測定コンタクタ単位': PLOT_UNITS.PROBE_AC2,
-  'DC2測定コンタクタ単位': PLOT_UNITS.PROBE_DC2,
-  'ULDトレイID単位': PLOT_UNITS.ULD_TRAYID,
+  '分割なし': "None",
+  'ロット単位': "LOT_NAME",
+  '設備単位': "MACINE_ID",
+  '機種名単位': "TYPE_NAME",
+  'Wa番号単位': "WANO",
+  'WaX座標単位': "WAX",
+  'WaY座標単位': "WAY",
+  'LDトレイID単位': "LD_TRAYID",
+  'LDトレイ保持アーム単位': "LD_TRAY_POS",
+  'DC1測定ステージ単位': "DC1_TEST_STAGE_SERAIL",
+  'AC1測定ステージ単位': "AC1_TEST_STAGE_SERAIL",
+  'AC2測定ステージ単位': "AC2_TEST_STAGE_SERAIL",
+  'DC2測定ステージ単位': "DC2_TEST_STAGE_SERAIL",
+  'DC1測定コンタクタ単位': "DC1_TEST_PROBE_SERIAL",
+  'AC1測定コンタクタ単位': "AC1_TEST_PROBE_SERIAL",
+  'AC2測定コンタクタ単位': "AC2_TEST_PROBE_SERIAL",
+  'DC2測定コンタクタ単位': "DC2_TEST_PROBE_SERIAL",
+  'ULDトレイID単位': "ULD_TRAYID",
 };
 
 // フィルター結合方法

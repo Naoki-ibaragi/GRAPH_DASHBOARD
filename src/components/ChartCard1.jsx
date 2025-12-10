@@ -5,6 +5,7 @@ import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variabl
 import { histogram_axis_items } from "../Variables/HistogramData";
 import { useGraphData } from "../contexts/GraphDataContext";
 import { useConfig } from "../contexts/ConfigContext";
+import { graphDataDownloads } from "../contexts/GraphDataDonwloads";
 
 //各グラフ種類毎のコンポーネントをimport
 import GraphManager from "../graphComponents/GraphManager";
@@ -150,8 +151,6 @@ export default function ChartCard1() {
       filter_conjunction: operator,
     };
 
-    console.log(newGraphCondition);
-
     setIsError(false); //errorを解除
     setErrorMessage(""); //errormessageを初期化
     setGraphCondition(newGraphCondition); //状態を更新
@@ -187,6 +186,12 @@ export default function ChartCard1() {
       setErrorMessage(error);
     }
   };
+
+  //グラフデータのダウンロード機能を実装
+  const handleGraphDataDownloads=()=>{
+    if (!isGraph) return;
+    graphDataDownloads(graphCondition,resultData);
+  }
 
   return (
     <div className="w-full max-w-full">
@@ -238,6 +243,8 @@ export default function ChartCard1() {
           getGraphDataFromBackend={getGraphDataFromBackend}
           alarmNumbersString={alarmNumbersString}
           setAlarmNumbersString={setAlarmNumbersString}
+          isGraph={isGraph}
+
         />
       ) : null}
       {isProcess ? (
