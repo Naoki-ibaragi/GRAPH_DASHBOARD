@@ -67,7 +67,6 @@ function GraphScatter(props) {
             }}
             containerProps={{style:{height:"600px"}}}
         >
-            <Title>ScatterPlot</Title>
             <XAxis
                 {...(x_axis_item.includes("DATE") && {
                     type: "datetime",

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
+import { density_plot_x_axis_items,density_plot_y_axis_items } from "../Variables/DensityPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
 import { useGraphData } from "../contexts/GraphDataContext";
 import { useConfig } from "../contexts/ConfigContext";
@@ -91,8 +92,8 @@ export default function ChartCard1() {
       } else if (graphType === "Histogram") {
         setXDimItems(histogram_axis_items);
       } else if (graphType === "DensityPlot") {
-        setXDimItems(scatter_plot_x_axis_items);
-        setYDimItems(scatter_plot_y_axis_items);
+        setXDimItems(density_plot_x_axis_items);
+        setYDimItems(density_plot_y_axis_items);
       }
       return;
     }
@@ -117,10 +118,10 @@ export default function ChartCard1() {
         setXDimItems(histogram_axis_items);
         setXdimItem(histogram_axis_items[Object.keys(histogram_axis_items)[0]]);
       } else if (graphType === "DensityPlot") {
-        setXDimItems(scatter_plot_x_axis_items);
-        setYDimItems(scatter_plot_y_axis_items);
-        setXdimItem(scatter_plot_x_axis_items[Object.keys(scatter_plot_x_axis_items)[0]]);
-        setYdimItem(scatter_plot_y_axis_items[Object.keys(scatter_plot_y_axis_items)[0]]);
+        setXDimItems(density_plot_x_axis_items);
+        setYDimItems(density_plot_y_axis_items);
+        setXdimItem(density_plot_x_axis_items[Object.keys(density_plot_x_axis_items)[0]]);
+        setYdimItem(density_plot_y_axis_items[Object.keys(density_plot_y_axis_items)[0]]);
       }
     }
   }, [graphType, setXdimItem, setYdimItem, setIsGraph, setResultData]);
@@ -152,6 +153,7 @@ export default function ChartCard1() {
     };
 
     setIsError(false); //errorを解除
+    setIsGraph(false); //グラフ非表示
     setErrorMessage(""); //errormessageを初期化
     setGraphCondition(newGraphCondition); //状態を更新
     setIsProcess(true); //処理開始

@@ -20,6 +20,7 @@ export default function GraphHeatmap(props) {
     const y_axis_item = graph_condition.graph_y_item;
 
     return (
+        <>
         <Chart
             options={{
                 colorAxis: {
@@ -54,7 +55,6 @@ export default function GraphHeatmap(props) {
             }}
             containerProps={{style:{height:"620px"}}}
         >
-            <Title>DensityPlot</Title>
             <Legend
                 align='right'
                 layout='vertical'
@@ -71,6 +71,11 @@ export default function GraphHeatmap(props) {
                 />
             ))}
         </Chart>
+        <div className='bg-white'>
+            <p>X最小値 : {x_min}, X格子幅 : {grid_len_x}</p>
+            <p>Y最小値 : {y_min}, Y格子幅 : {grid_len_y}</p>
+        </div>
+        </>
   );
 }
 

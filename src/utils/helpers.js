@@ -5,7 +5,8 @@
  * @returns {string|undefined} - 見つかったキー
  */
 export const getKeyByValue = (obj, value) => {
-  return Object.keys(obj).find((key) => obj[key] === value);
+  const item=Object.keys(obj).find((key) => obj[key] === value);
+  return item.split(".")[1]
 };
 
 /**

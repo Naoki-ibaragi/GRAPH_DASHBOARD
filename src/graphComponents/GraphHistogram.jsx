@@ -56,8 +56,8 @@ export default function GraphHistogram(props) {
     const multipleSeries = isMultipleSeries();
 
     return (
+        <>
         <Chart>
-            <Title>Histogram</Title>
             <XAxis
                 categories={categories}
                 labels={{
@@ -97,6 +97,10 @@ export default function GraphHistogram(props) {
                 />
             )}
         </Chart>
+        <div>
+            <p className='bg-white'>BIN幅 : {grid_data.histogram_bin_info.bin_width}</p>
+        </div>
+        </>
     );
 }
 

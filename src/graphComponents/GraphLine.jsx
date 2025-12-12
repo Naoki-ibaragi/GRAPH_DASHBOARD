@@ -73,15 +73,7 @@ function GraphLine(props) {
             }}
             containerProps={{style:{height:"600px"}}}
         >
-            <Title>LinePlot</Title>
-            <XAxis
-                {...(x_axis_item.includes("DATE") && {
-                    type: "datetime",
-                    labels: {
-                        format: '{value:%Y-%m-%d %H:%M:%S}'
-                    }
-                })}
-            >
+            <XAxis>
             </XAxis>
             <YAxis>{getKeyByValue(line_plot_y_axis_items,y_axis_item)}</YAxis>
                 {Object.keys(raw_data).map((key)=>(
@@ -105,7 +97,6 @@ function GraphLine(props) {
                                     }
                                 };
                             }
-
                             return yValue;
                         })}
                     />

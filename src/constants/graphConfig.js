@@ -62,22 +62,22 @@ export const PLOT_UNITS = {
 export const PLOT_UNIT_LABELS = {
   '分割なし': "None",
   'ロット単位': "LOT_NAME",
-  '設備単位': "MACINE_ID",
+  '設備単位': "MACHINE_ID",
   '機種名単位': "TYPE_NAME",
   'Wa番号単位': "WANO",
   'WaX座標単位': "WAX",
   'WaY座標単位': "WAY",
   'LDトレイID単位': "LD_TRAYID",
-  'LDトレイ保持アーム単位': "LD_TRAY_POS",
-  'DC1測定ステージ単位': "DC1_TEST_STAGE_SERAIL",
-  'AC1測定ステージ単位': "AC1_TEST_STAGE_SERAIL",
-  'AC2測定ステージ単位': "AC2_TEST_STAGE_SERAIL",
-  'DC2測定ステージ単位': "DC2_TEST_STAGE_SERAIL",
-  'DC1測定コンタクタ単位': "DC1_TEST_PROBE_SERIAL",
-  'AC1測定コンタクタ単位': "AC1_TEST_PROBE_SERIAL",
-  'AC2測定コンタクタ単位': "AC2_TEST_PROBE_SERIAL",
-  'DC2測定コンタクタ単位': "DC2_TEST_PROBE_SERIAL",
-  'ULDトレイID単位': "ULD_TRAYID",
+  'LDトレイ保持アーム単位': "LD_TRAY_ARM",
+  'DC1測定ステージ単位': "DC1_STAGE_SERAIL",
+  'AC1測定ステージ単位': "AC1_STAGE_SERAIL",
+  'AC2測定ステージ単位': "AC2_STAGE_SERAIL",
+  'DC2測定ステージ単位': "DC2_STAGE_SERAIL",
+  'DC1測定コンタクタ単位': "DC1_PROBE_SERIAL",
+  'AC1測定コンタクタ単位': "AC1_PROBE_SERIAL",
+  'AC2測定コンタクタ単位': "AC2_PROBE_SERIAL",
+  'DC2測定コンタクタ単位': "DC2_PROBE_SERIAL",
+  'ULDトレイID単位': "ULD_TRAYID"
 };
 
 // フィルター結合方法
