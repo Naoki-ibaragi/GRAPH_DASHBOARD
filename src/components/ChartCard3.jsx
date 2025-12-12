@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
+import { density_plot_x_axis_items,density_plot_y_axis_items } from "../Variables/DensityPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
 import { useGraphData3 } from "../contexts/GraphDataContext3";
 import { useConfig } from "../contexts/ConfigContext";
+import { graphDataDownloads } from "../contexts/GraphDataDonwloads";
 
 //各グラフ種類毎のコンポーネントをimport
 import GraphManager from "../graphComponents/GraphManager";
@@ -90,8 +92,8 @@ export default function ChartCard3() {
       } else if (graphType === "Histogram") {
         setXDimItems(histogram_axis_items);
       } else if (graphType === "DensityPlot") {
-        setXDimItems(scatter_plot_x_axis_items);
-        setYDimItems(scatter_plot_y_axis_items);
+        setXDimItems(density_plot_x_axis_items);
+        setYDimItems(density_plot_y_axis_items);
       }
       return;
     }
@@ -116,10 +118,10 @@ export default function ChartCard3() {
         setXDimItems(histogram_axis_items);
         setXdimItem(histogram_axis_items[Object.keys(histogram_axis_items)[0]]);
       } else if (graphType === "DensityPlot") {
-        setXDimItems(scatter_plot_x_axis_items);
-        setYDimItems(scatter_plot_y_axis_items);
-        setXdimItem(scatter_plot_x_axis_items[Object.keys(scatter_plot_x_axis_items)[0]]);
-        setYdimItem(scatter_plot_y_axis_items[Object.keys(scatter_plot_y_axis_items)[0]]);
+        setXDimItems(density_plot_x_axis_items);
+        setYDimItems(density_plot_y_axis_items);
+        setXdimItem(density_plot_x_axis_items[Object.keys(density_plot_x_axis_items)[0]]);
+        setYdimItem(density_plot_y_axis_items[Object.keys(density_plot_y_axis_items)[0]]);
       }
     }
   }, [graphType, setXdimItem, setYdimItem, setIsGraph, setResultData]);
@@ -150,9 +152,8 @@ export default function ChartCard3() {
       filter_conjunction: operator,
     };
 
-    console.log(newGraphCondition);
-
     setIsError(false); //errorを解除
+    setIsGraph(false); //グラフ非表示
     setErrorMessage(""); //errormessageを初期化
     setGraphCondition(newGraphCondition); //状態を更新
     setIsProcess(true); //処理開始
@@ -168,14 +169,6 @@ export default function ChartCard3() {
         body: JSON.stringify(newGraphCondition),
       });
 
-      // レスポンスステータスのチェック
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`HTTP Error ${response.status}:`, errorText);
-        setIsProcess(false);
-        return;
-      }
-
       const data = await response.json();
       if (data.success) {
         console.log("処理成功:", data);
@@ -185,6 +178,8 @@ export default function ChartCard3() {
       } else {
         console.log("処理失敗:", data);
         setIsProcess(false);
+        setIsError(true)
+        setErrorMessage(data.message);
       }
     } catch (error) {
       console.error("コマンド呼び出しエラー:", error);
@@ -194,9 +189,15 @@ export default function ChartCard3() {
     }
   };
 
+  //グラフデータのダウンロード機能を実装
+  const handleGraphDataDownloads=()=>{
+    if (!isGraph) return;
+    graphDataDownloads(graphCondition,resultData);
+  }
+
   return (
     <div className="w-full max-w-full">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-2">
         <button
           onClick={() => setCloseSettingCard((prev) => !prev)}
           className="px-6 text-sm font-medium text-primary-700 hover:text-primary-800 hover:bg-primary-50 rounded-lg transition-all duration-200"
@@ -244,6 +245,8 @@ export default function ChartCard3() {
           getGraphDataFromBackend={getGraphDataFromBackend}
           alarmNumbersString={alarmNumbersString}
           setAlarmNumbersString={setAlarmNumbersString}
+          isGraph={isGraph}
+          handleGraphDataDownloads={handleGraphDataDownloads}
         />
       ) : null}
       {isProcess ? (

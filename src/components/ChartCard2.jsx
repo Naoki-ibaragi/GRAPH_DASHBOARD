@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import GraphSetting from "../graphComponents/GraphSetting";
 import { line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
+import { density_plot_x_axis_items,density_plot_y_axis_items } from "../Variables/DensityPlotData";
 import { histogram_axis_items } from "../Variables/HistogramData";
 import { useGraphData2 } from "../contexts/GraphDataContext2";
 import { useConfig } from "../contexts/ConfigContext";
+import { graphDataDownloads } from "../contexts/GraphDataDonwloads";
 
 //各グラフ種類毎のコンポーネントをimport
 import GraphManager from "../graphComponents/GraphManager";
@@ -49,6 +51,8 @@ export default function ChartCard2() {
     setIsGraph,
     graphCondition,
     setGraphCondition,
+    alarmNumbersString,
+    setAlarmNumbersString,
   } = useGraphData2();
 
   // ローカルステート（UI表示用のみ）
@@ -63,6 +67,10 @@ export default function ChartCard2() {
   const [ydimItemError, setYdimItemError] = useState(false);
   const [alarmUnitError, setAlarmUnitError] = useState(false);
   const [filterItemError, setFilterItemError] = useState([false]);
+
+  //バックエンド処理でエラーが発生したかどうか
+  const [isError,setIsError]=useState(false);
+  const [errorMessage,setErrorMessage]=useState("");
 
   // 初回マウント時のフラグ
   const isInitialMount = useRef(true);
@@ -84,8 +92,8 @@ export default function ChartCard2() {
       } else if (graphType === "Histogram") {
         setXDimItems(histogram_axis_items);
       } else if (graphType === "DensityPlot") {
-        setXDimItems(scatter_plot_x_axis_items);
-        setYDimItems(scatter_plot_y_axis_items);
+        setXDimItems(density_plot_x_axis_items);
+        setYDimItems(density_plot_y_axis_items);
       }
       return;
     }
@@ -110,10 +118,10 @@ export default function ChartCard2() {
         setXDimItems(histogram_axis_items);
         setXdimItem(histogram_axis_items[Object.keys(histogram_axis_items)[0]]);
       } else if (graphType === "DensityPlot") {
-        setXDimItems(scatter_plot_x_axis_items);
-        setYDimItems(scatter_plot_y_axis_items);
-        setXdimItem(scatter_plot_x_axis_items[Object.keys(scatter_plot_x_axis_items)[0]]);
-        setYdimItem(scatter_plot_y_axis_items[Object.keys(scatter_plot_y_axis_items)[0]]);
+        setXDimItems(density_plot_x_axis_items);
+        setYDimItems(density_plot_y_axis_items);
+        setXdimItem(density_plot_x_axis_items[Object.keys(density_plot_x_axis_items)[0]]);
+        setYdimItem(density_plot_y_axis_items[Object.keys(density_plot_y_axis_items)[0]]);
       }
     }
   }, [graphType, setXdimItem, setYdimItem, setIsGraph, setResultData]);
@@ -144,8 +152,9 @@ export default function ChartCard2() {
       filter_conjunction: operator,
     };
 
-    console.log(newGraphCondition);
-
+    setIsError(false); //errorを解除
+    setIsGraph(false); //グラフ非表示
+    setErrorMessage(""); //errormessageを初期化
     setGraphCondition(newGraphCondition); //状態を更新
     setIsProcess(true); //処理開始
     setProcessState("バックエンドへの通信を開始");
@@ -160,14 +169,6 @@ export default function ChartCard2() {
         body: JSON.stringify(newGraphCondition),
       });
 
-      // レスポンスステータスのチェック
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`HTTP Error ${response.status}:`, errorText);
-        setIsProcess(false);
-        return;
-      }
-
       const data = await response.json();
       if (data.success) {
         console.log("処理成功:", data);
@@ -177,16 +178,26 @@ export default function ChartCard2() {
       } else {
         console.log("処理失敗:", data);
         setIsProcess(false);
+        setIsError(true)
+        setErrorMessage(data.message);
       }
     } catch (error) {
       console.error("コマンド呼び出しエラー:", error);
       setIsProcess(false); // ← エラー時も処理中フラグを解除
+      setIsError(true); //errorメッセージの表示
+      setErrorMessage(error);
     }
   };
 
+  //グラフデータのダウンロード機能を実装
+  const handleGraphDataDownloads=()=>{
+    if (!isGraph) return;
+    graphDataDownloads(graphCondition,resultData);
+  }
+
   return (
     <div className="w-full max-w-full">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-2">
         <button
           onClick={() => setCloseSettingCard((prev) => !prev)}
           className="px-6 text-sm font-medium text-primary-700 hover:text-primary-800 hover:bg-primary-50 rounded-lg transition-all duration-200"
@@ -232,6 +243,10 @@ export default function ChartCard2() {
           filterItemError={filterItemError}
           setFilterItemError={setFilterItemError}
           getGraphDataFromBackend={getGraphDataFromBackend}
+          alarmNumbersString={alarmNumbersString}
+          setAlarmNumbersString={setAlarmNumbersString}
+          isGraph={isGraph}
+          handleGraphDataDownloads={handleGraphDataDownloads}
         />
       ) : null}
       {isProcess ? (
@@ -240,6 +255,15 @@ export default function ChartCard2() {
             <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
             <h3 className="text-xl font-semibold text-gray-800">グラフデータを取得中...</h3>
             <p className="text-sm text-gray-600">{processState}</p>
+          </div>
+        </div>
+      ) : null}
+      {/* エラー発生時表示 */}
+      {isError ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl shadow-lg p-8 mt-6">
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-2">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-red-800">{`エラーが発生しました:${errorMessage}`}</h3>
           </div>
         </div>
       ) : null}

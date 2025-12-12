@@ -78,7 +78,7 @@ function App() {
                     setOpenSideBar={setOpenSideBar}
                     title={currentPage.title}
                   />
-                  <div className="flex pt-16">
+                  <div className="flex pt-12">
                     {openSideBar && (
                       <Sidebar
                         onSelect={setSelectedPage}

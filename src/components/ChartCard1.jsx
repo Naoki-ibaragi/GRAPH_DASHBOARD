@@ -197,7 +197,7 @@ export default function ChartCard1() {
 
   return (
     <div className="w-full max-w-full">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-2">
         <button
           onClick={() => setCloseSettingCard((prev) => !prev)}
           className="px-6 text-sm font-medium text-primary-700 hover:text-primary-800 hover:bg-primary-50 rounded-lg transition-all duration-200"
@@ -246,7 +246,7 @@ export default function ChartCard1() {
           alarmNumbersString={alarmNumbersString}
           setAlarmNumbersString={setAlarmNumbersString}
           isGraph={isGraph}
-
+          handleGraphDataDownloads={handleGraphDataDownloads}
         />
       ) : null}
       {isProcess ? (

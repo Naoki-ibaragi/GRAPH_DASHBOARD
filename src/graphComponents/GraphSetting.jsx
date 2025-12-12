@@ -39,6 +39,7 @@ function GraphSetting(props) {
   const alarmNumbersString=props.alarmNumbersString;
   const setAlarmNumbersString=props.setAlarmNumbersString;
   const isGraph=props.isGraph; //グラフが表示されているかどうか
+  const handleGraphDataDownloads=props.handleGraphDataDownloads; //グラフデータをcsvでダウンロード
 
   // 日付バリデーション用のステート
   const [startDateError, setStartDateError] = useState(false);
@@ -227,10 +228,10 @@ function GraphSetting(props) {
   }, [validateDatas, getGraphDataFromBackend, setAlarmNumbers]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg px-6 py-2 mb-6">
+    <div className="bg-white rounded-xl shadow-lg px-6 py-1 mb-6">
       {/* グラフ基本設定 */}
-      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4">
-        <legend className="text-base font-semibold text-gray-700 px-2">グラフ基本設定</legend>
+      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4 bg-green-100/30">
+        <legend className="text-base font-semibold text-gray-700 px-2 bg-white border">グラフ基本設定</legend>
 
         <div className="flex flex-wrap items-center gap-6 mb-4">
           {/* グラフの種類 */}
@@ -365,9 +366,9 @@ function GraphSetting(props) {
       </fieldset>
 
       {/* フィルター設定 */}
-      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4">
+      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4 bg-green-100/30">
         <OriginalTooltip text="フィルターの内容に沿って表示内容を制限します">
-          <legend className="text-base font-semibold text-gray-700 px-2">フィルター設定</legend>
+          <legend className="text-base font-semibold text-gray-700 px-2 border">フィルター設定</legend>
         </OriginalTooltip>
 
         {/* AND/OR選択 */}
@@ -490,9 +491,9 @@ function GraphSetting(props) {
 
       {/* プロット分割設定 */}
       {/* 密度プロットが選択されている時は分割無しに固定する */}
-      <fieldset className="border border-gray-300 rounded-lg p-4 mb-3">
+      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4 bg-green-100/30">
         <OriginalTooltip text="グラフのプロットを選択された項目のユニークなシリアル毎に分割します">
-          <legend className="text-base font-semibold text-gray-700 px-2">プロット分割設定</legend>
+          <legend className="text-base font-semibold text-gray-700 px-2 border">プロット分割設定</legend>
         </OriginalTooltip>
         {graphType !== "DensityPlot" ?
           <select
@@ -519,9 +520,9 @@ function GraphSetting(props) {
       </fieldset>
 
       {/* 集計日時設定 */}
-      <fieldset className="border border-gray-300 rounded-lg px-4 py-1 mb-4">
+      <fieldset className="border border-gray-300 rounded-lg p-4 mb-4 bg-blue-100/30">
         <OriginalTooltip text="範囲内の日時に流れたチップのデータを取得します。範囲が大きいとデータ取得に時間がかかります">
-          <legend className="text-base font-semibold text-gray-700 px-2">集計日時設定</legend>
+          <legend className="text-base font-semibold text-gray-700 px-2 border">集計日時設定</legend>
         </OriginalTooltip>
         <div className="flex flex-wrap items-center gap-6 mt-2 mb-2">
           <div className="flex items-center gap-3">
@@ -557,7 +558,9 @@ function GraphSetting(props) {
       </button>
       {isGraph ? 
         <button 
-          className="px-8 py-3 ml-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95">
+          className="px-8 py-3 ml-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+          onClick={handleGraphDataDownloads}
+          >
           グラフデータダウンロード
         </button>
         :null

@@ -58,6 +58,13 @@ function GraphScatter(props) {
             return color;
         }
     };
+    // アラームポイントのマーカー色を取得（インデックスベース）
+    let alarmMarkerIndex = 0;
+    const getAlarmMarkerColor = () => {
+        const color = ALARM_COLOR_PALETTE[alarmMarkerIndex % ALARM_COLOR_PALETTE.length];
+        alarmMarkerIndex++;
+        return color;
+    };
 
     return (
         <Chart
@@ -86,7 +93,26 @@ function GraphScatter(props) {
                         name={key}
                         color={getColorForKey(key)}
                         zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>[new Date(p["Scatter"]["x_data"]["DateData"]).getTime(),p["Scatter"]["y_data"]])}
+                        data={raw_data[key].map((p)=>{
+                            const xValue=p["Scatter"]["x_data"]["DateData"]
+                            const yValue=p["Scatter"]["y_data"] 
+                            const isAlarm=p["Scatter"]["is_alarm"]   
+                            if (isAlarm){
+                                return{
+                                    x:xValue,
+                                    y:yValue,
+                                    marker:{
+                                        fillColor:getAlarmMarkerColor(),
+                                        enabled:true
+                                    }
+                                }
+                            }else{
+                                return{
+                                    x:xValue,
+                                    y:yValue,
+                                }
+                            }
+                        })}
                     />
                 ))
                 :
@@ -97,7 +123,26 @@ function GraphScatter(props) {
                         name={key}
                         color={getColorForKey(key)}
                         zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>[p["Scatter"]["x_data"]["NumberData"],p["Scatter"]["y_data"]])}
+                        data={raw_data[key].map((p)=>{
+                            const xValue=p["Scatter"]["x_data"]["NumberData"]
+                            const yValue=p["Scatter"]["y_data"] 
+                            const isAlarm=p["Scatter"]["is_alarm"]   
+                            if (isAlarm){
+                                return{
+                                    x:xValue,
+                                    y:yValue,
+                                    marker:{
+                                        fillColor:getAlarmMarkerColor(),
+                                        enabled:true
+                                    }
+                                }
+                            }else{
+                                return{
+                                    x:xValue,
+                                    y:yValue,
+                                }
+                            }
+                        })}
                     />
                 ))
             }
