@@ -368,7 +368,7 @@ function GraphSetting(props) {
       {/* フィルター設定 */}
       <fieldset className="border border-gray-300 rounded-lg p-4 mb-4 bg-green-100/30">
         <OriginalTooltip text="フィルターの内容に沿って表示内容を制限します">
-          <legend className="text-base font-semibold text-gray-700 px-2 border">フィルター設定</legend>
+          <legend className="text-base font-semibold text-gray-700 px-2 bg-white border">フィルター設定</legend>
         </OriginalTooltip>
 
         {/* AND/OR選択 */}
@@ -493,7 +493,7 @@ function GraphSetting(props) {
       {/* 密度プロットが選択されている時は分割無しに固定する */}
       <fieldset className="border border-gray-300 rounded-lg p-4 mb-4 bg-green-100/30">
         <OriginalTooltip text="グラフのプロットを選択された項目のユニークなシリアル毎に分割します">
-          <legend className="text-base font-semibold text-gray-700 px-2 border">プロット分割設定</legend>
+          <legend className="text-base font-semibold text-gray-700 px-2 bg-white border">プロット分割設定</legend>
         </OriginalTooltip>
         {graphType !== "DensityPlot" ?
           <select
@@ -522,7 +522,7 @@ function GraphSetting(props) {
       {/* 集計日時設定 */}
       <fieldset className="border border-gray-300 rounded-lg p-4 mb-4 bg-blue-100/30">
         <OriginalTooltip text="範囲内の日時に流れたチップのデータを取得します。範囲が大きいとデータ取得に時間がかかります">
-          <legend className="text-base font-semibold text-gray-700 px-2 border">集計日時設定</legend>
+          <legend className="text-base font-semibold text-gray-700 px-2 bg-white border">集計日時設定</legend>
         </OriginalTooltip>
         <div className="flex flex-wrap items-center gap-6 mt-2 mb-2">
           <div className="flex items-center gap-3">

@@ -120,8 +120,12 @@ function Manual() {
           </div>
           <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
             <p className="text-gray-700 leading-relaxed">
-              エントリーにロット番号を打ち込むことで1ロット単位のデータをグラフ化できます。<br/>
-              視覚的にデータの傾向を把握することができます。
+              4種類のグラフをプロット可能です<br/>
+              1.散布図<br/>
+              2.時系列プロット<br/>
+              3.ヒストグラム<br/>
+              4.密度プロット<br/>
+              プロットの数が10万を超えると応答が悪くなります。フィルターやデータ取得期間を調整してください。
             </p>
           </div>
         </section>
