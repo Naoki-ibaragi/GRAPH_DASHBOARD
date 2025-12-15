@@ -77,6 +77,12 @@ export const PLOT_UNIT_LABELS = {
   'AC1測定コンタクタ単位': "AC1_PROBE_SERIAL",
   'AC2測定コンタクタ単位': "AC2_PROBE_SERIAL",
   'DC2測定コンタクタ単位': "DC2_PROBE_SERIAL",
+  'DC1測定BIN単位': "DC1_TEST_BIN",
+  'AC1測定BIN単位': "AC1_TEST_BIN",
+  'AC2測定BIN単位': "AC2_TEST_BIN",
+  'DC2測定BIN単位': "DC2_TEST_BIN",
+  '表面外観測定BIN単位': "IP_SURF_BIN",
+  '裏面外観測定BIN単位': "IP_BACK_BIN",
   'ULDトレイID単位': "ULD_TRAYID"
 };
 
