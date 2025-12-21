@@ -18,7 +18,7 @@ export function GraphDataProvider({ children }) {
   const [filters, setFilters] = useState([
     { enable: false, item: filter_items[Object.keys(filter_items)[0]], value: "", comparison: "=" }
   ]);
-  const [startDate, setStartDate] = useState(dayjs().subtract(1, "month"));
+  const [startDate, setStartDate] = useState(dayjs().subtract(1, "week"));
   const [endDate, setEndDate] = useState(dayjs());
   const [closeSettingCard, setCloseSettingCard] = useState(false);
 

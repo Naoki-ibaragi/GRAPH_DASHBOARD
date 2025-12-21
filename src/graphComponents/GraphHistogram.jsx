@@ -1,3 +1,4 @@
+import React, { useRef, useEffect } from 'react';
 import { Title, XAxis, setHighcharts, Chart } from '@highcharts/react';
 import { Series } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
@@ -10,6 +11,7 @@ setHighcharts(Highcharts);
 export default function GraphHistogram(props) {
     const result_data = props.resultData;
     const graph_condition = props.graphCondition;
+    const chartRef = useRef(null);
 
     const graph_data = result_data.graph_data;
     const grid_data = result_data.grid_data;
@@ -55,9 +57,28 @@ export default function GraphHistogram(props) {
     const categories = getBinCategories();
     const multipleSeries = isMultipleSeries();
 
+    // シリーズ名をマッピングするための配列を作成
+    const seriesNames = useRef([]);
+
+    // グラフ描画後にシリーズ名を書き換える
+    useEffect(() => {
+        if (chartRef.current && chartRef.current.chart) {
+            const chart = chartRef.current.chart;
+            chart.series.forEach((series, index) => {
+                if (seriesNames.current[index]) {
+                    series.update({ name: seriesNames.current[index] }, false);
+                }
+            });
+            chart.redraw();
+        }
+    }, [graph_data]);
+
+    // シリーズ名の配列をリセット
+    seriesNames.current = [];
+
     return (
         <>
-        <Chart>
+        <Chart ref={chartRef}>
             <XAxis
                 categories={categories}
                 labels={{
@@ -74,12 +95,13 @@ export default function GraphHistogram(props) {
                 Object.keys(graph_data).map((key) => {
                     const chartData = processHistogramData(graph_data[key]);
                     const isAlarm = key.includes("alarm");
+                    seriesNames.current.push(key);
 
                     return (
                         <Series
                             key={key}
                             type="column"
-                            name={key}
+                            name={String(key)}
                             data={chartData}
                             color={isAlarm ? "#FF0000" : undefined}
                             zIndex={isAlarm ? 100 : undefined}
@@ -88,13 +110,18 @@ export default function GraphHistogram(props) {
                     );
                 })
             ) : (
-                <Series
-                    type="column"
-                    name="Histogram"
-                    data={processHistogramData(graph_data.data)}
-                    color="#7cb5ec"
-                    pointPlacement={0}
-                />
+                (() => {
+                    seriesNames.current.push("Histogram");
+                    return (
+                        <Series
+                            type="column"
+                            name={String("Histogram")}
+                            data={processHistogramData(graph_data.data)}
+                            color="#7cb5ec"
+                            pointPlacement={0}
+                        />
+                    );
+                })()
             )}
         </Chart>
         <div>

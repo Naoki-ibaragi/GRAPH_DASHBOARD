@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Chart, Series, Title, XAxis, YAxis, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
@@ -35,6 +35,7 @@ const NORMAL_COLOR_PALETTE = [
 function GraphScatter(props) {
     const result_data = props.resultData;
     const graph_condition = props.graphCondition;
+    const chartRef = useRef(null);
 
     // バックエンドから受け取ったデータ構造に対応
     const raw_data = result_data.graph_data;
@@ -66,8 +67,28 @@ function GraphScatter(props) {
         return color;
     };
 
+    // シリーズ名をマッピングするための配列を作成
+    const seriesNames = useRef([]);
+
+    // グラフ描画後にシリーズ名を書き換える
+    useEffect(() => {
+        if (chartRef.current && chartRef.current.chart) {
+            const chart = chartRef.current.chart;
+            chart.series.forEach((series, index) => {
+                if (seriesNames.current[index]) {
+                    series.update({ name: seriesNames.current[index] }, false);
+                }
+            });
+            chart.redraw();
+        }
+    }, [raw_data]);
+
+    // シリーズ名の配列をリセット
+    seriesNames.current = [];
+
     return (
         <Chart
+            ref={chartRef}
             boost={{
                 useGPUTranslations: true,
                 seriesThreshold: 1
@@ -86,65 +107,132 @@ function GraphScatter(props) {
             </XAxis>
             <YAxis>{getKeyByValue(scatter_plot_y_axis_items,y_axis_item)}</YAxis>
             {x_axis_item.includes("DATE") ?
-                Object.keys(raw_data).map((key)=>(
-                    <Series
-                        key={key}
-                        type="scatter"
-                        name={key}
-                        color={getColorForKey(key)}
-                        zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>{
-                            const xValue=p["Scatter"]["x_data"]["DateData"]
-                            const yValue=p["Scatter"]["y_data"] 
-                            const isAlarm=p["Scatter"]["is_alarm"]   
-                            if (isAlarm){
-                                return{
-                                    x:xValue,
-                                    y:yValue,
-                                    marker:{
-                                        fillColor:getAlarmMarkerColor(),
-                                        enabled:true
-                                    }
-                                }
-                            }else{
-                                return{
-                                    x:xValue,
-                                    y:yValue,
-                                }
-                            }
-                        })}
-                    />
-                ))
+                Object.keys(raw_data).flatMap((key)=>{
+                    const normalData = [];
+                    const alarmData = [];
+
+                    raw_data[key].forEach((p)=>{
+                        const xValue=p["Scatter"]["x_data"]["DateData"]
+                        const yValue=p["Scatter"]["y_data"]
+                        const isAlarm=p["Scatter"]["is_alarm"]
+
+                        if (isAlarm){
+                            alarmData.push({
+                                x:xValue,
+                                y:yValue
+                            });
+                        }else{
+                            normalData.push({
+                                x:xValue,
+                                y:yValue
+                            });
+                        }
+                    });
+
+                    const series = [];
+
+                    // 通常データのSeries
+                    if (normalData.length > 0) {
+                        seriesNames.current.push(key);
+                        series.push(
+                            <Series
+                                key={key}
+                                type="scatter"
+                                name={String(key)}
+                                color={getColorForKey(key)}
+                                zIndex={1}
+                                data={normalData}
+                            />
+                        );
+                    }
+
+                    // アラームデータのSeries（最前面）
+                    if (alarmData.length > 0) {
+                        seriesNames.current.push(`${key} (Alarm)`);
+                        series.push(
+                            <Series
+                                key={`${key}_alarm`}
+                                type="scatter"
+                                name={String(`${key} (Alarm)`)}
+                                color={getAlarmMarkerColor()}
+                                zIndex={1000}
+                                marker={{
+                                    enabled: true,
+                                    radius: 8,
+                                    lineWidth: 2,
+                                    lineColor: '#FFFFFF'
+                                }}
+                                data={alarmData}
+                            />
+                        );
+                    }
+
+                    return series;
+                })
                 :
-                Object.keys(raw_data).map((key)=>(
-                    <Series
-                        key={key}
-                        type="scatter"
-                        name={key}
-                        color={getColorForKey(key)}
-                        zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>{
-                            const xValue=p["Scatter"]["x_data"]["NumberData"]
-                            const yValue=p["Scatter"]["y_data"] 
-                            const isAlarm=p["Scatter"]["is_alarm"]   
-                            if (isAlarm){
-                                return{
-                                    x:xValue,
-                                    y:yValue,
-                                    marker:{
-                                        fillColor:getAlarmMarkerColor(),
-                                        enabled:true
-                                    }
-                                }
-                            }else{
-                                return{
-                                    x:xValue,
-                                    y:yValue,
-                                }
-                            }
-                        })}
-                    />
-                ))
+                Object.keys(raw_data).flatMap((key)=>{
+                    const normalData = [];
+                    const alarmData = [];
+
+                    raw_data[key].forEach((p)=>{
+                        const xValue=p["Scatter"]["x_data"]["NumberData"]
+                        const yValue=p["Scatter"]["y_data"]
+                        const isAlarm=p["Scatter"]["is_alarm"]
+
+                        if (isAlarm){
+                            alarmData.push({
+                                x:xValue,
+                                y:yValue
+                            });
+                        }else{
+                            normalData.push({
+                                x:xValue,
+                                y:yValue
+                            });
+                        }
+                    });
+
+                    const series = [];
+
+                    // 通常データのSeries
+                    if (normalData.length > 0) {
+                        seriesNames.current.push(key);
+                        series.push(
+                            <Series
+                                key={key}
+                                type="scatter"
+                                name={String(key)}
+                                color={getColorForKey(key)}
+                                zIndex={1}
+                                data={normalData}
+                            />
+                        );
+                    }
+
+                    // アラームデータのSeries（最前面）
+                    if (alarmData.length > 0) {
+                        console.log("OK")
+                        seriesNames.current.push(`${key} (Alarm)`);
+                        series.push(
+                            <Series
+                                key={`${key}_alarm`}
+                                type="scatter"
+                                name={String(`${key} (Alarm)`)}
+                                color={getAlarmMarkerColor()}
+                                zIndex={1000}
+                                marker={{
+                                    enabled: true,
+                                    radius: 8,
+                                    lineWidth: 2,
+                                    lineColor: '#FFFFFF'
+                                }}
+                                data={alarmData}
+                            />
+                        );
+                    }
+
+                    return series;
+                })
             }
         </Chart>
     )

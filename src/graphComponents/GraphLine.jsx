@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Chart, Series, Title, XAxis, YAxis, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
@@ -35,6 +35,7 @@ const NORMAL_COLOR_PALETTE = [
 function GraphLine(props) {
     const result_data = props.resultData;
     const graph_condition = props.graphCondition;
+    const chartRef = useRef(null);
 
     const raw_data = result_data.graph_data;
     const x_axis_item = graph_condition.graph_x_item;
@@ -65,8 +66,28 @@ function GraphLine(props) {
         return color;
     };
 
+    // シリーズ名をマッピングするための配列を作成
+    const seriesNames = useRef([]);
+
+    // グラフ描画後にシリーズ名を書き換える
+    useEffect(() => {
+        if (chartRef.current && chartRef.current.chart) {
+            const chart = chartRef.current.chart;
+            chart.series.forEach((series, index) => {
+                if (seriesNames.current[index]) {
+                    series.update({ name: seriesNames.current[index] }, false);
+                }
+            });
+            chart.redraw();
+        }
+    }, [raw_data]);
+
+    // シリーズ名の配列をリセット
+    seriesNames.current = [];
+
     return (
         <Chart
+            ref={chartRef}
             boost={{
                 useGPUTranslations: true,
                 seriesThreshold: 1
@@ -76,31 +97,34 @@ function GraphLine(props) {
             <XAxis>
             </XAxis>
             <YAxis>{getKeyByValue(line_plot_y_axis_items,y_axis_item)}</YAxis>
-                {Object.keys(raw_data).map((key)=>(
-                    <Series
-                        key={key}
-                        type="line"
-                        name={key}
-                        color={getColorForKey(key)}
-                        zIndex={key.includes("alarm") ? 100 : undefined}
-                        data={raw_data[key].map((p)=>{
-                            const yValue = p["Line"]["y_data"];
-                            const isAlarm = p["Line"]["is_alarm"];
+                {Object.keys(raw_data).map((key)=>{
+                    seriesNames.current.push(key);
+                    return (
+                        <Series
+                            key={key}
+                            type="line"
+                            name={String(key)}
+                            color={getColorForKey(key)}
+                            zIndex={key.includes("alarm") ? 100 : undefined}
+                            data={raw_data[key].map((p)=>{
+                                const yValue = p["Line"]["y_data"];
+                                const isAlarm = p["Line"]["is_alarm"];
 
-                            // アラームの場合、マーカーに個別の色を設定
-                            if (isAlarm) {
-                                return {
-                                    y: yValue,
-                                    marker: {
-                                        fillColor: getAlarmMarkerColor(),
-                                        enabled: true
-                                    }
-                                };
-                            }
-                            return yValue;
-                        })}
-                    />
-                ))}
+                                // アラームの場合、マーカーに個別の色を設定
+                                if (isAlarm) {
+                                    return {
+                                        y: yValue,
+                                        marker: {
+                                            fillColor: getAlarmMarkerColor(),
+                                            enabled: true
+                                        }
+                                    };
+                                }
+                                return yValue;
+                            })}
+                        />
+                    );
+                })}
         </Chart>
     )
 }

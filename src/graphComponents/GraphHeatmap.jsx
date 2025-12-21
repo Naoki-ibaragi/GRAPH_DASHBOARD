@@ -1,3 +1,4 @@
+import React, { useRef, useEffect } from 'react';
 import { Chart, Series, Title, Legend, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
@@ -10,6 +11,7 @@ setHighcharts(Highcharts);
 export default function GraphHeatmap(props) {
     const result_data = props.resultData;
     const graph_condition = props.graphCondition;
+    const chartRef = useRef(null);
 
     const raw_data = result_data.graph_data;
     const grid_len_x=result_data.grid_data.grid_x;
@@ -19,9 +21,29 @@ export default function GraphHeatmap(props) {
     const x_axis_item = graph_condition.graph_x_item;
     const y_axis_item = graph_condition.graph_y_item;
 
+    // シリーズ名をマッピングするための配列を作成
+    const seriesNames = useRef([]);
+
+    // グラフ描画後にシリーズ名を書き換える
+    useEffect(() => {
+        if (chartRef.current && chartRef.current.chart) {
+            const chart = chartRef.current.chart;
+            chart.series.forEach((series, index) => {
+                if (seriesNames.current[index]) {
+                    series.update({ name: seriesNames.current[index] }, false);
+                }
+            });
+            chart.redraw();
+        }
+    }, [raw_data]);
+
+    // シリーズ名の配列をリセット
+    seriesNames.current = [];
+
     return (
         <>
         <Chart
+            ref={chartRef}
             options={{
                 colorAxis: {
                     min: 1,
@@ -63,13 +85,17 @@ export default function GraphHeatmap(props) {
                 y={10}
                 symbolHeight={520}
             />
-            {Object.keys(raw_data).map((key)=>(
-                <Series
-                    type="heatmap"
-                    name={key}
-                    data={raw_data[key].map((p)=>[p["Heatmap"].x_data,p["Heatmap"].y_data,p["Heatmap"].z_data])}
-                />
-            ))}
+            {Object.keys(raw_data).map((key)=>{
+                seriesNames.current.push(key);
+                return (
+                    <Series
+                        key={key}
+                        type="heatmap"
+                        name={String(key)}
+                        data={raw_data[key].map((p)=>[p["Heatmap"].x_data,p["Heatmap"].y_data,p["Heatmap"].z_data])}
+                    />
+                );
+            })}
         </Chart>
         <div className='bg-white'>
             <p>X最小値 : {x_min}, X格子幅 : {grid_len_x}</p>
