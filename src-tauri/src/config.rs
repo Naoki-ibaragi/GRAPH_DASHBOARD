@@ -15,6 +15,8 @@ pub struct AppConfig {
     pub machine_list_url: String,
     /// アラームデータダウンロードURL
     pub alarm_data_url: String,
+    /// 稼働データダウンロードURL
+    pub operation_data_url: String,
 }
 
 impl Default for AppConfig {
@@ -24,6 +26,7 @@ impl Default for AppConfig {
             lot_data_url: "http://127.0.0.1:8080/download_lot".to_string(),
             machine_list_url: "http://127.0.0.1:8080/get_machine_list".to_string(),
             alarm_data_url: "http://127.0.0.1:8080/download_alarm".to_string(),
+            operation_data_url: "http://127.0.0.1:8080/download_operating_data".to_string(),
         }
     }
 }
@@ -31,18 +34,34 @@ impl Default for AppConfig {
 impl AppConfig {
     /// 設定ファイルのパスを取得
     fn get_config_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
-        let app_data_dir = app_handle
-            .path()
-            .app_data_dir()
-            .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+        // リリースビルドの場合はexeファイルと同じ階層に配置
+        #[cfg(not(debug_assertions))]
+        {
+            let exe_dir = env::current_exe()
+                .map_err(|e| format!("Failed to get executable path: {}", e))?
+                .parent()
+                .ok_or_else(|| "Failed to get executable directory".to_string())?
+                .to_path_buf();
 
-        // ディレクトリが存在しない場合は作成
-        if !app_data_dir.exists() {
-            fs::create_dir_all(&app_data_dir)
-                .map_err(|e| format!("Failed to create app data dir: {}", e))?;
+            Ok(exe_dir.join("app_config.json"))
         }
 
-        Ok(app_data_dir.join("app_config.json"))
+        // デバッグビルドの場合は従来通りapp_data_dirに配置
+        #[cfg(debug_assertions)]
+        {
+            let app_data_dir = app_handle
+                .path()
+                .app_data_dir()
+                .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+
+            // ディレクトリが存在しない場合は作成
+            if !app_data_dir.exists() {
+                fs::create_dir_all(&app_data_dir)
+                    .map_err(|e| format!("Failed to create app data dir: {}", e))?;
+            }
+
+            Ok(app_data_dir.join("app_config.json"))
+        }
     }
 
     /// 設定ファイルを読み込む

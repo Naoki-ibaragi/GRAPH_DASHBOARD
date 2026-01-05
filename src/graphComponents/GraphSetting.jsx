@@ -82,6 +82,7 @@ function GraphSetting(props) {
       より大きい: ">",
       より小さい: "<",
       を含む: "LIKE",
+      を含まない: "NOT LIKE",
     }),
     []
   );
