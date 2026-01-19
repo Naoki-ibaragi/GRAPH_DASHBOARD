@@ -84,7 +84,6 @@ export const scatter_plot_x_axis_items={
     "83. ULDチップ排出時刻":"ULD_PUT_DATE",
     "84. ULDポケット内チップ補正量X":"ULD_CHIP_ALIGN_X",
     "85. ULDポケット内チップ補正量Y":"ULD_CHIP_ALIGN_Y",
-    "86. ULDチップ認識リトライ回数":"ULD_CHIP_ALIGN_NUM",
 }
 
 export const scatter_plot_y_axis_items={
@@ -171,6 +170,5 @@ export const scatter_plot_y_axis_items={
     "82. ULDアームコレット使用回数":"ULD_ARM1_COLLET",
     "84. ULDポケット内チップ補正量X":"ULD_CHIP_ALIGN_X",
     "85. ULDポケット内チップ補正量Y":"ULD_CHIP_ALIGN_Y",
-    "86. ULDチップ認識リトライ回数":"ULD_CHIP_ALIGN_NUM",
 }
 

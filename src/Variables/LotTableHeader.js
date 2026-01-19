@@ -104,7 +104,7 @@ export const lot_table_headers={
     "ULD_PUT_DATE":"Str",
     "ULD_CHIP_ALIGN_X":"Num",
     "ULD_CHIP_ALIGN_Y":"Num",
-    "ULD_CHIP_ALIGN_NUM":"Num",
+    "ULD_PF":"Str",
     "ULD_ALARM":"Num",
 }
 

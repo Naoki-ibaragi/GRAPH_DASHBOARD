@@ -104,7 +104,7 @@ export const filter_items={
     "103.ULDチップ排出時刻":"ULD_PUT_DATE",
     "104.ULDポケット内チップ補正量X":"ULD_CHIP_ALIGN_X",
     "105.ULDポケット内チップ補正量Y":"ULD_CHIP_ALIGN_Y",
-    "106.ULDチップ認識リトライ回数":"ULD_CHIP_ALIGN_NUM",
+    "106.ULDチップPASSFAIL":"ULD_PF",
     "107.ULDアラーム":"ULD_ALARM",
 }
 

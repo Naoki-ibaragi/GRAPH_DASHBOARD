@@ -11,8 +11,6 @@ const GraphManager = React.memo((props) => {
   const graph_type = graph_condition.graph_type;
   const [isRendering, setIsRendering] = useState(true);
 
-  console.log("graph_type", graph_type);
-
   useEffect(() => {
     // データが変わったら再レンダリング状態にする
     setIsRendering(true);

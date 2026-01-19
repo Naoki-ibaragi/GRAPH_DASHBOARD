@@ -13,20 +13,29 @@ function Header(props) {
         <button
           onClick={handleClickMenuIcon}
           className="mr-4 p-2 text-white hover:bg-white/10 rounded-lg transition-all duration-200 active:scale-95"
-          aria-label="menu"
+          aria-label={openSideBar ? "close menu" : "open menu"}
         >
           <svg
-            className="w-6 h-6"
+            className="w-6 h-6 transition-transform duration-200"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
+            {openSideBar ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
           </svg>
         </button>
         <h1 className="flex-1 text-xl md:text-2xl font-semibold text-white tracking-wide">

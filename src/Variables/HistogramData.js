@@ -82,6 +82,5 @@ export const histogram_axis_items={
     "81.ULDアーム1コレット使用回数":"ULD_ARM1_COLLET",
     "82.ULDポケット内チップ補正量X":"ULD_CHIP_ALIGN_X",
     "83.ULDポケット内チップ補正量Y":"ULD_CHIP_ALIGN_Y",
-    "84.ULDチップ認識リトライ回数":"ULD_CHIP_ALIGN_NUM",
 }
 

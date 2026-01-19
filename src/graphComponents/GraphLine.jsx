@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { Chart, Series, Title, XAxis, YAxis, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
@@ -41,29 +41,37 @@ function GraphLine(props) {
     const x_axis_item = graph_condition.graph_x_item;
     const y_axis_item = graph_condition.graph_y_item;
 
-    // キーをalarmとnormalに分類してインデックスを管理
-    const keys = Object.keys(raw_data);
-    let alarmIndex = 0;
-    let normalIndex = 0;
+    // 色の割り当てをuseMemoで安定化
+    const colorMapping = useMemo(() => {
+        const keys = Object.keys(raw_data);
+        const mapping = {};
+        let alarmIndex = 0;
+        let normalIndex = 0;
+        let alarmMarkerIndex = 0;
+
+        keys.forEach(key => {
+            if (key.includes("alarm")) {
+                mapping[key] = ALARM_COLOR_PALETTE[alarmIndex % ALARM_COLOR_PALETTE.length];
+                alarmIndex++;
+            } else {
+                mapping[key] = NORMAL_COLOR_PALETTE[normalIndex % NORMAL_COLOR_PALETTE.length];
+                normalIndex++;
+            }
+
+            // アラームマーカーの色も事前に割り当て
+            mapping[`${key}_alarm`] = ALARM_COLOR_PALETTE[alarmMarkerIndex % ALARM_COLOR_PALETTE.length];
+            alarmMarkerIndex++;
+        });
+
+        return mapping;
+    }, [raw_data]);
 
     const getColorForKey = (key) => {
-        if (key.includes("alarm")) {
-            const color = ALARM_COLOR_PALETTE[alarmIndex % ALARM_COLOR_PALETTE.length];
-            alarmIndex++;
-            return color;
-        } else {
-            const color = NORMAL_COLOR_PALETTE[normalIndex % NORMAL_COLOR_PALETTE.length];
-            normalIndex++;
-            return color;
-        }
+        return colorMapping[key];
     };
 
-    // アラームポイントのマーカー色を取得（インデックスベース）
-    let alarmMarkerIndex = 0;
-    const getAlarmMarkerColor = () => {
-        const color = ALARM_COLOR_PALETTE[alarmMarkerIndex % ALARM_COLOR_PALETTE.length];
-        alarmMarkerIndex++;
-        return color;
+    const getAlarmMarkerColor = (key) => {
+        return colorMapping[`${key}_alarm`];
     };
 
     // シリーズ名をマッピングするための配列を作成
@@ -97,33 +105,65 @@ function GraphLine(props) {
             <XAxis>
             </XAxis>
             <YAxis>{getKeyByValue(line_plot_y_axis_items,y_axis_item)}</YAxis>
-                {Object.keys(raw_data).map((key)=>{
-                    seriesNames.current.push(key);
-                    return (
-                        <Series
-                            key={key}
-                            type="line"
-                            name={String(key)}
-                            color={getColorForKey(key)}
-                            zIndex={key.includes("alarm") ? 100 : undefined}
-                            data={raw_data[key].map((p)=>{
-                                const yValue = p["Line"]["y_data"];
-                                const isAlarm = p["Line"]["is_alarm"];
+                {Object.keys(raw_data).flatMap((key)=>{
+                    const normalData = [];
+                    const alarmData = [];
 
-                                // アラームの場合、マーカーに個別の色を設定
-                                if (isAlarm) {
-                                    return {
-                                        y: yValue,
-                                        marker: {
-                                            fillColor: getAlarmMarkerColor(),
-                                            enabled: true
-                                        }
-                                    };
-                                }
-                                return yValue;
-                            })}
-                        />
-                    );
+                    raw_data[key].forEach((p, index)=>{
+                        const yValue = p["Line"]["y_data"];
+                        const isAlarm = p["Line"]["is_alarm"];
+
+                        if (isAlarm) {
+                            alarmData.push({
+                                x: index,
+                                y: yValue
+                            });
+                        } else {
+                            normalData.push(yValue);
+                        }
+                    });
+
+                    const series = [];
+
+                    // 通常データのSeries（線グラフ）
+                    if (normalData.length > 0 || alarmData.length > 0) {
+                        seriesNames.current.push(key);
+                        // 全データを線で繋ぐ（アラームも含む）
+                        const allData = raw_data[key].map(p => p["Line"]["y_data"]);
+                        series.push(
+                            <Series
+                                key={key}
+                                type="line"
+                                name={String(key)}
+                                color={getColorForKey(key)}
+                                zIndex={1}
+                                data={allData}
+                            />
+                        );
+                    }
+
+                    // アラームデータのSeries（散布図として最前面に表示）
+                    if (alarmData.length > 0) {
+                        seriesNames.current.push(`${key} (Alarm)`);
+                        series.push(
+                            <Series
+                                key={`${key}_alarm`}
+                                type="scatter"
+                                name={String(`${key} (Alarm)`)}
+                                color={getAlarmMarkerColor(key)}
+                                zIndex={1000}
+                                marker={{
+                                    enabled: true,
+                                    radius: 8,
+                                    lineWidth: 2,
+                                    lineColor: '#FFFFFF'
+                                }}
+                                data={alarmData}
+                            />
+                        );
+                    }
+
+                    return series;
                 })}
         </Chart>
     )

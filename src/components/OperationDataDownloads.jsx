@@ -3,6 +3,7 @@ import { useConfig } from "../contexts/ConfigContext";
 import dayjs from "dayjs";
 import { OriginalDatepicker } from "../utils/datepicker";
 import { useOperationData } from "../contexts/OperationDataContext";
+import OperationTable from "../TableComponents/OperationTable";
 
 export default function OperationDataDownloads() {
   // 設定を取得
@@ -10,12 +11,10 @@ export default function OperationDataDownloads() {
 
   // グローバルステートから取得
   const { 
-    machineUnitData,
-    setMachineUnitData,
+    resultData,
+    setResultData,
     machineName,
     setMachineName,
-    validationError,
-    setValidationError,
     downloads,
     setDownloads,
     isError,
@@ -24,8 +23,8 @@ export default function OperationDataDownloads() {
     setErrorMessage,
     downloadsState,
     setDownloadsState,
-    isTable,
-    setIsTable,
+    isResult,
+    setIsResult,
     machineList,
     setMachineList,
     startDate,
@@ -138,7 +137,8 @@ export default function OperationDataDownloads() {
       return;
     }
 
-    setMachineUnitData(null);
+    setResultData(null);
+    setIsResult(false);
     setIsError(false);
     setErrorMessage("");
 
@@ -148,7 +148,6 @@ export default function OperationDataDownloads() {
 
     //tauri invokeからバックエンドapiへのfetchに仕様変更
     try {
-      console.log("operation_url",config.operation_data_url);
       const response = await fetch(config.operation_data_url, {
         method: "POST",
         headers: {
@@ -160,8 +159,6 @@ export default function OperationDataDownloads() {
           end_date: endDate.format("YYYY-MM-DD HH:mm:00"),
         }),
       });
-
-      console.log(`Machine id,${machineName}`);
 
       // レスポンスステータスの確認
       if (!response.ok) {
@@ -188,11 +185,12 @@ export default function OperationDataDownloads() {
 
       if (data.success) {
         console.log("処理成功:", data);
-        setMachineUnitData(data.alarm_data);
+        setIsResult(true);
+        setResultData(data.summary_data);
         setDownloads(false);
-        setIsTable(true);
       } else {
         console.log("処理失敗:", data);
+        setIsResult(false);
         setDownloads(false);
         setIsError(true);
         setErrorMessage(data.message);
@@ -292,6 +290,9 @@ export default function OperationDataDownloads() {
           </div>
         </div>
       ) : null}
+
+      {/* fetch結果表示 */}
+      {isResult ? <OperationTable resultData={resultData}></OperationTable> : null}
     </>
   );
 }

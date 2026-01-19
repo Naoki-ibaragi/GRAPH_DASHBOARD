@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { Chart, Series, Title, XAxis, YAxis, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
@@ -39,32 +39,41 @@ function GraphScatter(props) {
 
     // バックエンドから受け取ったデータ構造に対応
     const raw_data = result_data.graph_data;
-    console.log("graph_data:", raw_data);
 
     const x_axis_item = graph_condition.graph_x_item;
     const y_axis_item = graph_condition.graph_y_item;
 
-    // キーをalarmとnormalに分類してインデックスを管理
-    let alarmIndex = 0;
-    let normalIndex = 0;
+    // 色の割り当てをuseMemoで安定化
+    const colorMapping = useMemo(() => {
+        const keys = Object.keys(raw_data);
+        const mapping = {};
+        let alarmIndex = 0;
+        let normalIndex = 0;
+        let alarmMarkerIndex = 0;
+
+        keys.forEach(key => {
+            if (key.includes("alarm")) {
+                mapping[key] = ALARM_COLOR_PALETTE[alarmIndex % ALARM_COLOR_PALETTE.length];
+                alarmIndex++;
+            } else {
+                mapping[key] = NORMAL_COLOR_PALETTE[normalIndex % NORMAL_COLOR_PALETTE.length];
+                normalIndex++;
+            }
+
+            // アラームマーカーの色も事前に割り当て
+            mapping[`${key}_alarm`] = ALARM_COLOR_PALETTE[alarmMarkerIndex % ALARM_COLOR_PALETTE.length];
+            alarmMarkerIndex++;
+        });
+
+        return mapping;
+    }, [raw_data]);
 
     const getColorForKey = (key) => {
-        if (key.includes("alarm")) {
-            const color = ALARM_COLOR_PALETTE[alarmIndex % ALARM_COLOR_PALETTE.length];
-            alarmIndex++;
-            return color;
-        } else {
-            const color = NORMAL_COLOR_PALETTE[normalIndex % NORMAL_COLOR_PALETTE.length];
-            normalIndex++;
-            return color;
-        }
+        return colorMapping[key];
     };
-    // アラームポイントのマーカー色を取得（インデックスベース）
-    let alarmMarkerIndex = 0;
-    const getAlarmMarkerColor = () => {
-        const color = ALARM_COLOR_PALETTE[alarmMarkerIndex % ALARM_COLOR_PALETTE.length];
-        alarmMarkerIndex++;
-        return color;
+
+    const getAlarmMarkerColor = (key) => {
+        return colorMapping[`${key}_alarm`];
     };
 
     // シリーズ名をマッピングするための配列を作成
@@ -154,7 +163,7 @@ function GraphScatter(props) {
                                 key={`${key}_alarm`}
                                 type="scatter"
                                 name={String(`${key} (Alarm)`)}
-                                color={getAlarmMarkerColor()}
+                                color={getAlarmMarkerColor(key)}
                                 zIndex={1000}
                                 marker={{
                                     enabled: true,
@@ -211,14 +220,13 @@ function GraphScatter(props) {
 
                     // アラームデータのSeries（最前面）
                     if (alarmData.length > 0) {
-                        console.log("OK")
                         seriesNames.current.push(`${key} (Alarm)`);
                         series.push(
                             <Series
                                 key={`${key}_alarm`}
                                 type="scatter"
                                 name={String(`${key} (Alarm)`)}
-                                color={getAlarmMarkerColor()}
+                                color={getAlarmMarkerColor(key)}
                                 zIndex={1000}
                                 marker={{
                                     enabled: true,

@@ -9,6 +9,7 @@ function Settings() {
   const [lotDataUrl, setLotDataUrl] = useState("");
   const [machineListUrl, setMachineListUrl] = useState("");
   const [alarmDataUrl, setAlarmDataUrl] = useState("");
+  const [operationDataUrl, setOperationDataUrl] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -21,6 +22,7 @@ function Settings() {
       setLotDataUrl(config.lot_data_url || "");
       setMachineListUrl(config.machine_list_url || "");
       setAlarmDataUrl(config.alarm_data_url || "");
+      setOperationDataUrl(config.operation_data_url || "");
     }
   }, [config]);
 
@@ -35,6 +37,7 @@ function Settings() {
       lot_data_url: lotDataUrl,
       machine_list_url: machineListUrl,
       alarm_data_url: alarmDataUrl,
+      operation_data_url: operationDataUrl,
     };
 
     const result = await saveConfig(newConfig);
@@ -112,6 +115,18 @@ function Settings() {
                 onChange={(e) => setAlarmDataUrl(e.target.value)}
               />
             </div>
+
+            <div className="flex gap-4 items-center">
+              <span className="text-lg w-72">稼働データ取得先URL</span>
+              <input
+                type="text"
+                placeholder="http://127.0.0.1:8080/download_operating_data"
+                className="w-[500px] px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                value={operationDataUrl}
+                onChange={(e) => setOperationDataUrl(e.target.value)}
+              />
+            </div>
+
 
             <div className="flex items-center gap-4 mt-8">
               <button

@@ -47,6 +47,11 @@ export default function GraphHistogram(props) {
     const isMultipleSeries = () => {
         if (!graph_data) return false;
 
+        // alarm_dataが存在する場合は複数シリーズとして扱う
+        if (graph_data.alarm_data && Array.isArray(graph_data.alarm_data)) {
+            return true;
+        }
+
         if (Array.isArray(graph_data.data)) {
             return false;
         }
