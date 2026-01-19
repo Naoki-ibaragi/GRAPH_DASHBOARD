@@ -4,12 +4,14 @@ import ChartCard1 from "./components/ChartCard1";
 import ChartCard2 from "./components/ChartCard2";
 import ChartCard3 from "./components/ChartCard3";
 import LotDataDownloads from "./components/LotDataDownloads";
+import LotDataAnalysis from "./components/LotDataAnalysis";
 import AlarmDataDownloads from "./components/AlarmDataDownloads";
 import OperationDataDownloads from "./components/OperationDataDownloads";
 import Header from "./components/Header";
 import Settings from "./components/Settings";
 import Manual from "./components/Manual";
 import { LotDataProvider } from "./contexts/LotDataContext";
+import { LotDataAnalysisProvider } from "./contexts/LotDataAnalysisContext";
 import { AlarmDataProvider } from "./contexts/AlarmDataContext";
 import { OperationDataProvider } from "./contexts/OperationDataContext";
 import { GraphDataProvider } from "./contexts/GraphDataContext";
@@ -27,6 +29,10 @@ const PAGE_CONFIG = {
   AlarmDataDownloads: {
     title: "Alarm Data Download",
     component: AlarmDataDownloads,
+  },
+  LotDataAnalysis: {
+    title: "Lot Data Graph Analysis",
+    component: LotDataAnalysis,
   },
   OperationDataDownloads:{
     title:"Operation Data Download",
@@ -74,35 +80,37 @@ function App() {
   return (
     <ConfigProvider>
       <LotDataProvider>
-        <AlarmDataProvider>
-          <OperationDataProvider>
-            <GraphDataProvider>
-              <GraphDataProvider2>
-                <GraphDataProvider3>
-                  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                    <Header
-                      openSideBar={openSideBar}
-                      setOpenSideBar={setOpenSideBar}
-                      title={currentPage.title}
-                    />
-                    <div className="flex pt-12">
-                      {openSideBar && (
-                        <Sidebar
-                          onSelect={setSelectedPage}
-                          openSideBar={openSideBar}
-                          setOpenSideBar={setOpenSideBar}
-                        />
-                      )}
-                      <main className="flex-1 p-4 md:p-6 lg:p-4">
-                        {PageComponent && <PageComponent />}
-                      </main>
+        <LotDataAnalysisProvider>        
+          <AlarmDataProvider>
+            <OperationDataProvider>
+              <GraphDataProvider>
+                <GraphDataProvider2>
+                  <GraphDataProvider3>
+                    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+                      <Header
+                        openSideBar={openSideBar}
+                        setOpenSideBar={setOpenSideBar}
+                        title={currentPage.title}
+                      />
+                      <div className="flex pt-12">
+                        {openSideBar && (
+                          <Sidebar
+                            onSelect={setSelectedPage}
+                            openSideBar={openSideBar}
+                            setOpenSideBar={setOpenSideBar}
+                          />
+                        )}
+                        <main className="flex-1 p-4 md:p-6 lg:p-4">
+                          {PageComponent && <PageComponent />}
+                        </main>
+                      </div>
                     </div>
-                  </div>
-                </GraphDataProvider3>
-              </GraphDataProvider2>
-            </GraphDataProvider>
-          </OperationDataProvider>
-        </AlarmDataProvider>
+                  </GraphDataProvider3>
+                </GraphDataProvider2>
+              </GraphDataProvider>
+            </OperationDataProvider>
+          </AlarmDataProvider>
+        </LotDataAnalysisProvider>
       </LotDataProvider>
     </ConfigProvider>
   );

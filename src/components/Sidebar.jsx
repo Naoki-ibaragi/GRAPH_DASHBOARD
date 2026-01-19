@@ -5,12 +5,13 @@ export default function Sidebar({ onSelect, openSideBar, setOpenSideBar }) {
   };
 
   const menuItems = [
-    { id: "LotDataDownloads", label: "LotData Downloads", icon: "📊" },
-    { id: "AlarmDataDownloads", label: "Alarm Downloads", icon: "🔔" },
-    { id: "OperationDataDownloads", label: "OperationData Downloads", icon: "🕐" },
-    { id: "Graph1", label: "Graph1", icon: "📈" },
-    { id: "Graph2", label: "Graph2", icon: "📈"},
-    { id: "Graph3", label: "Graph3", icon: "📈" },
+    { id: "LotDataDownloads", label: "LotDataTable", icon: "📋" },
+    //{ id: "AlarmDataDownloads", label: "LotDataGraph", icon: "🔔" },
+    { id: "LotDataAnalysis", label: "LotDataAnalysis", icon: "📈" },
+    { id: "OperationDataDownloads", label: "OperationData", icon: "🕐" },
+    { id: "Graph1", label: "Graph1", icon: "📊" },
+    { id: "Graph2", label: "Graph2", icon: "📊"},
+    { id: "Graph3", label: "Graph3", icon: "📊" },
     { id: "Settings", label: "Settings", icon: "⚙️" },
   ];
 

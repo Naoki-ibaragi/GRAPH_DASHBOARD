@@ -11,6 +11,8 @@ pub struct AppConfig {
     pub graph_data_url: String,
     /// ロットデータダウンロードURL
     pub lot_data_url: String,
+    /// ロットデータ解析URL
+    pub lot_data_analysis_url: String,
     /// 装置一覧取得URL
     pub machine_list_url: String,
     /// アラームデータダウンロードURL
@@ -24,6 +26,7 @@ impl Default for AppConfig {
         Self {
             graph_data_url: "http://127.0.0.1:8080/get_graphdata".to_string(),
             lot_data_url: "http://127.0.0.1:8080/download_lot".to_string(),
+            lot_data_analysis_url: "http://127.0.0.1:8080/download_lot_data_analysis".to_string(),
             machine_list_url: "http://127.0.0.1:8080/get_machine_list".to_string(),
             alarm_data_url: "http://127.0.0.1:8080/download_alarm".to_string(),
             operation_data_url: "http://127.0.0.1:8080/download_operating_data".to_string(),

@@ -9,6 +9,7 @@ function Settings() {
   const [lotDataUrl, setLotDataUrl] = useState("");
   const [machineListUrl, setMachineListUrl] = useState("");
   const [alarmDataUrl, setAlarmDataUrl] = useState("");
+  const [lotDataAnalysisUrl, setLotDataAnalysisUrl] = useState("");
   const [operationDataUrl, setOperationDataUrl] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
@@ -20,6 +21,7 @@ function Settings() {
     if (config) {
       setGraphDataUrl(config.graph_data_url || "");
       setLotDataUrl(config.lot_data_url || "");
+      setLotDataAnalysisUrl(config.lot_data_analysis_url || "");
       setMachineListUrl(config.machine_list_url || "");
       setAlarmDataUrl(config.alarm_data_url || "");
       setOperationDataUrl(config.operation_data_url || "");
@@ -35,6 +37,7 @@ function Settings() {
     const newConfig = {
       graph_data_url: graphDataUrl,
       lot_data_url: lotDataUrl,
+      lot_data_analysis_url: lotDataAnalysisUrl,
       machine_list_url: machineListUrl,
       alarm_data_url: alarmDataUrl,
       operation_data_url: operationDataUrl,
@@ -113,6 +116,17 @@ function Settings() {
                 className="w-[500px] px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                 value={alarmDataUrl}
                 onChange={(e) => setAlarmDataUrl(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-4 items-center">
+              <span className="text-lg w-72">ロット解析データ取得先URL</span>
+              <input
+                type="text"
+                placeholder="http://127.0.0.1:8080/download_lot_data_analysis"
+                className="w-[500px] px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                value={lotDataAnalysisUrl}
+                onChange={(e) => setLotDataAnalysisUrl(e.target.value)}
               />
             </div>
 

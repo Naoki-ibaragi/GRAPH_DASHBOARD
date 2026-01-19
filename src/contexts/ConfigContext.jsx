@@ -20,6 +20,7 @@ export const ConfigProvider = ({ children }) => {
     lot_data_url: "http://127.0.0.1:8080/download_lot",
     machine_list_url: "http://127.0.0.1:8080/get_machine_list",
     alarm_data_url: "http://127.0.0.1:8080/download_alarm",
+    lot_data_analysis_url: "http://127.0.0.1:8080/lot_data_analysis",
     operation_data_url: "http://127.0.0.1:8080/download_operating_data",
   });
   const [isLoading, setIsLoading] = useState(true);

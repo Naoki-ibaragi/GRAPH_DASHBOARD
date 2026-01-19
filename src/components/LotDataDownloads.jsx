@@ -56,7 +56,7 @@ export default function LotDataDownloads() {
 
     try {
       // REST APIにリクエストを送信
-      const response = await fetch(config.lot_data_url, {
+      const response = await fetch(config.lot_data_analysis_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
