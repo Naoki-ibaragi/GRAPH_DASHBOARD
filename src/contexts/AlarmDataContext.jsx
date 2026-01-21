@@ -4,14 +4,13 @@ import dayjs from "dayjs";
 const AlarmDataContext = createContext();
 
 export function AlarmDataProvider({ children }) {
-  const [machineUnitData, setMachineUnitData] = useState(null);
   const [machineName, setMachineName] = useState("");
   const [validationError, setValidationError] = useState(false); //設備名入力時のエラーの有無
   const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
   const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
   const [errorMessage, setErrorMessage] = useState(""); //ダウンロード失敗時のメッセージを表示
   const [downloadsState, setDownloadsState] = useState(""); //ダウンロード状況表示
-  const [isTable, setIsTable] = useState(false); //データを受け取ってテーブルを表示するかどうか
+  const [isGraph, setIsGraph] = useState(false); //データを受け取ってテーブルを表示するかどうか
   const [machineList, setMachineList] = useState([]); //設備名一覧
   const [startDate, setStartDate] = useState(dayjs().subtract(7, "day")); //データ収集開始日（デフォルト: 7日前）
   const [endDate, setEndDate] = useState(dayjs()); //データ収集終了日（デフォルト: 今日）
@@ -19,12 +18,15 @@ export function AlarmDataProvider({ children }) {
   const [endDateError, setEndDateError] = useState(false); //終了日のバリデーションエラー
   const [startDateErrorMessage, setStartDateErrorMessage] = useState(""); //開始日のエラーメッセージ
   const [endDateErrorMessage, setEndDateErrorMessage] = useState(""); //終了日のエラーメッセージ
+  const [typeNameList,setTypeNameList]=useState([]); //バックエンドから取得した機種名のリスト
+  const [alarmDetailMap,setAlarmDetailMap]=useState(null); //アラーム詳細マップ
+  const [stopTimeMap,setStopTimeMap]=useState(null); //機種ごとのアラーム停止時間MAP
+  const [stopCountMap,setStopCountMap]=useState(null); //機種ごとのアラーム停止回数MAP
+  const [selectedTypeName,setSelectedTypeName]=useState("all");
 
   return (
     <AlarmDataContext.Provider
       value={{
-        machineUnitData,
-        setMachineUnitData,
         machineName,
         setMachineName,
         validationError,
@@ -37,8 +39,8 @@ export function AlarmDataProvider({ children }) {
         setErrorMessage,
         downloadsState,
         setDownloadsState,
-        isTable,
-        setIsTable,
+        isGraph,
+        setIsGraph,
         machineList,
         setMachineList,
         startDate,
@@ -52,7 +54,17 @@ export function AlarmDataProvider({ children }) {
         startDateErrorMessage,
         setStartDateErrorMessage,
         endDateErrorMessage,
-        setEndDateErrorMessage
+        setEndDateErrorMessage,
+        typeNameList,
+        setTypeNameList,
+        alarmDetailMap,
+        setAlarmDetailMap,
+        stopTimeMap,
+        setStopTimeMap,
+        stopCountMap,
+        setStopCountMap,
+        selectedTypeName,
+        setSelectedTypeName
       }}
     >
       {children}

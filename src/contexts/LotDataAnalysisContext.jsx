@@ -13,7 +13,7 @@ export function LotDataAnalysisProvider({ children }) {
   const [isGraph, setIsGraph] = useState(false); //データを受け取ってテーブルを表示するかどうか
   const [lotData,setLotData]=useState(null);
   const [eventData,setEventData]=useState(null);
-  const [displayItem, setDisplayItem] = useState(null); //何のデータをグラフに表示するか
+  const [displayItem, setDisplayItem] = useState("シリアル"); //何のデータをグラフに表示するか
   const [displayEvent, setDisplayEvent] = useState(null); //何のイベントをグラフに表示するか
   const [itemComboMenu, setItemComboMenu] = useState(Object.keys(analysis_data_items)); //何のデータをグラフに表示するか
   const [eventComboMenu, setEventComboMenu] = useState([]); //何のイベントをグラフに表示するか

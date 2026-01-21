@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Chart, Series, XAxis, YAxis, Tooltip, Legend, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
-import ParetoModule from 'highcharts/modules/pareto';
+import ParetoModule from "highcharts/modules/pareto";
 
 setHighcharts(Highcharts);
 

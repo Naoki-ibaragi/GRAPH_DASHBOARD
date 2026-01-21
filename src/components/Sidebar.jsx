@@ -6,8 +6,8 @@ export default function Sidebar({ onSelect, openSideBar, setOpenSideBar }) {
 
   const menuItems = [
     { id: "LotDataDownloads", label: "LotDataTable", icon: "📋" },
-    //{ id: "AlarmDataDownloads", label: "LotDataGraph", icon: "🔔" },
     { id: "LotDataAnalysis", label: "LotDataAnalysis", icon: "📈" },
+    { id: "AlarmDataAnalysis", label: "AlarmDataAnalysis", icon: "🔔" },
     { id: "OperationDataDownloads", label: "OperationData", icon: "🕐" },
     { id: "Graph1", label: "Graph1", icon: "📊" },
     { id: "Graph2", label: "Graph2", icon: "📊"},
@@ -16,7 +16,7 @@ export default function Sidebar({ onSelect, openSideBar, setOpenSideBar }) {
   ];
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-64 bg-white shadow-xl z-40 overflow-y-auto scrollbar-thin">
+    <aside className="fixed left-0 top-12 bottom-0 w-64 bg-white shadow-xl z-40 overflow-y-auto scrollbar-thin">
       <nav className="py-4">
         <ul className="space-y-1 px-3">
           {menuItems.map((item) => (

@@ -332,10 +332,10 @@ export default function LotDataAnalysis() {
       ) : null}
 
       {isGraph ?
-      <div>
+      <div style={{marginTop:"20px"}}>
         {/* 表示アイテム選択コンボボックス */}
         <div style={{marginBottom: "20px"}}>
-            <label style={{marginRight: "10px", fontWeight: "bold"}}>表示項目:</label>
+            <label style={{marginRight: "42px", fontWeight: "bold"}}>表示項目:</label>
             <select
                 value={displayItem || ""}
                 onChange={(e) => {
@@ -350,7 +350,6 @@ export default function LotDataAnalysis() {
                     minWidth: "200px"
                 }}
             >
-                <option value="">-- 選択してください --</option>
                 {itemComboMenu.map(item => (
                     <option key={item} value={item}>{item}</option>
                 ))}

@@ -5,7 +5,7 @@ import ChartCard2 from "./components/ChartCard2";
 import ChartCard3 from "./components/ChartCard3";
 import LotDataDownloads from "./components/LotDataDownloads";
 import LotDataAnalysis from "./components/LotDataAnalysis";
-import AlarmDataDownloads from "./components/AlarmDataDownloads";
+import AlarmDataAnalysis from "./components/AlarmDataAnalysis";
 import OperationDataDownloads from "./components/OperationDataDownloads";
 import Header from "./components/Header";
 import Settings from "./components/Settings";
@@ -26,9 +26,9 @@ const PAGE_CONFIG = {
     title: "Lot Data Downloads",
     component: LotDataDownloads,
   },
-  AlarmDataDownloads: {
+  AlarmDataAnalysis: {
     title: "Alarm Data Download",
-    component: AlarmDataDownloads,
+    component: AlarmDataAnalysis,
   },
   LotDataAnalysis: {
     title: "Lot Data Graph Analysis",
