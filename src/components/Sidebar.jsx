@@ -5,8 +5,9 @@ export default function Sidebar({ onSelect, openSideBar, setOpenSideBar }) {
   };
 
   const menuItems = [
-    { id: "LotDataDownloads", label: "LotDataTable", icon: "📋" },
-    { id: "LotDataAnalysis", label: "LotDataAnalysis", icon: "📈" },
+    { id: "LotDataDownloads", label: "従来機 LotDataTable", icon: "🔹" },
+    { id: "LotDataDownloadsVer2", label: "小型機 LotDataTable", icon: "🔸" },
+    { id: "LotDataAnalysis", label: "従来機 LotDataAnalysis", icon: "📈" },
     { id: "AlarmDataAnalysis", label: "AlarmDataAnalysis", icon: "🔔" },
     { id: "OperationDataDownloads", label: "OperationData", icon: "🕐" },
     { id: "Graph1", label: "Graph1", icon: "📊" },

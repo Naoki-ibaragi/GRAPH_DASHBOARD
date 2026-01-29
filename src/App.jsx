@@ -11,6 +11,7 @@ import Header from "./components/Header";
 import Settings from "./components/Settings";
 import Manual from "./components/Manual";
 import { LotDataProvider } from "./contexts/LotDataContext";
+import { LotDataVer2Provider } from "./contexts/LotDataContextVer2";
 import { LotDataAnalysisProvider } from "./contexts/LotDataAnalysisContext";
 import { AlarmDataProvider } from "./contexts/AlarmDataContext";
 import { OperationDataProvider } from "./contexts/OperationDataContext";
@@ -23,7 +24,11 @@ import { useBackendEvent } from "./hooks/useBackendEvent";
 // ページ設定の定義
 const PAGE_CONFIG = {
   LotDataDownloads: {
-    title: "Lot Data Downloads",
+    title: "従来機 Lot Data Downloads",
+    component: LotDataDownloads,
+  },
+  LotDataDownloadsVer2: {
+    title: "小型機 Lot Data Downloads",
     component: LotDataDownloads,
   },
   AlarmDataAnalysis: {
@@ -80,37 +85,39 @@ function App() {
   return (
     <ConfigProvider>
       <LotDataProvider>
-        <LotDataAnalysisProvider>        
-          <AlarmDataProvider>
-            <OperationDataProvider>
-              <GraphDataProvider>
-                <GraphDataProvider2>
-                  <GraphDataProvider3>
-                    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                      <Header
-                        openSideBar={openSideBar}
-                        setOpenSideBar={setOpenSideBar}
-                        title={currentPage.title}
-                      />
-                      <div className="flex pt-12">
-                        {openSideBar && (
-                          <Sidebar
-                            onSelect={setSelectedPage}
-                            openSideBar={openSideBar}
-                            setOpenSideBar={setOpenSideBar}
-                          />
-                        )}
-                        <main className="flex-1 p-4 md:p-6 lg:p-4">
-                          {PageComponent && <PageComponent />}
-                        </main>
+        <LotDataVer2Provider>
+          <LotDataAnalysisProvider>        
+            <AlarmDataProvider>
+              <OperationDataProvider>
+                <GraphDataProvider>
+                  <GraphDataProvider2>
+                    <GraphDataProvider3>
+                      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+                        <Header
+                          openSideBar={openSideBar}
+                          setOpenSideBar={setOpenSideBar}
+                          title={currentPage.title}
+                        />
+                        <div className="flex pt-12">
+                          {openSideBar && (
+                            <Sidebar
+                              onSelect={setSelectedPage}
+                              openSideBar={openSideBar}
+                              setOpenSideBar={setOpenSideBar}
+                            />
+                          )}
+                          <main className="flex-1 p-4 md:p-6 lg:p-4">
+                            {PageComponent && <PageComponent />}
+                          </main>
+                        </div>
                       </div>
-                    </div>
-                  </GraphDataProvider3>
-                </GraphDataProvider2>
-              </GraphDataProvider>
-            </OperationDataProvider>
-          </AlarmDataProvider>
-        </LotDataAnalysisProvider>
+                    </GraphDataProvider3>
+                  </GraphDataProvider2>
+                </GraphDataProvider>
+              </OperationDataProvider>
+            </AlarmDataProvider>
+          </LotDataAnalysisProvider>
+        </LotDataVer2Provider>
       </LotDataProvider>
     </ConfigProvider>
   );

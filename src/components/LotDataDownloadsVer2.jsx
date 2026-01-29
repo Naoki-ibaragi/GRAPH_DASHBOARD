@@ -4,9 +4,9 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { lot_table_headers } from "../Variables/LotTableHeader";
 import LotDataTable from "../TableComponents/LotDataTable";
 import { useConfig } from "../contexts/ConfigContext";
-import { useLotData } from "../contexts/LotDataContext";
+import { useLotDataVer2 } from "../contexts/LotDataContextVer2";
 
-export default function LotDataDownloads() {
+export default function LotDataDownloadsVer2() {
   // 設定を取得
   const { config } = useConfig();
   const {
@@ -26,7 +26,7 @@ export default function LotDataDownloads() {
     setLotUnitData,
     isTable,
     setIsTable
-  }=useLotData();
+  }=useLotDataVer2();
 
   //invoke処理が完了するとテーブルを表示する
   useEffect(() => {
@@ -56,12 +56,12 @@ export default function LotDataDownloads() {
 
     try {
       // REST APIにリクエストを送信
-      const response = await fetch(config.lot_data_analysis_url, {
+      const response = await fetch(config.lot_data_analysis_ver2_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ lot_name: lotNumber,version:"1" }),
+        body: JSON.stringify({ lot_name: lotNumber,version:"2" }),
       });
 
       if (!response.ok) {
