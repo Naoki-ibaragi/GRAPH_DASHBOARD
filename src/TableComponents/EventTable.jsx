@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 
-function LotDataTable({ lotUnitData,lot_table_headers }) {
-    if (!lotUnitData) return null;
+function EventTable({ resultData}) {
+    if (!resultData) return null;
 
     const columnWidth = 150;
     const columnWidth_last = 120;
@@ -13,30 +13,26 @@ function LotDataTable({ lotUnitData,lot_table_headers }) {
     const containerRef = useRef(null);
     const headerRef = useRef(null);
     const [scrollTop, setScrollTop] = useState(0);
-    const containerHeight = 552; // 600 - headerHeight
+    const containerHeight = 752; // 600 - headerHeight
     //テーブルのヘッダー
-    const header_arr=Object.keys(lot_table_headers);
+    const header_arr=["装置ID","機種名","ロット名","時刻","イベント","アラームユニット","アラームコード"];
 
     //ロットデータをバックエンドからもらった生データから表示用に置き換える
     let display_datas=[];
-    Object.keys(lotUnitData).map((chip_key)=>{
+    resultData.forEach((rowArray)=>{
         const unit_vec=[];
-        const chip_unit_data=lotUnitData[chip_key];
 
-        Object.keys(chip_unit_data).map((data_key,idx)=>{
-            const data_type=lot_table_headers[header_arr[idx]]; //num or str
-            if (chip_unit_data[data_key]==="None"){
-                unit_vec.push("");
-            }else if (data_type in chip_unit_data[data_key]){
-                unit_vec.push(chip_unit_data[data_key][data_type]);
+        rowArray.forEach((data)=>{
+            if(typeof data === 'object' && data !== null && Object.hasOwn(data,"Str")){
+                unit_vec.push(data["Str"]);
+            }else if(typeof data === 'object' && data !== null && Object.hasOwn(data,"Num")){
+                unit_vec.push(data["Num"]);
             }else{
-                unit_vec.push("");
+                unit_vec.push(data);
             }
         });
         display_datas.push(unit_vec);
     });
-    console.log("display_datas",display_datas);
-
 
     useEffect(() => {
         
@@ -90,14 +86,12 @@ function LotDataTable({ lotUnitData,lot_table_headers }) {
                     <div
                         key={index}
                         style={{
-                            minWidth: index==header_arr.length-1 ? columnWidth : columnWidth,
-                            width: index==header_arr.length-1 ? columnWidth : columnWidth,
+                            width: index === 3 ? columnWidth_time : (index === header_arr.length - 1 ? columnWidth_last : columnWidth),
                             fontWeight: "bold",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             padding: "8px",
-                            borderRight: index==header_arr.length-1 ? null:"1px solid #e0e0e0",
                             flexShrink: 0,
                         }}
                     >
@@ -142,13 +136,11 @@ function LotDataTable({ lotUnitData,lot_table_headers }) {
                                         <div
                                             key={c_index}
                                             style={{
-                                                minWidth: c_index==header_arr.length-1 ? columnWidth_last : columnWidth,
-                                                width: c_index==header_arr.length-1 ? columnWidth_last : columnWidth,
+                                                width: c_index === 3 ? columnWidth_time : (c_index === row.length - 1 ? columnWidth_last : columnWidth),
                                                 display: "flex",
                                                 alignItems: "center",
                                                 justifyContent: "center",
                                                 padding: "8px",
-                                                borderRight: c_index==header_arr.length-1 ? "0px":"1px solid #e0e0e0",
                                                 flexShrink: 0,
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
@@ -170,4 +162,4 @@ function LotDataTable({ lotUnitData,lot_table_headers }) {
     );
 }
 
-export default LotDataTable;
+export default EventTable;

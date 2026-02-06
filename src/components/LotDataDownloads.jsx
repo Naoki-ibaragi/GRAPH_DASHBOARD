@@ -56,12 +56,12 @@ export default function LotDataDownloads() {
 
     try {
       // REST APIにリクエストを送信
-      const response = await fetch(config.lot_data_analysis_url, {
+      const response = await fetch(config.lot_data_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ lot_name: lotNumber,version:"1" }),
+        body: JSON.stringify({ lot_name: lotNumber,version:1 }),
       });
 
       if (!response.ok) {
@@ -196,7 +196,7 @@ export default function LotDataDownloads() {
           テーブルをCSVに出力
         </button>
       ) : null}
-      {isTable ? <LotDataTable lotUnitData={lotUnitData}></LotDataTable> : null}
+      {isTable ? <LotDataTable lotUnitData={lotUnitData} lot_table_headers={lot_table_headers}></LotDataTable> : null}
     </>
   );
 }

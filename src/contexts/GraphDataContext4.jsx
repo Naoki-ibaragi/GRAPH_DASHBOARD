@@ -4,7 +4,7 @@ import { filter_items } from "../VariablesVer2/FilterData";
 
 const GraphDataContext = createContext();
 
-export function GraphDataProvider3({ children }) {
+export function GraphDataProvider4({ children }) {
   const [graphType, setGraphType] = useState("ScatterPlot");
   const [xdimItem, setXdimItem] = useState("SERIAL");
   const [ydimItem, setYdimItem] = useState("SERIAL");
@@ -81,7 +81,7 @@ export function GraphDataProvider3({ children }) {
   );
 }
 
-export function useGraphData3() {
+export function useGraphData4() {
   const context = useContext(GraphDataContext);
   if (!context) {
     throw new Error("useGraphData must be used within GraphDataProvider");

@@ -150,6 +150,7 @@ export default function ChartCard2() {
       plot_unit: plotUnit,
       filters: filters_result,
       filter_conjunction: operator,
+      version:1
     };
 
     setIsError(false); //errorを解除

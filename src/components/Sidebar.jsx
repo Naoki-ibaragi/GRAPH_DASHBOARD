@@ -7,12 +7,13 @@ export default function Sidebar({ onSelect, openSideBar, setOpenSideBar }) {
   const menuItems = [
     { id: "LotDataDownloads", label: "従来機 LotDataTable", icon: "🔹" },
     { id: "LotDataDownloadsVer2", label: "小型機 LotDataTable", icon: "🔸" },
-    { id: "LotDataAnalysis", label: "従来機 LotDataAnalysis", icon: "📈" },
     { id: "AlarmDataAnalysis", label: "AlarmDataAnalysis", icon: "🔔" },
     { id: "OperationDataDownloads", label: "OperationData", icon: "🕐" },
-    { id: "Graph1", label: "Graph1", icon: "📊" },
-    { id: "Graph2", label: "Graph2", icon: "📊"},
-    { id: "Graph3", label: "Graph3", icon: "📊" },
+    { id: "EventDataAnalysis", label: "EventData", icon: "🗓️" },
+    { id: "Graph1", label: "従来機 Graph1", icon: "🔹" },
+    { id: "Graph2", label: "従来機 Graph2", icon: "🔹"},
+    { id: "Graph3", label: "小型機 Graph1", icon: "🔸" },
+    { id: "Graph4", label: "小型機 Graph2", icon: "🔸" },
     { id: "Settings", label: "Settings", icon: "⚙️" },
   ];
 

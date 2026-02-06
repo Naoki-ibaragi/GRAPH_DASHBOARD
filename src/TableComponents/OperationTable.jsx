@@ -1,8 +1,14 @@
 /*稼働結果を表示*/
 import React, { useState, useRef, useEffect } from 'react';
 import { Chart, Series, XAxis, YAxis, Tooltip, Legend, setHighcharts } from '@highcharts/react';
+// 注: ComplexChartはoptionsベースで設定、ParetoChartはDeclarative APIを使用
 import Highcharts from 'highcharts/highcharts';
 import ParetoModule from "highcharts/modules/pareto";
+
+// Paretoモジュールを初期化（ビルド時にも確実に動作させるため）
+if (typeof ParetoModule === 'function') {
+    ParetoModule(Highcharts);
+}
 
 setHighcharts(Highcharts);
 
@@ -57,104 +63,112 @@ function OperationTable({resultData}) {
             }
         };
 
-        return(
-            <Chart containerProps={{ style: { height: "400px" } }}>
-                <XAxis
-                    categories={categories}
-                    labels={{
-                        rotation: -45,
-                        style: {
-                            fontSize: '11px'
-                        }
-                    }}
-                />
-                <YAxis id="chip-axis">
-                    チップ数 (pcs)
-                </YAxis>
-                <YAxis id="percent-axis" opposite min={0} max={100}>
-                    OEE・歩留 (%)
-                </YAxis>
-                <Tooltip
-                    shared
-                    useHTML
-                    formatter={function() {
-                        if (!this.points || this.points.length === 0) return '';
-                        const index = this.point ? this.point.index : 0;
-                        const data = filteredData[index];
-                        if (!data) return '';
+        // optionsベースでチャートを設定
+        const chartOptions = {
+            chart: {
+                height: 400
+            },
+            xAxis: {
+                categories: categories,
+                labels: {
+                    rotation: -45,
+                    style: {
+                        fontSize: '11px'
+                    }
+                }
+            },
+            yAxis: [{
+                id: 'chip-axis',
+                title: {
+                    text: 'チップ数 (pcs)'
+                }
+            }, {
+                id: 'percent-axis',
+                title: {
+                    text: 'OEE・歩留 (%)'
+                },
+                opposite: true,
+                min: 0,
+            }],
+            tooltip: {
+                shared: true,
+                useHTML: true,
+                formatter: function() {
+                    if (!this.points || this.points.length === 0) return '';
+                    const index = this.points[0].point.index;
+                    const data = filteredData[index];
+                    if (!data) return '';
 
-                        let tooltip = `<b>${data.lot_name}</b><br/>`;
-                        tooltip += `機種: ${data.type_name}<br/>`;
-                        //tooltip += `<hr style="margin:5px 0"/>`;
-                        //tooltip += `<b>時間内訳:</b><br/>`;
-                        //tooltip += `稼働時間: ${formatTime(data.start_time)}<br/>`;
-                        //tooltip += `停止時間: ${formatTime(data.stop_time)}<br/>`;
-                        //tooltip += `合計(ロット時間): ${formatTime(data.lot_time)}<br/>`;
-                        //tooltip += `<hr style="margin:5px 0"/>`;
-                        //tooltip += `<b>指標:</b><br/>`;
-                        //tooltip += `歩留: ${data.good_yield.toFixed(2)}%<br/>`;
-                        //tooltip += `OEE: ${data.oee_index.toFixed(2)}%<br/>`;
-                        //tooltip += `<hr style="margin:5px 0"/>`;
-                        //tooltip += `<span style="color:#888;font-size:10px">クリックで詳細表示</span>`;
-                        return tooltip;
-                    }}
-                />
-                <Legend />
-                {/* 第一軸: 積み上げ棒グラフ (良品数 + 不良品数 + ラインアウト数) */}
-                <Series
-                    name="良品数"
-                    type="column"
-                    yAxis="chip-axis"
-                    data={passChipData}
-                    color="#4CAF50"
-                    stacking="normal"
-                />
-                <Series
-                    name="不良品数"
-                    type="column"
-                    yAxis="chip-axis"
-                    data={failChipData}
-                    color="#F44336"
-                    stacking="normal"
-                />
-                <Series
-                    name="ラインアウト数"
-                    type="column"
-                    yAxis="chip-axis"
-                    data={lineoutChipData}
-                    color="#9E9E9E"
-                    stacking="normal"
-                />
-                {/* 第二軸: 折れ線グラフ (歩留, OEE) */}
-                <Series
-                    name="歩留"
-                    type="spline"
-                    yAxis="percent-axis"
-                    data={goodYieldData}
-                    color="#2196F3"
-                    marker={{
-                        enabled: true,
-                        radius: 4
-                    }}
-                    lineWidth={2}
-                />
-                <Series
-                    name="OEE"
-                    type="spline"
-                    yAxis="percent-axis"
-                    data={oeeData}
-                    color="#FF9800"
-                    marker={{
-                        enabled: true,
-                        radius: 6
-                    }}
-                    lineWidth={2}
-                    cursor="pointer"
-                    events={{
-                        click: handleOeeClick
-                    }}
-                />
-            </Chart>
+                    let tooltip = `<b>${data.lot_name}</b><br/>`;
+                    tooltip += `機種: ${data.type_name}<br/>`;
+                    return tooltip;
+                }
+            },
+            legend: {
+                enabled: true
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal'
+                }
+            },
+            series: [{
+                id: 'pass-chip-series',
+                name: '良品数',
+                type: 'column',
+                yAxis: 0,
+                data: passChipData,
+                color: '#4CAF50',
+                stack: 'chip-stack'
+            }, {
+                id: 'fail-chip-series',
+                name: '不良品数',
+                type: 'column',
+                yAxis: 0,
+                data: failChipData,
+                color: '#F44336',
+                stack: 'chip-stack'
+            }, {
+                id: 'lineout-chip-series',
+                name: 'ラインアウト数',
+                type: 'column',
+                yAxis: 0,
+                data: lineoutChipData,
+                color: '#9E9E9E',
+                stack: 'chip-stack'
+            }, {
+                id: 'yield-series',
+                name: '歩留',
+                type: 'spline',
+                yAxis: 1,
+                data: goodYieldData,
+                color: '#2196F3',
+                marker: {
+                    enabled: true,
+                    radius: 4
+                },
+                lineWidth: 2
+            }, {
+                id: 'oee-series',
+                name: 'OEE',
+                type: 'spline',
+                yAxis: 1,
+                data: oeeData,
+                color: '#FF9800',
+                marker: {
+                    enabled: true,
+                    radius: 6
+                },
+                lineWidth: 2,
+                cursor: 'pointer',
+                events: {
+                    click: handleOeeClick
+                }
+            }]
+        };
+
+        return(
+            <Chart options={chartOptions} />
         )
     }
 
@@ -218,21 +232,22 @@ function OperationTable({resultData}) {
                 />
                 <Legend />
                 <Series
-                    type="pareto"
-                    name="累積比率"
-                    yAxis="cumulative-axis"
-                    zIndex={10}
-                    baseSeries={0}
-                    tooltip={{
-                        valueSuffix: '%'
-                    }}
-                />
-                <Series
+                    id="stoptime-series"
                     name="停止時間"
                     type="column"
                     yAxis="stoptime-axis"
                     data={stopTimes}
                     color="#4472C4"
+                />
+                <Series
+                    type="pareto"
+                    name="累積比率"
+                    yAxis="cumulative-axis"
+                    zIndex={10}
+                    baseSeries="stoptime-series"
+                    tooltip={{
+                        valueSuffix: '%'
+                    }}
                 />
             </Chart>
         );

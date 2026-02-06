@@ -22,6 +22,7 @@ export const ConfigProvider = ({ children }) => {
     alarm_data_url: "http://127.0.0.1:8080/download_alarm",
     lot_data_analysis_url: "http://127.0.0.1:8080/lot_data_analysis",
     operation_data_url: "http://127.0.0.1:8080/download_operating_data",
+    event_data_url: "http://127.0.0.1:8080/download_event_data",
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

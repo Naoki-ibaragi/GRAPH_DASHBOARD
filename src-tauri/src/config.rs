@@ -19,6 +19,8 @@ pub struct AppConfig {
     pub alarm_data_url: String,
     /// 稼働データダウンロードURL
     pub operation_data_url: String,
+    /// イベントデータダウンロードURL
+    pub event_data_url: String,
 }
 
 impl Default for AppConfig {
@@ -30,6 +32,7 @@ impl Default for AppConfig {
             machine_list_url: "http://127.0.0.1:8080/get_machine_list".to_string(),
             alarm_data_url: "http://127.0.0.1:8080/download_alarm".to_string(),
             operation_data_url: "http://127.0.0.1:8080/download_operating_data".to_string(),
+            event_data_url: "http://127.0.0.1:8080/download_event_data".to_string(),
         }
     }
 }

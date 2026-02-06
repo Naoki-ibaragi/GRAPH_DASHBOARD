@@ -11,6 +11,7 @@ function Settings() {
   const [alarmDataUrl, setAlarmDataUrl] = useState("");
   const [lotDataAnalysisUrl, setLotDataAnalysisUrl] = useState("");
   const [operationDataUrl, setOperationDataUrl] = useState("");
+  const [eventDataUrl, setEventDataUrl] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -25,6 +26,7 @@ function Settings() {
       setMachineListUrl(config.machine_list_url || "");
       setAlarmDataUrl(config.alarm_data_url || "");
       setOperationDataUrl(config.operation_data_url || "");
+      setEventDataUrl(config.event_data_url || "");
     }
   }, [config]);
 
@@ -41,6 +43,7 @@ function Settings() {
       machine_list_url: machineListUrl,
       alarm_data_url: alarmDataUrl,
       operation_data_url: operationDataUrl,
+      event_data_url: eventDataUrl,
     };
 
     const result = await saveConfig(newConfig);
@@ -141,6 +144,16 @@ function Settings() {
               />
             </div>
 
+            <div className="flex gap-4 items-center">
+              <span className="text-lg w-72">イベントデータ取得先URL</span>
+              <input
+                type="text"
+                placeholder="http://127.0.0.1:8080/download_event_data"
+                className="w-[500px] px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                value={eventDataUrl}
+                onChange={(e) => setEventDataUrl(e.target.value)}
+              />
+            </div>
 
             <div className="flex items-center gap-4 mt-8">
               <button

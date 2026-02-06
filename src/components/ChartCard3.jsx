@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import GraphSetting from "../graphComponents/GraphSetting";
+import GraphSetting from "../graphComponentsVer2/GraphSetting";
 import { line_plot_y_axis_items } from "../Variables/LinePlotData";
-import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
-import { density_plot_x_axis_items,density_plot_y_axis_items } from "../Variables/DensityPlotData";
-import { histogram_axis_items } from "../Variables/HistogramData";
+import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../VariablesVer2/ScatterPlotData";
+import { density_plot_x_axis_items,density_plot_y_axis_items } from "../VariablesVer2/DensityPlotData";
+import { histogram_axis_items } from "../VariablesVer2/HistogramData";
 import { useGraphData3 } from "../contexts/GraphDataContext3";
 import { useConfig } from "../contexts/ConfigContext";
 import { graphDataDownloads } from "../contexts/GraphDataDonwloads";
 
 //各グラフ種類毎のコンポーネントをimport
-import GraphManager from "../graphComponents/GraphManager";
+import GraphManager from "../graphComponentsVer2/GraphManager";
 
 export default function ChartCard3() {
   // 設定を取得
@@ -150,6 +150,7 @@ export default function ChartCard3() {
       plot_unit: plotUnit,
       filters: filters_result,
       filter_conjunction: operator,
+      version:2
     };
 
     setIsError(false); //errorを解除
@@ -161,6 +162,7 @@ export default function ChartCard3() {
 
     try {
       // バックエンドのコマンドを呼び出し（ローカル変数を送信）
+      console.log(newGraphCondition);
       const response = await fetch(config.graph_data_url, {
         method: "POST",
         headers: {

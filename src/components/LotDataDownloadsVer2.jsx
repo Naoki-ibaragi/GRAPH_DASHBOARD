@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { lot_table_headers } from "../Variables/LotTableHeader";
+import { lot_table_headers } from "../VariablesVer2/LotTableHeader";
 import LotDataTable from "../TableComponents/LotDataTable";
 import { useConfig } from "../contexts/ConfigContext";
 import { useLotDataVer2 } from "../contexts/LotDataContextVer2";
@@ -56,12 +56,12 @@ export default function LotDataDownloadsVer2() {
 
     try {
       // REST APIにリクエストを送信
-      const response = await fetch(config.lot_data_analysis_ver2_url, {
+      const response = await fetch(config.lot_data_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ lot_name: lotNumber,version:"2" }),
+        body: JSON.stringify({ lot_name: lotNumber,version:2 }),
       });
 
       if (!response.ok) {
@@ -196,7 +196,7 @@ export default function LotDataDownloadsVer2() {
           テーブルをCSVに出力
         </button>
       ) : null}
-      {isTable ? <LotDataTable lotUnitData={lotUnitData}></LotDataTable> : null}
+      {isTable ? <LotDataTable lotUnitData={lotUnitData} lot_table_headers={lot_table_headers}></LotDataTable> : null}
     </>
   );
 }

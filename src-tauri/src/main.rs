@@ -24,7 +24,7 @@ fn main() {
                 match event.id().0.as_str() {
                     "version" => {
                         app_handle.dialog()
-                        .message(format!("バージョン:0.2.0\n作成者:Takahashi Naoki"))
+                        .message(format!("バージョン:0.3.0\n作成者:Takahashi Naoki"))
                         .kind(MessageDialogKind::Info)
                         .title("バージョン情報")
                         .blocking_show();

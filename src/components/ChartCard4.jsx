@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import GraphSetting from "../graphComponents/GraphSetting";
+import GraphSetting from "../graphComponentsVer2/GraphSetting";
 import { line_plot_y_axis_items } from "../Variables/LinePlotData";
-import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../Variables/ScatterPlotData";
-import { density_plot_x_axis_items,density_plot_y_axis_items } from "../Variables/DensityPlotData";
-import { histogram_axis_items } from "../Variables/HistogramData";
-import { useGraphData } from "../contexts/GraphDataContext";
+import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../VariablesVer2/ScatterPlotData";
+import { density_plot_x_axis_items,density_plot_y_axis_items } from "../VariablesVer2/DensityPlotData";
+import { histogram_axis_items } from "../VariablesVer2/HistogramData";
+import { useGraphData3 } from "../contexts/GraphDataContext3";
 import { useConfig } from "../contexts/ConfigContext";
 import { graphDataDownloads } from "../contexts/GraphDataDonwloads";
 
 //各グラフ種類毎のコンポーネントをimport
-import GraphManager from "../graphComponents/GraphManager";
+import GraphManager from "../graphComponentsVer2/GraphManager";
 
-export default function ChartCard1() {
+export default function ChartCard4() {
   // 設定を取得
   const { config } = useConfig();
 
@@ -53,7 +53,7 @@ export default function ChartCard1() {
     setGraphCondition,
     alarmNumbersString,
     setAlarmNumbersString,
-  } = useGraphData();
+  } = useGraphData3();
 
   // ローカルステート（UI表示用のみ）
   const [xDimItems, setXDimItems] = useState(scatter_plot_x_axis_items); //X軸の項目
@@ -150,7 +150,7 @@ export default function ChartCard1() {
       plot_unit: plotUnit,
       filters: filters_result,
       filter_conjunction: operator,
-      version:1
+      version:2
     };
 
     setIsError(false); //errorを解除

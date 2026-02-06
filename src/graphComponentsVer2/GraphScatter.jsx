@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { Chart, Series, Title, XAxis, YAxis, setHighcharts } from '@highcharts/react';
 import Highcharts from 'highcharts/highcharts';
 import 'highcharts/modules/boost';
-import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from '../Variables/ScatterPlotData';
+import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from '../VariablesVer2/ScatterPlotData';
 import { getKeyByValue } from '../utils/helpers';
 
 setHighcharts(Highcharts);
