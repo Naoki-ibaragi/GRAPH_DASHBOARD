@@ -56,6 +56,7 @@ export const filter_items={
     "55. AC2下流アームコレット使用回数":"AC2_ARM2_COLLET",
     "56. DC2上流アームコレット使用回数":"DC2_ARM1_COLLET",
     "57. DC2測定ステージ使用回数":"DC2_STAGE_COUNT",
+    "57. DC2測定ステージ使用回数":"DC2_STAGE_SERIAL",
     "58. DC2コンタクタ使用回数":"DC2_PROBE_COUNT",
     "59. DC2コンタクタ補正位置X":"DC2_PROBE_X",
     "60. DC2コンタクタ補正位置Y":"DC2_PROBE_Y",

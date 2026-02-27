@@ -41,7 +41,11 @@ export default function EventDataDownloads() {
     startDateErrorMessage,
     setStartDateErrorMessage,
     endDateErrorMessage,
-    setEndDateErrorMessage
+    setEndDateErrorMessage,
+    lotName,
+    setLotName,
+    searchMode,
+    setSearchMode,
   } = useEventData();
 
   //一番最初にバックエンドから設備名一覧を取得する
@@ -157,6 +161,8 @@ export default function EventDataDownloads() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          search_mode: searchMode,
+          lot_name:lotName,
           machine_id: parseInt(machineName),
           start_date: startDate.format("YYYY-MM-DD HH:mm:00"),
           end_date: endDate.format("YYYY-MM-DD HH:mm:00"),
@@ -209,7 +215,7 @@ export default function EventDataDownloads() {
   //テーブルをcsvで出力
   const exportCSV = async () => {
     // ヘッダー行
-    const header_arr=["装置ID","機種名","ロット名","時刻","イベント","アラームユニット","アラームコード"];
+    const header_arr=["装置ID","機種名","ロット名","時刻","イベント","アラームユニット","アラームコード","アラーム詳細"];
 
     // データ行（各行を個別にカンマ区切りにしてから改行で結合）
     let datas=[];
@@ -229,12 +235,19 @@ export default function EventDataDownloads() {
     // ヘッダーとデータを結合
     const csvContent = [header_arr, ...datas].join("\n");
 
+    let filePath="";
     // ファイル保存ダイアログを開く
-    const filePath = await save({
-      filters: [{ name: "CSV Files", extensions: ["csv"] }],
-      defaultPath: `machine_${machineName}_events.csv`,
-    });
-
+    if(searchMode==1){
+      filePath = await save({
+        filters: [{ name: "CSV Files", extensions: ["csv"] }],
+        defaultPath: `machine_${machineName}_events.csv`,
+      });
+    }else{
+      filePath = await save({
+        filters: [{ name: "CSV Files", extensions: ["csv"] }],
+        defaultPath: `${lotName}_events.csv`,
+      });
+    }
     if (filePath) {
       try {
         // plugin-fs を使ってファイルに書き込む（UTF-8 BOMを追加して文字化け防止）
@@ -250,32 +263,38 @@ export default function EventDataDownloads() {
   return (
     <>
       <div className="mt-8 max-w-4xl">
-        {/* アラームデータ */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">イベントデータのダウンロード</h2>
             <p className="text-sm text-gray-600 mb-6">対象装置のイベントデータをダウンロードします。</p>
-
-            {/* 装置選択 */}
-            <div className="flex items-center gap-2 flex-wrap mb-6">
-              <label className="text-base font-medium text-gray-700">装置 : CLT</label>
-              <select
-                className="h-10 w-30 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                value={machineName}
-                onChange={(e) => setMachineName(e.target.value)}
-              >
-                {machineList.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-              <label className="text-base font-medium text-gray-700">号機</label>
-            </div>
-
             {/* 日付範囲選択 */}
             <div className="border border-gray-300 rounded-lg p-4 mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">データ収集期間</h3>
+              <div className="flex items-center gap-2 flex-wrap mb-5">
+                <h3 className="text-sm font-semibold text-gray-700">装置番号と期間を指定して検索</h3>
+                <input
+                  type="radio"
+                  name="searchMode"
+                  checked={searchMode==1}
+                  onChange={() => setSearchMode(1)}
+                  className="w-5 h-5 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                />
+              </div>
+              {/* 装置選択 */}
+              <div className="flex items-center gap-2 flex-wrap mb-3">
+                <label className="text-base font-medium text-gray-700">装置 : CLT</label>
+                <select
+                  className="h-10 w-30 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  value={machineName}
+                  onChange={(e) => setMachineName(e.target.value)}
+                >
+                  {machineList.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+                <label className="text-base font-medium text-gray-700">号機</label>
+              </div>
               <div className="flex flex-wrap items-start gap-6">
                 <div className="flex flex-col gap-1">
                   <label className="text-sm font-medium text-gray-700">開始日</label>
@@ -299,6 +318,28 @@ export default function EventDataDownloads() {
                 </div>
               </div>
             </div>
+
+            {/* ロット番号で指定 */}
+            <div className="border border-gray-300 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-2 flex-wrap mb-5">
+                <h3 className="text-sm font-semibold text-gray-700">ロット番号を使用して検索</h3>
+                <input
+                  type="radio"
+                  name="searchMode"
+                  checked={searchMode==2}
+                  onChange={() => setSearchMode(2)}
+                  className="w-5 h-5 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="ロット番号"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                value={lotName}
+                onChange={(e)=>setLotName(e.target.value)}
+              />
+            </div>
+
 
             {/* ダウンロードボタン */}
             <div className="flex items-center gap-4">

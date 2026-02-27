@@ -4,7 +4,7 @@ function EventTable({ resultData}) {
     if (!resultData) return null;
 
     const columnWidth = 150;
-    const columnWidth_last = 120;
+    const columnWidth_last = 300;
     const columnWidth_time = 150;
     const rowHeight = 32;
     const headerHeight = 48;
@@ -15,7 +15,7 @@ function EventTable({ resultData}) {
     const [scrollTop, setScrollTop] = useState(0);
     const containerHeight = 752; // 600 - headerHeight
     //テーブルのヘッダー
-    const header_arr=["装置ID","機種名","ロット名","時刻","イベント","アラームユニット","アラームコード"];
+    const header_arr=["装置ID","機種名","ロット名","時刻","イベント","アラームユニット","アラームコード","アラーム詳細"];
 
     //ロットデータをバックエンドからもらった生データから表示用に置き換える
     let display_datas=[];

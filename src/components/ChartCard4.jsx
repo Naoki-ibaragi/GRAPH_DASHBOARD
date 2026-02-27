@@ -4,7 +4,7 @@ import { line_plot_y_axis_items } from "../Variables/LinePlotData";
 import { scatter_plot_x_axis_items, scatter_plot_y_axis_items } from "../VariablesVer2/ScatterPlotData";
 import { density_plot_x_axis_items,density_plot_y_axis_items } from "../VariablesVer2/DensityPlotData";
 import { histogram_axis_items } from "../VariablesVer2/HistogramData";
-import { useGraphData3 } from "../contexts/GraphDataContext3";
+import { useGraphData4 } from "../contexts/GraphDataContext4";
 import { useConfig } from "../contexts/ConfigContext";
 import { graphDataDownloads } from "../contexts/GraphDataDonwloads";
 
@@ -53,7 +53,7 @@ export default function ChartCard4() {
     setGraphCondition,
     alarmNumbersString,
     setAlarmNumbersString,
-  } = useGraphData3();
+  } = useGraphData4();
 
   // ローカルステート（UI表示用のみ）
   const [xDimItems, setXDimItems] = useState(scatter_plot_x_axis_items); //X軸の項目

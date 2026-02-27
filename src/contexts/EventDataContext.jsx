@@ -6,7 +6,9 @@ const EventDataContext = createContext();
 export function EventDataProvider({ children }) {
   const [resultData, setResultData] = useState(null); //結果データ
   const [machineName, setMachineName] = useState("");
-  const [validationError, setValidationError] = useState(false); //設備名入力時のエラーの有無
+  const [lotName, setLotName] = useState(""); //ロット番号新規追加
+  const [searchMode, setSearchMode] = useState(1); //1->設備名・期間で検索,2->ロット名で検索
+  const [validationError, setValidationError] = useState(false); //ロット名入力時のエラーの有無
   const [downloads, setDownloads] = useState(false); //ダウンロード中かどうか
   const [isError, setIsError] = useState(false); //ダウンロードタスク中にエラーがでたかどうか
   const [errorMessage, setErrorMessage] = useState(""); //ダウンロード失敗時のメッセージを表示
@@ -52,7 +54,11 @@ export function EventDataProvider({ children }) {
         startDateErrorMessage,
         setStartDateErrorMessage,
         endDateErrorMessage,
-        setEndDateErrorMessage
+        setEndDateErrorMessage,
+        lotName,
+        setLotName,
+        searchMode,
+        setSearchMode
       }}
     >
       {children}
